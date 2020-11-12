@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+
+<VBox fx:id="basePane" maxHeight="-Infinity" maxWidth="-Infinity"
+    minHeight="100" minWidth="200" prefHeight="650" prefWidth="900"
+    xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="com.splendiddata.sqlparser.testgui.SqlParserTestGuiController">
+    <children>
+        <SplitPane orientation="VERTICAL" VBox.vgrow="ALWAYS"
+            dividerPositions="0.25">
+            <items>
+                <SplitPane>
+                    <items>
+                        <VBox>
+                            <children>
+                                <HBox>
+                                    <Label text="Type SQL Query here :" />
+                                    <Pane minWidth="0" prefWidth="0" 
+                                        HBox.hgrow="ALWAYS" />
+                                    <Label fx:id="caretPos" >
+									    <padding>
+									        <Insets right="18" top="0" left="0" bottom="0" />
+									    </padding>
+                                    </Label>
+                                </HBox>
+                                <TextArea fx:id="sqlText"
+                                    onKeyReleased="#processSqlQuery"
+                                    wrapText="true" VBox.vgrow="ALWAYS" />
+                            </children>
+                        </VBox>
+                        <VBox>
+                            <children>
+                                <Label text="Errors Visible here :" />
+                                <TextArea fx:id="errorsText"
+                                    editable="false" wrapText="true"
+                                    VBox.vgrow="ALWAYS" />
+                            </children>
+                        </VBox>
+
+                    </items>
+                </SplitPane>
+                <SplitPane dividerPositions="0.2" VBox.vgrow="ALWAYS">
+                    <items>
+                        <VBox>
+                            <children>
+                                <Label text="Result output in String" />
+                                <ListView fx:id="resultString"
+                                    fixedCellSize="0" VBox.vgrow="ALWAYS" />
+                            </children>
+                        </VBox>
+                        <VBox>
+                            <children>
+                                <Label text="Result output in XML" />
+                                <TextArea fx:id="resultXML"
+                                    editable="false" wrapText="true"
+                                    VBox.vgrow="ALWAYS" />
+                            </children>
+                        </VBox>
+                    </items>
+                </SplitPane>
+            </items>
+        </SplitPane>
+    </children>
+    <padding>
+        <Insets right="5" top="5" left="5" bottom="5" />
+    </padding>
+</VBox>

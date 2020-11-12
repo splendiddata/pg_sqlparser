@@ -1,0 +1,88 @@
+﻿<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.splendiddata</groupId>
+		<artifactId>pg_sqlparser</artifactId>
+		<version>13-SNAPSHOT</version>
+	</parent>
+	<groupId>com.splendiddata.pg_sqlparser</groupId>
+	<artifactId>grammar-to-java</artifactId>
+	<packaging>maven-plugin</packaging>
+	<description>Creates maven plugins to help convert Postgres's scanner and grammar file to executable Java code.</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-plugin-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.plugin-tools</groupId>
+			<artifactId>maven-plugin-annotations</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.splendiddata.pg_sqlparser</groupId>
+			<artifactId>parser-enums</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.javaparser</groupId>
+			<artifactId>javaparser-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-core</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-plugin-plugin</artifactId>
+				<configuration>
+					<!-- see http://jira.codehaus.org/browse/MNG-5346 -->
+					<skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+				</configuration>
+				<executions>
+					<execution>
+						<id>mojo-descriptor</id>
+						<goals>
+							<goal>descriptor</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<!-- The maven-plugin-plugin version 3.6.0 does not allow Java objects 
+					that are compiled with a version higher than 12. So for the time being a 
+					maven-compiler-plugin is added to specify Java version 12. Please remove 
+					when a more up-to-date version of the maven-plugin-plugin arrives. -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<release>12</release>
+					<compilerArgs>
+						<arg>-Xlint:removal</arg>
+					</compilerArgs>
+				</configuration>
+			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <License>https://www.gnu.org/licenses/gpl-3.0.en.html</License>
+                            <Vendor>https://www.splendiddata.com</Vendor>
+                            <Copyright>Copyright (c) Splendid Data Product Development B.V. 2013</Copyright>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+		</plugins>
+	</build>
+</project>
