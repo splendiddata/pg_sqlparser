@@ -52,3 +52,4 @@ public static void main(String[] args) {
 }
    ...
 ```
+More information can be found in [https://github.com/splendiddata/pg_sqlparser/tree/main/doc/README.pdf](https://github.com/splendiddata/pg_sqlparser/tree/main/doc/README.pdf)
