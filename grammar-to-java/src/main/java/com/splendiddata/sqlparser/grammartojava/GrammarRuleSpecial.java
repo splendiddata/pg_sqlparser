@@ -635,6 +635,18 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
                     .replace("($$)->", "((SelectLimit)$$).");
         }
     }),
+    /** @since 13 */
+    create_extension_opt_list(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line
+                    /*
+                     * Temporary work around as the "from version" in the create extension statement is still known as an option
+                     * but is not supported any more. A syntax error will be given, but the grammar now attempts to add a String
+                     * to a List<DefElem>, which will not succeed of course.
+                     */
+                    .replace("{ $$ = lappend($1, $2); }", "{ if (yystack.valueAt (0) instanceof DefElem) { $$ = lappend($1, $2); } }");
+        }
+    }),
 
     /**
      * We're in the epilog section
