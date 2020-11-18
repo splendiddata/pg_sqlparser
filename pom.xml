@@ -34,10 +34,6 @@
 		<url>https://github.com/splendiddata/pg_sqlparser/issues</url>
 	</issueManagement>
 
-	<prerequisites>
-		<maven>3.5.2</maven>
-	</prerequisites>
-
 	<properties>
 		<java.version>14</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
@@ -119,7 +115,7 @@
 			<dependency>
 				<groupId>com.github.javaparser</groupId>
 				<artifactId>javaparser-core</artifactId>
-				<version>3.16.3</version>
+				<version>3.17.0</version>
 			</dependency>
 
 			<dependency>
@@ -309,6 +305,9 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-deploy-plugin</artifactId>
 					<version>3.0.0-M1</version>
+					<configuration>
+						<deployAtEnd>true</deployAtEnd>
+					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -319,6 +318,11 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
 					<version>3.2.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>3.0.0-M3</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -352,6 +356,25 @@
 					<trimStackTrace>false</trimStackTrace>
 					<reportFormat>plain</reportFormat>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-maven</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireMavenVersion>
+									<version>3.5.2</version>
+								</requireMavenVersion>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

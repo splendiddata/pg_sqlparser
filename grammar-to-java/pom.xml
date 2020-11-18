@@ -12,6 +12,10 @@
 	<packaging>maven-plugin</packaging>
 	<description>Creates maven plugins to help convert Postgres's scanner and grammar file to executable Java code.</description>
 
+	<prerequisites>
+		<maven>3.5.2</maven>
+	</prerequisites>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.maven</groupId>
