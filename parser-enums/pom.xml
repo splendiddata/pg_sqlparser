@@ -13,20 +13,6 @@
 	<description>This module contains a bunch of enums that will be used by the sql scanner and that are needed already in the grammar.to.java plugin.</description>
 	<build>
 		<plugins>
-			<plugin>
-				<!-- The maven-plugin-plugin version 3.6.0 does not allow Java objects 
-					that are compiled with a version higher than 12. So for the time being a 
-					maven-compiler-plugin is added to specify Java version 12. Please remove 
-					when a more up-to-date version of the maven-plugin-plugin arrives. -->
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<release>12</release>
-					<compilerArgs>
-						<arg>-Xlint:removal</arg>
-					</compilerArgs>
-				</configuration>
-			</plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
