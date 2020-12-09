@@ -46,8 +46,8 @@
 			<dependencies>
 				<dependency>
 					<groupId>com.splendiddata.pgcode_formatter</groupId>
-					<artifactId>pgcode_formatter_main</artifactId>
-					<version>1.0</version>
+					<artifactId>pgcode_formatter</artifactId>
+					<version>0.1-SNAPSHOT</version>
 				</dependency>
 			</dependencies>
 			<build>
@@ -101,11 +101,6 @@
 		<dependency>
 			<groupId>org.glassfish.jaxb</groupId>
 			<artifactId>jaxb-runtime</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.jaxb</groupId>
-			<artifactId>jaxb-core</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 	</dependencies>

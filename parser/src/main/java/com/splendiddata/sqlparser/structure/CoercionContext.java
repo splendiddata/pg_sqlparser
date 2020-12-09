@@ -17,7 +17,7 @@
 
 package com.splendiddata.sqlparser.structure;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
  * Copied from /postgresql-9.3.4/src/include/nodes/primnodes.h

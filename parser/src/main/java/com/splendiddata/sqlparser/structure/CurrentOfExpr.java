@@ -17,8 +17,8 @@
 
 package com.splendiddata.sqlparser.structure;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
  * Representing the WHERE current of expression. Copied from /postgresql-9.3.4/src/include/nodes/primnodes.h

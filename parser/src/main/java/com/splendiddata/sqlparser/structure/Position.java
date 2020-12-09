@@ -17,7 +17,7 @@
 
 package com.splendiddata.sqlparser.structure;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
  * The postition of the item in the scanner input.

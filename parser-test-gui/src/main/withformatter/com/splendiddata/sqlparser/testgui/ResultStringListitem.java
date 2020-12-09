@@ -23,9 +23,9 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.splendiddata.plpgsql.code.formatter.CodeFormatter;
-import com.splendiddata.plpgsql.code.formatter.FormatConfiguration;
-import com.splendiddata.plpgsql.code.formatter.configuration.xml.v1_0.Configuration;
+import com.splendiddata.pgcode.formatter.CodeFormatter;
+import com.splendiddata.pgcode.formatter.FormatConfiguration;
+import com.splendiddata.pgcode.formatter.configuration.xml.v1_0.Configuration;
 import com.splendiddata.sqlparser.structure.Node;
 
 import javafx.application.Platform;

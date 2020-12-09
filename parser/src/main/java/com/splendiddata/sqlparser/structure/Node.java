@@ -17,9 +17,9 @@
 
 package com.splendiddata.sqlparser.structure;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

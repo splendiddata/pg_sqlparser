@@ -28,5 +28,5 @@ module com.splendiddata.sqlparser.testgui {
     requires transitive javafx.controls;
     requires transitive javafx.fxml;
     requires transitive javafx.graphics;
-    requires transitive com.splendiddata.plpgsql.code.formatter;
+    requires transitive com.splendiddata.pgcode.formatter;
 }
