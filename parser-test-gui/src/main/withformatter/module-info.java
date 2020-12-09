@@ -20,7 +20,7 @@ module com.splendiddata.sqlparser.testgui {
     opens com.splendiddata.sqlparser.testgui;
     
     requires java.base;
-    requires transitive java.xml.bind;
+    requires transitive jakarta.xml.bind;
     requires transitive org.apache.logging.log4j;
     requires transitive com.splendiddata.sqlparser;
     requires transitive com.splendiddata.sqlparser.enums;
