@@ -1,18 +1,15 @@
 /*
  * Copyright (c) Splendid Data Product Development B.V. 2020
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.grammartojava;
@@ -698,14 +695,15 @@ public class JavaParserConverter extends AbstractMojo implements FileVisitor<Pat
             out.println(line);
             Matcher matcher = BISON_VERSION_PATTERN.matcher(line);
             if (matcher.matches()) {
-                String versionString = matcher.group(1);
-                log.info("Bison version = " + versionString);
-                if (versionString.matches("3\\.(0|1|2)\\..*")) {
-                    bisonVersion = BisonVersion.BISON_VERSION_3;
-                }  else if (versionString.startsWith("3")) {
-                    bisonVersion = BisonVersion.BISON_VERSION_3_3;
-                } else {
+                bisonVersion = BisonVersion.fromVersionString(matcher.group(1));
+                if (bisonVersion == null) {
                     bisonVersion = BisonVersion.BISON_VERSION_2;
+                    log.warn(new StringBuilder().append("Bison version \"").append(matcher.group(1))
+                            .append("\" in line \"").append(line)
+                            .append("\" cannot be interpreted as a usable bison version. Version: ")
+                            .append(bisonVersion).append(" assumed."));
+                } else {
+                    log.info("Bison version = " + bisonVersion);
                 }
                 return out;
             }

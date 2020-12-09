@@ -143,10 +143,16 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
      * A pattern to identify the function name in a function definition in the epilog section
      */
     private static final Pattern EPILOG_FUNCTION_DEFINITION_PATTERN = Pattern.compile("^(\\w+)\\(.*");
+    
+    /**
+     * Pattern to interpret the first line of the bison --version response
+     */
+    private static final Pattern BISON_VERSION_PATTERN = Pattern
+            .compile("bison \\(GNU Bison\\) ([\\d.]+).*");
     /**
      * What Bison version are we working with?
      */
-    static BisonVersion bisonVersion = BisonVersion.BISON_VERSION_2;
+    static BisonVersion bisonVersion;
 
     /**
      * Are we in some special block?
@@ -1249,7 +1255,10 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                 String line = bisonOutput.readLine();
 
                 String usingBisonVersionLine;
-                bisonVersion = BisonVersion.fromLine(line);
+                Matcher matcher = BISON_VERSION_PATTERN.matcher(line);
+                if (matcher.matches()) {
+                    bisonVersion = BisonVersion.fromVersionString(matcher.group(1));
+                }
                 if (bisonVersion == null) {
                     usingBisonVersionLine = "No Bison version found, assuming version 2";
                     bisonVersion = BisonVersion.BISON_VERSION_2;

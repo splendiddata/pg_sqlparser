@@ -52,7 +52,7 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 
 /**
- * Checks all Java source files for javax.xml.bind.annotation annotations. If any is found then the class is added to
+ * Checks all Java source files for jakarta.xml.bind.annotation annotations. If any is found then the class is added to
  * the jaxb.index file of its package.
  *
  * @author Splendid Data Product Development B.V.
@@ -82,7 +82,7 @@ public class JaxbIndexCreator extends AbstractMojo implements FileVisitor<Path> 
     private String buildDirectory;
 
     /**
-     * Map with for each package the simple names of each class that contains any javax.xml.bind.annotation annotation
+     * Map with for each package the simple names of each class that contains any jakarta.xml.bind.annotation annotation
      */
     private Map<String, Set<String>> jaxbAnnotatedClassesPerPackage = new HashMap<>();
 
@@ -95,7 +95,7 @@ public class JaxbIndexCreator extends AbstractMojo implements FileVisitor<Path> 
     /**
      * @see org.apache.maven.plugin.Mojo#execute()
      * 
-     *      Walks all source files to find any javax.xml.bind.annotatoin annotations and, if so, add class names to the
+     *      Walks all source files to find any jakarta.xml.bind.annotatoin annotations and, if so, add class names to the
      *      package's jaxb.info files.
      *
      * @throws MojoExecutionException
@@ -238,10 +238,10 @@ public class JaxbIndexCreator extends AbstractMojo implements FileVisitor<Path> 
         case "XmlElement":
         case "XmlElementWrapper":
         case "XmlRootElement":
-        case "javax.xml.bind.annotation.XmlAttribute":
-        case "javax.xml.bind.annotation.XmlElement":
-        case "javax.xml.bind.annotation.XmlElementWrapper":
-        case "javax.xml.bind.annotation.XmlRootElement":
+        case "jakarta.xml.bind.annotation.XmlAttribute":
+        case "jakarta.xml.bind.annotation.XmlElement":
+        case "jakarta.xml.bind.annotation.XmlElementWrapper":
+        case "jakarta.xml.bind.annotation.XmlRootElement":
             break;
         default:
             if (log.isDebugEnabled()) {
