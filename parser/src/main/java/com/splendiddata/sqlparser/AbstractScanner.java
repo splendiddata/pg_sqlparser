@@ -889,7 +889,13 @@ public abstract class AbstractScanner extends AbstractCProgram implements com.sp
      * @return int ScanKeyword.EOF.getValue() (= 0)
      */
     int yyterminate() {
-        return ScanKeyword.EOF.getValue();
+        // return ScanKeyword.EOF.getValue();
+        /* 
+         * Since Bison 3.6.0 ScanKeyword.EOF is called ScanKeyword.YYEOF,
+         * so returning the actual value zero now as conditional compilation
+         * is not supported in Java 
+         */
+        return 0;
     }
 
     /**

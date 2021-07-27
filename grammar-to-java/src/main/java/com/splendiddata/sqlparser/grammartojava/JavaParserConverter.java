@@ -268,6 +268,8 @@ public class JavaParserConverter extends AbstractMojo implements FileVisitor<Pat
             log.debug("@>visitFile(file=" + file + ", attrs=" + attrs + ")");
         }
 
+        String eofToken = "EOF";
+        
         phase = JavaConverterPhase.DETERMINING_CLASS_NAME;
         try (JavaSourceReader in = new JavaSourceReader(file);
                 PrintWriter out = initClassFile(in, file.toFile().getName());
@@ -278,40 +280,52 @@ public class JavaParserConverter extends AbstractMojo implements FileVisitor<Pat
                     divideYYAction(line, in, out);
                     continue;
                 case IN_LARGE_TABLE_SECTION:
-                    if (line.contains("yytable_[]")) {
+                    if (line.contains("yytable_[]")  // pre-bison 3.6.0
+                            || line.contains("[] yytable_")) {
                         externalizeBigArrayOfShort("yytable_", in, out);
                         continue;
-                    } else if (line.contains("yycheck_[] =")) {
+                    } else if (line.contains("yycheck_[] =")  // pre-bison 3.6.0
+                            || line.contains("[] yycheck_")) {
                         externalizeBigArrayOfShort("yycheck_", in, out);
                         continue;
-                    } else if (line.contains("yystos_[] =")) {
+                    } else if (line.contains("yystos_[] =")  // pre-bison 3.6.0
+                            || line.contains("[] yystos_")) {
                         externalizeBigArrayOfShort("yystos_", in, out);
                         continue;
-                    } else if (line.contains("yydefact_[] =")) {
+                    } else if (line.contains("yydefact_[] =")  // pre-bison 3.6.0
+                            || line.contains("[] yydefact_")) {
                         externalizeBigArrayOfShort("yydefact_", in, out);
                         continue;
-                    } else if (line.contains("yypgoto_[] =")) {
+                    } else if (line.contains("yypgoto_[] =")  // pre-bison 3.6.0
+                            || line.contains("[] yypgoto_")) {
                         externalizeBigArrayOfShort("yypgoto_", in, out);
                         continue;
-                    } else if (line.contains("yydefgoto_[] =")) {
+                    } else if (line.contains("yydefgoto_[] =")  // pre-bison 3.6.0
+                            || line.contains("[] yydefgoto_")) {
                         externalizeBigArrayOfShort("yydefgoto_", in, out);
                         continue;
-                    } else if (line.contains("yytoken_number_[] =")) {
+                    } else if (line.contains("yytoken_number_[] =")  // pre-bison 3.6.0
+                            || line.contains("[] yytoken_number_")) {
                         externalizeBigArrayOfShort("yytoken_number_", in, out);
                         continue;
-                    } else if (line.contains("yyr1_[] =")) {
+                    } else if (line.contains("yyr1_[] =")  // pre-bison 3.6.0
+                            || line.contains("[] yyr1_")) {
                         externalizeBigArrayOfShort("yyr1_", in, out);
                         continue;
-                    } else if (line.contains("yyrhs_[] =")) {
+                    } else if (line.contains("yyrhs_[] =")  // pre-bison 3.6.0
+                            || line.contains("[] yyrhs_")) {
                         externalizeBigArrayOfShort("yyrhs_", in, out);
                         continue;
-                    } else if (line.contains("yyprhs_[] =")) {
+                    } else if (line.contains("yyprhs_[] =")  // pre-bison 3.6.0
+                            || line.contains("[] yyprhs_")) {
                         externalizeBigArrayOfShort("yyprhs_", in, out);
                         continue;
-                    } else if (line.contains("yyrline_[] =")) {
+                    } else if (line.contains("yyrline_[] =")  // pre-bison 3.6.0
+                            || line.contains("[] yyrline_")) {
                         externalizeBigArrayOfShort("yyrline_", in, out);
                         continue;
-                    } else if (line.contains("yytranslate_table_[] =")) {
+                    } else if (line.contains("yytranslate_table_[] =")  // pre-bison 3.6.0
+                            || line.contains("[] yytranslate_table_")) {
                         externalizeBigArrayOfShort("yytranslate_table_", in, out);
                         continue;
                     } else if (in.getBraceLevelAtLineEnd() > 0) {
@@ -321,7 +335,7 @@ public class JavaParserConverter extends AbstractMojo implements FileVisitor<Pat
                     }
                     continue;
                 default:
-                    if (line.startsWith("  public class Location")) {
+                    if (line.matches("^\\s*public\\s+(static\\s+)?class\\s+Location.*")) { // Bison 3.6.0 added "static" to the class definition
                         /*
                          * Skip the entire location class. It is defined external.
                          */
@@ -330,12 +344,13 @@ public class JavaParserConverter extends AbstractMojo implements FileVisitor<Pat
                         } while (in.getBraceLevelAtLineEnd() > OUTER_CLASS_BRACE_LEVEL && !in.isEof());
                         continue;
                     }
-                    if (line.startsWith("  private int yyaction (int yyn, YYStack yystack, int yylen)")) {
+                    if (line.matches("^\\s*private\\s+int\\s+yyaction\\s*\\(int\\s+yyn,\\s*YYStack\\s+yystack,\\s*int\\s+yylen\\).*")) {
                         phase = JavaConverterPhase.IN_YYACTION;
                         initYYAction(in, out);
                         continue;
                     }
-                    if (line.contains("yypact_[] =")) {
+                    if (line.contains("yypact_[] =") // pre bison 3.6.0
+                            || line.contains("[] yypact_ =")) {
                         phase = JavaConverterPhase.IN_LARGE_TABLE_SECTION;
                         initBigArraySection(out);
                         externalizeBigArrayOfInt("yypact_", in, out);
@@ -349,6 +364,8 @@ public class JavaParserConverter extends AbstractMojo implements FileVisitor<Pat
                         String tokenName = matcher.group(1);
                         switch (tokenName) {
                         case "EOF":
+                        case "YYEOF": // The EOF keyword has been replaced by YYEOF in Bison 3.6.0
+                            eofToken = tokenName;
                             /*
                              * The EOF token is the first token, and is used in the parser as well. So it must be
                              * written to both the parser class file as the enum file.
@@ -356,6 +373,7 @@ public class JavaParserConverter extends AbstractMojo implements FileVisitor<Pat
                             out.println(line);
                             break;
                         case "COLUMN":
+                        case "YYUNDEF": // In use since Bison 3.6.0
                             /*
                              * COLUMN is used in the parser as well. This is not the first token, so a comma must be
                              * added to finish the prior token definition.
@@ -389,7 +407,7 @@ public class JavaParserConverter extends AbstractMojo implements FileVisitor<Pat
             }
             out.println("}");
 
-            finishTokenEnumFile(tokenEnum);
+            finishTokenEnumFile(tokenEnum, eofToken);
         }
 
         if (log.isDebugEnabled()) {
@@ -762,10 +780,24 @@ public class JavaParserConverter extends AbstractMojo implements FileVisitor<Pat
      *
      * @param tokenEnum
      *            The generated ScanKeyword.java file under construction
+     * @param eofToken 
      */
-    private void finishTokenEnumFile(PrintWriter tokenEnum) {
+    private void finishTokenEnumFile(PrintWriter tokenEnum, String eofToken) {
         tokenEnum.println(";");
         tokenEnum.println();
+        if (!"EOF".equals(eofToken)) {
+            tokenEnum.println("    /**");
+            tokenEnum.print("     * Synonym for {@link #");
+            tokenEnum.print(eofToken);
+            tokenEnum.println("} for backward compatibility");
+            tokenEnum.println("     */");
+            tokenEnum.print("    public static final ");
+            tokenEnum.print(tokenClassName);
+            tokenEnum.print(" EOF = ");
+            tokenEnum.print(eofToken);
+            tokenEnum.println(";");
+            tokenEnum.println();
+        }
         tokenEnum.print("    private static final Map<String, ");
         tokenEnum.print(tokenClassName);
         tokenEnum.println("> FROM_NAME;");
