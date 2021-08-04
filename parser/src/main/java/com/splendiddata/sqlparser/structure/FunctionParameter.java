@@ -66,6 +66,7 @@ public class FunctionParameter extends Node {
 
         switch (mode) {
         case 'i':
+        case 'd':
             // in is default
             break;
         case 'o':

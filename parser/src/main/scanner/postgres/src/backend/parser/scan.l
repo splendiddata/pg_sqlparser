@@ -22,7 +22,7 @@
  * Postgres 9.2, this check is made automatically by the Makefile.)
  *
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -39,6 +39,7 @@
 #include "parser/gramparse.h"
 #include "parser/parser.h"		/* only needed for GUC variables */
 #include "parser/scansup.h"
+#include "port/pg_bitutils.h"
 #include "mb/pg_wchar.h"
 }
 
@@ -73,7 +74,7 @@ bool		standard_conforming_strings = true;
  * callers need to pass it to scanner_init, if they are using the
  * standard keyword list ScanKeywords.
  */
-#define PG_KEYWORD(kwname, value, category) value,
+#define PG_KEYWORD(kwname, value, category, collabel) value,
 
 const uint16 ScanKeywordTokens[] = {
 #include "parser/kwlist.h"
@@ -1253,10 +1254,7 @@ addlit(char *ytext, int yleng, core_yyscan_t yyscanner)
 	/* enlarge buffer if needed */
 	if ((yyextra->literallen + yleng) >= yyextra->literalalloc)
 	{
-		do
-		{
-			yyextra->literalalloc *= 2;
-		} while ((yyextra->literallen + yleng) >= yyextra->literalalloc);
+		yyextra->literalalloc = pg_nextpower2_32(yyextra->literallen + yleng + 1);
 		yyextra->literalbuf = (char *) repalloc(yyextra->literalbuf,
 												yyextra->literalalloc);
 	}

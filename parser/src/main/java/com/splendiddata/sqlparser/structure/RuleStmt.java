@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -14,14 +14,14 @@
 
 package com.splendiddata.sqlparser.structure;
 
+import com.splendiddata.sqlparser.ParserUtil;
+import com.splendiddata.sqlparser.enums.CmdType;
+import com.splendiddata.sqlparser.enums.NodeTag;
+
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
-
-import com.splendiddata.sqlparser.ParserUtil;
-import com.splendiddata.sqlparser.enums.CmdType;
-import com.splendiddata.sqlparser.enums.NodeTag;
 
 /**
  * Copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
@@ -44,7 +44,9 @@ public class RuleStmt extends Node {
     @XmlElement
     public Node whereClause;
 
-    /** SELECT, INSERT, etc */
+    /**
+     * SELECT, INSERT, etc
+     */
     @XmlAttribute
     public CmdType event;
 

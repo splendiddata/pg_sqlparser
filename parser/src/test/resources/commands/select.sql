@@ -25,7 +25,6 @@ select a <> all (select b from c) from d;
 select a, (select b from c) as d from e natural left join f order by 2 using > nulls last,a desc nulls first;
 select a operator(my_schema.<<>>) b from some_table;
 select operator(my_schema.=?=) 'value';
-select 15operator("my schema".=?=);
 select * from some_schema.some_table order by 1 using operator(some_schema.<^<<), tbl_a.col_a using >> nulls last;
 select 'i'::"char";
 select * from rows from (f1('arg1') as (a text, b integer), f2(x, y) as (c varchar(10))) with ordinality as f(x,y,z);

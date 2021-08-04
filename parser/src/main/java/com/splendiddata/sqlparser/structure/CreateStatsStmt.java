@@ -49,7 +49,7 @@ public class CreateStatsStmt extends Node {
     /** expressions to build statistics on */
     @XmlElementWrapper(name = "exprs")
     @XmlElement(name = "expr")
-    public List<Expr> exprs;
+    public List<StatsElem> exprs;
 
     /** rels to build stats on (list of RangeVar) */
     @XmlElementWrapper(name = "relations")
@@ -139,7 +139,7 @@ public class CreateStatsStmt extends Node {
         }
         if (exprs != null) {
             String separator = " on ";
-            for (Expr expr : exprs) {
+            for (StatsElem expr : exprs) {
                 result.append(separator).append(expr);
                 separator = ", ";
             }

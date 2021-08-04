@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -14,13 +14,13 @@
 
 package com.splendiddata.sqlparser.structure;
 
+import com.splendiddata.sqlparser.ParserUtil;
+import com.splendiddata.sqlparser.enums.NodeTag;
+
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
-
-import com.splendiddata.sqlparser.ParserUtil;
-import com.splendiddata.sqlparser.enums.NodeTag;
 
 /**
  * Copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
@@ -62,6 +62,12 @@ public class CreateFunctionStmt extends Node {
     public List<DefElem> options;
 
     /**
+     * @since 14.0
+     */
+    @XmlElement
+    public Node sql_body;
+
+    /**
      * a list of DefElem
      * 
      * @deprecated The with clause in a function definition is no longer supported since 6.0 - Postgres 11
@@ -98,8 +104,8 @@ public class CreateFunctionStmt extends Node {
         if (original.options != null) {
             this.options = original.options.clone();
         }
-        if (original.withClause != null) {
-            this.withClause = original.withClause.clone();
+        if (original.sql_body != null) {
+            this.sql_body = original.sql_body.clone();
         }
     }
 
@@ -117,6 +123,9 @@ public class CreateFunctionStmt extends Node {
         }
         if (options != null) {
             clone.options = options.clone();
+        }
+        if (sql_body != null) {
+            clone.sql_body = sql_body.clone();
         }
         return clone;
     }
@@ -138,7 +147,6 @@ public class CreateFunctionStmt extends Node {
             result.append("function ");
         }
         result.append(ParserUtil.nameToSql(funcname));
-
         List<FunctionParameter> resultingTableColumns = null;
         if (parameters == null) {
             result.append("()");
@@ -230,6 +238,24 @@ public class CreateFunctionStmt extends Node {
                     result.append(ParserUtil.reportUnknownValue("option", ParserUtil.stmtToXml(option), getClass()));
                     break;
                 }
+            }
+        }
+
+        if (sql_body != null) {
+            if (sql_body instanceof List) {
+                result.append(" begin atomic ");
+                for (Node lstElem : (List<Node>) sql_body) {
+                    if (lstElem instanceof List) {
+                        for (Node stmt : (List<Node>) lstElem) {
+                            result.append(stmt).append("; ");
+                        }
+                    } else {
+                        result.append(lstElem).append("; ");
+                    }
+                }
+                result.append("end");
+            } else {
+                result.append(" ").append(sql_body);
             }
         }
 

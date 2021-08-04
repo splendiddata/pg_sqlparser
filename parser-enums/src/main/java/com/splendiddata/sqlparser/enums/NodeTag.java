@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -426,6 +426,10 @@ public enum NodeTag {
     T_DeleteStmt,
     T_UpdateStmt,
     T_SelectStmt,
+    /** @since 14.0 */
+    T_ReturnStmt,
+    /** @since 14.0 */
+    T_PLAssignStmt,
     T_AlterTableStmt,
     T_AlterTableCmd,
     T_AlterDomainStmt,
@@ -577,6 +581,8 @@ public enum NodeTag {
     T_TypeName,
     T_ColumnDef,
     T_IndexElem,
+    /** @since 14.0 */
+    T_StatsElem,
     T_Constraint,
     T_DefElem,
     T_RangeTblEntry,
@@ -611,6 +617,10 @@ public enum NodeTag {
     T_WithClause,
     T_InferClause,
     T_OnConflictClause,
+    /** @since 14.0 */
+    T_CTESearchClause,
+    /** @since 14.0 */
+    T_CTECycleClause,
     T_CommonTableExpr,
     T_RoleSpec,
     /** @since 5.0 */

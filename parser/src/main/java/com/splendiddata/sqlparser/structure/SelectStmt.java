@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -66,6 +63,13 @@ public class SelectStmt extends Expr {
     @XmlElementWrapper(name = "groupClause")
     @XmlElement(name = "groupBy")
     public List<Node> groupClause;
+
+    /**
+     * Is this GROUP BY DISTINCT?
+     * 
+     * @since 14.0
+     */
+    public boolean groupDistinct;
 
     /** HAVING conditional-expression */
     @XmlElement
@@ -173,6 +177,7 @@ public class SelectStmt extends Expr {
         this.all = other.all;
         this.larg = other.larg;
         this.rarg = other.rarg;
+        this.groupDistinct = other.groupDistinct;
     }
 
     @Override
@@ -304,6 +309,9 @@ public class SelectStmt extends Expr {
 
         if (groupClause != null) {
             String separator = " group by ";
+            if (groupDistinct) {
+                separator += "distinct ";
+            }
             for (Object target : groupClause) {
                 result.append(separator).append(target);
                 separator = ", ";

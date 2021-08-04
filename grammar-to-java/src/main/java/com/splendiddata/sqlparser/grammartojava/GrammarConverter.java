@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -81,6 +81,7 @@ import com.splendiddata.sqlparser.enums.RoleSpecType;
 import com.splendiddata.sqlparser.enums.RoleStmtType;
 import com.splendiddata.sqlparser.enums.SQLValueFunctionOp;
 import com.splendiddata.sqlparser.enums.SetOperation;
+import com.splendiddata.sqlparser.enums.SetQuantifier;
 import com.splendiddata.sqlparser.enums.Severity;
 import com.splendiddata.sqlparser.enums.SortByDir;
 import com.splendiddata.sqlparser.enums.SortByNulls;
@@ -327,7 +328,13 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                             .replace("%token <ival>", "%token <Integer>").replace("%token <keyword>", "%token <String>")
                             .replace("%type <SubLinkType> sub_type opt_materialized",
                                     "%type <SubLinkType> sub_type\n%type <CTEMaterialize> opt_materialized")
-                            .replace("%type <selectlimit>", "%type <SelectLimit>");
+                            .replace("%type <selectlimit>", "%type <SelectLimit>")
+                            .replace("%type <selem>", "%type <StatsElem>")
+                            .replace("%type <setquantifier>", "%type <SetQuantifier>")
+                            .replace("%type <groupclause>", "%type <GroupClause>")
+                            .replace("%type <alias>", "%type <Alias>")
+                            .replace("%type <into>", "%type <IntoClause>")
+                            .replace("%type <with>", "%type <WithClause>");
                     /*
                      * declaration lines are written unchanged
                      */
@@ -570,7 +577,11 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                         /*
                          * LimitOption from "enum".
                          */
-                        .replaceAll("(\\W)(" + LimitOption.REPLACEMENT_REGEXP_PART + ")(\\W)", "$1LimitOption.$2$3");
+                        .replaceAll("(\\W)(" + LimitOption.REPLACEMENT_REGEXP_PART + ")(\\W)", "$1LimitOption.$2$3")
+                        /*
+                         * SetQuantifier from "enum".
+                         */
+                        .replaceAll("(\\W)(" + SetQuantifier.REPLACEMENT_REGEXP_PART + ")(\\W)", "$1SetQuantifier.$2$3");
                 /*
                  * Replace some constants that are defined in the type that uses them
                  */
@@ -766,7 +777,11 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                              */
                             .replaceAll("(makeBoolAConst\\s*\\(.*?\\,\\s*)-1", "$1null")
 
-                            .replaceAll("(\\W)int32(\\W)", "$1int$2").replace("(int16)", "(int)");
+                            .replaceAll("(\\W)int32(\\W)", "$1int$2").replace("(int16)", "(int)")
+                            /*
+                             * makeRawStmt(whatever, 0) becomes makeRawStatement(whatever, null)
+                             */
+                            .replaceAll("makeRawStmt\\(([^\\,]+)\\,\\s*0\\)", "makeRawStmt($1, null)");
                 }
                 if (log.isDebugEnabled()) {
                     if (convertedLine == null) {
@@ -1036,7 +1051,7 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
         out.println("import java.io.ObjectInputStream;");
         out.println();
         out.println("import com.splendiddata.sqlparser.enums.*;");
-        out.println("import com.splendiddata.sqlparser.plumming.base_yy_extra_type;");
+        out.println("import com.splendiddata.sqlparser.plumbing.base_yy_extra_type;");
         out.println("import com.splendiddata.sqlparser.structure.*;");
         out.println("}");
         out.println("%code {");
@@ -1049,77 +1064,49 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
         out.println("  private static final boolean FALSE = false;");
         out.println("  private static final Oid InvalidOid = null;");
         out.println();
-        out.println("  private static final int ACL_INSERT             = (1<<0)  /* for relations */;");
-        out.println("  private static final int ACL_SELECT             = (1<<1);");
-        out.println("  private static final int ACL_UPDATE             = (1<<2);");
-        out.println("  private static final int ACL_DELETE             = (1<<3);");
-        out.println("  private static final int ACL_TRUNCATE           = (1<<4);");
-        out.println("  private static final int ACL_REFERENCES         = (1<<5);");
-        out.println("  private static final int ACL_TRIGGER            = (1<<6);");
-        out.println("  private static final int ACL_EXECUTE            = (1<<7)  /* for functions */;");
-        out.println(
-                "  private static final int ACL_USAGE              = (1<<8)  /* for languages, namespaces, FDWs, and servers */;");
-        out.println("  private static final int ACL_CREATE             = (1<<9)  /* for namespaces and databases */;");
-        out.println("  private static final int ACL_CREATE_TEMP        = (1<<10) /* for databases */;");
-        out.println("  private static final int ACL_CONNECT            = (1<<11) /* for databases */;");
-        out.println("  private static final int N_ACL_RIGHTS           = 12      /* 1 plus the last 1<<x */;");
-        out.println("  private static final int ACL_NO_RIGHTS          = 0;");
-        out.println("  private static final int ACL_SELECT_FOR_UPDATE  = ACL_UPDATE;");
-        out.println("  /**");
-        out.println("   * See {@link com.splendiddata.sqlparser.structure.VacuumStmt#VACOPT_VACUUM}");
+        out.println("   /* Copied from /postgresql/src/include/nodes/parsenodes.h */");
+        out.println("  /** BINARY */");
+        out.println("  private static final int CURSOR_OPT_BINARY       = 0x0001;");
+        out.println("  /** SCROLL explicitly given */");
+        out.println("  private static final int CURSOR_OPT_SCROLL       = 0x0002;");
+        out.println("  /** NO SCROLL explicitly given */");
+        out.println("  private static final int CURSOR_OPT_NO_SCROLL    = 0x0004;");
+        out.println("  /** INSENSITIVE */");
+        out.println("  private static final int CURSOR_OPT_INSENSITIVE  = 0x0008;");
+        out.println("  /** ");
+        out.println("   * ASENSITIVE");
+        out.println("   * @since 14.0");
         out.println("   */");
-        out.println("  private static final int VACOPT_VACUUM  = 1 << 0;");
-        out.println("  /**");
-        out.println("   * See {@link com.splendiddata.sqlparser.structure.VacuumStmt#VACOPT_ANALYZE}");
+        out.println("  private static final int CURSOR_OPT_ASENSITIVE   = 0x0010;");
+        out.println("  /** WITH HOLD */");
+        out.println("  private static final int CURSOR_OPT_HOLD         = 0x0020;");
+        out.println("  /** ");
+        out.println("   * prefer fast-start plan");
+        out.println("   * @since 14.0");
         out.println("   */");
-        out.println("  private static final int VACOPT_ANALYZE = 1 << 1;");
+        out.println("  private static final int CURSOR_OPT_FAST_PLAN    = 0x0100;");
+        out.println();
+        out.println("  /* Copied from /postgresql/src/include/nodes/parsenodes.h */");
+        out.println("  /** input only */");
+        out.println("  private static final char FUNC_PARAM_IN          = 'i';");
+        out.println("  /** output only */");
+        out.println("  private static final char FUNC_PARAM_OUT         = 'o';");
+        out.println("  /** both */");
+        out.println("  private static final char FUNC_PARAM_INOUT       = 'b';");
+        out.println("  /** variadic (always input) */");
+        out.println("  private static final char FUNC_PARAM_VARIADIC    = 'v';");
+        out.println("  /** table function output column */");
+        out.println("  private static final char FUNC_PARAM_TABLE       = 't';");
         out.println("  /**");
-        out.println("   * See {@link com.splendiddata.sqlparser.structure.VacuumStmt#VACOPT_VERBOSE}");
+        out.println("   * this is not used in pg_proc:<br>");
+        out.println("   * default; effectively same as IN");
+        out.println("   * @since 14.0");
         out.println("   */");
-        out.println("  private static final int VACOPT_VERBOSE = 1 << 2;");
-        out.println("  /**");
-        out.println("   * See {@link com.splendiddata.sqlparser.structure.VacuumStmt#VACOPT_DISABLE_PAGE_SKIPPING}");
-        out.println("   */");
-        out.println("  private static final int VACOPT_DISABLE_PAGE_SKIPPING = 1 << 7;");
-        out.println("  /**");
-        out.println("   * See {@link com.splendiddata.sqlparser.structure.VacuumStmt#VACOPT_FREEZE}");
-        out.println("   */");
-        out.println("  private static final int VACOPT_FREEZE  = 1 << 3;");
-        out.println("  /**");
-        out.println("   * See {@link com.splendiddata.sqlparser.structure.VacuumStmt#VACOPT_FULL}");
-        out.println("   */");
-        out.println("  private static final int VACOPT_FULL    = 1 << 4;");
-        out.println("  /**");
-        out.println("   * See {@link com.splendiddata.sqlparser.structure.VacuumStmt#VACOPT_NOWAIT}");
-        out.println("   */");
-        out.println("  private static final int VACOPT_NOWAIT  = 1 << 5;");
-        out.println("  private static final int CURSOR_OPT_BINARY       = 0x0001  /* BINARY */;");
-        out.println("  private static final int CURSOR_OPT_SCROLL       = 0x0002  /* SCROLL explicitly given */;");
-        out.println("  private static final int CURSOR_OPT_NO_SCROLL    = 0x0004  /* NO SCROLL explicitly given */;");
-        out.println("  private static final int CURSOR_OPT_INSENSITIVE  = 0x0008  /* INSENSITIVE */;");
-        out.println("  private static final int CURSOR_OPT_HOLD         = 0x0010  /* WITH HOLD */;");
-        out.println("  private static final int CURSOR_OPT_FAST_PLAN    = 0x0020  /* prefer fast-start plan */;");
-        out.println("  private static final int CURSOR_OPT_GENERIC_PLAN = 0x0040  /* force use of generic plan */;");
-        out.println("  private static final int CURSOR_OPT_CUSTOM_PLAN  = 0x0080  /* force use of custom plan */;");
-        out.println("  private static final char FUNC_PARAM_IN          = 'i' /* input only */;");
-        out.println("  private static final char FUNC_PARAM_OUT         = 'o' /* output only */;");
-        out.println("  private static final char FUNC_PARAM_INOUT       = 'b' /* both */;");
-        out.println("  private static final char FUNC_PARAM_VARIADIC    = 'v' /* variadic (always input) */;");
-        out.println("  private static final char FUNC_PARAM_TABLE       = 't' /* table function output column */;");
+        out.println("  private static final char FUNC_PARAM_DEFAULT     = 'd';");
         out.println("  private static final int OPCLASS_ITEM_OPERATOR      = 1;");
         out.println("  private static final int OPCLASS_ITEM_FUNCTION      = 2;");
         out.println("  private static final int OPCLASS_ITEM_STORAGETYPE   = 3;");
         out.println("  private static final long FETCH_ALL = Long.MAX_VALUE;");
-        out.println("  /**");
-        out.println("   * Copied from /postgresql-10rc1/src/include/catalog/pg_attribute.h");
-        out.println("   * @since 5.0");
-        out.println("   */");
-        out.println("  private static final String ATTRIBUTE_IDENTITY_ALWAYS     = \"a\";");
-        out.println("  /**");
-        out.println("   * Copied from /postgresql-10rc1/src/include/catalog/pg_attribute.h");
-        out.println("   * @since 5.0");
-        out.println("   */");
-        out.println("  private static final String ATTRIBUTE_IDENTITY_BY_DEFAULT = \"d\";");
         out.println();
         out.println("  /*");
         out.println("   * obtained from /postgresql-9.3.4/src/include/catalog/index.h");
@@ -1130,7 +1117,6 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
         out.println("   * obtained from /postgresql-9.3.4/src/include/catalog/pg_trigger.h");
         out.println("   */");
         out.println("  private static final int TRIGGER_TYPE_AFTER              = 0;");
-        out.println("  private static final int TRIGGER_TYPE_ROW                = 1;");
         out.println("  private static final int TRIGGER_TYPE_BEFORE             = 1 << 1;");
         out.println("  private static final int TRIGGER_TYPE_INSERT             = 1 << 2;");
         out.println("  private static final int TRIGGER_TYPE_DELETE             = 1 << 3;");
@@ -1147,18 +1133,6 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
         out.println("  private static final char TRIGGER_DISABLED                   = 'D';");
         out.println();
         out.println("  /**");
-        out.println("   * obtained from /postgresql-9.6beta1/src/include/catalog/pg_am.h");
-        out.println("   * <p>index access method</p>");
-        out.println("   */");
-        out.println("  private static final char AMTYPE_INDEX                       = 'i';");
-        out.println("  /**");
-        out.println("   * obtained from /postgresql-12beta2/src/include/catalog/pg_am.h");
-        out.println("   * <p>table access method</p>");
-        out.println("   * @since 7.0 - Postgres 12");
-        out.println("   */");
-        out.println("  private static final char AMTYPE_TABLE                       = 't';");
-        out.println();
-        out.println("  /**");
         out.println("   * obtained from /postgresql-9.3.4/src/include/utils/timestamp.h");
         out.println("   */");
         out.println("  private static final int INTERVAL_FULL_RANGE            = 0x7FFF;");
@@ -1166,8 +1140,7 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
         out.println("  /*");
         out.println("   * obtained from /postgresql-9.3.4/src/include/storage/lock.h");
         out.println("   */");
-        out.println("  /** NoLock is not a lock mode, but a flag value meaning \"don't get a lock\" */");
-        out.println("  private static final int NoLock                   = 0;");
+        out.println();
         out.println("  /** SELECT */");
         out.println("  private static final int AccessShareLock          = 1;");
         out.println("  /** SELECT FOR UPDATE/FOR SHARE */");
@@ -1186,11 +1159,6 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
         out.println("  private static final int AccessExclusiveLock      = 8;");
         out.println();
         out.println("  /*");
-        out.println("   * obtained from /postgresql-9.5alpha2/src/backend/parser/parse_expr.c");
-        out.println("   */");
-        out.println("  private static final boolean operator_precedence_warning = false;");
-        out.println();
-        out.println("  /*");
         out.println("   * obtained from postgresql-11beta4/src/include/c.h");
         out.println("   */");
         out.println("  private static final int PG_INT16_MAX             = 0x7FFF;");
@@ -1200,12 +1168,6 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
         out.println("   * @since 8.0 - Postgres 13");
         out.println("   */");
         out.println("  private static final int InvalidSubTransactionId  = 0;");
-        out.println();
-        out.println("  /**");
-        out.println("   * obtained from postgresql-13beta1/src/include/c.h");
-        out.println("   * @since 8.0 - Postgres 13");
-        out.println("   */");
-        out.println("  private static final int TopSubTransactionId      = 1;");
         out.println("}");
     }
 

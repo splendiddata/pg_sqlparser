@@ -133,6 +133,39 @@ public class AlterSubscriptionStmt extends Node {
             result.append(" refresh publication");
             separator = " with (";
             break;
+        case ALTER_SUBSCRIPTION_SET_PUBLICATION:
+            result.append(" set publication");
+            if (publication != null) {
+                separator = " ";
+                for (Value value : publication) {
+                    result.append(separator).append(value);
+                    separator = ", ";
+                }
+            }
+            separator = " with (";
+            break;
+        case ALTER_SUBSCRIPTION_ADD_PUBLICATION:
+            result.append(" add publication");
+            if (publication != null) {
+                separator = " ";
+                for (Value value : publication) {
+                    result.append(separator).append(value);
+                    separator = ", ";
+                }
+            }
+            separator = " with (";
+            break;
+        case ALTER_SUBSCRIPTION_DROP_PUBLICATION:
+            result.append(" drop publication");
+            if (publication != null) {
+                separator = " ";
+                for (Value value : publication) {
+                    result.append(separator).append(value);
+                    separator = ", ";
+                }
+            }
+            separator = " with (";
+            break;
         default:
             return ParserUtil.reportUnknownValue(AlterSubscriptionType.class.getName(), kind, getClass());
         }

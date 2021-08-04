@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -26,8 +23,33 @@ import com.splendiddata.sqlparser.enums.JoinType;
 import com.splendiddata.sqlparser.enums.NodeTag;
 
 /**
+ * * JoinExpr - for SQL JOIN expressions
+ * <p>
+ * isNatural, usingClause, and quals are interdependent. The user can write only one of NATURAL, USING(), or ON() (this
+ * is enforced by the grammar). If he writes NATURAL then parse analysis generates the equivalent USING() list, and from
+ * that fills in "quals" with the right equality comparisons. If he writes USING() then "quals" is filled with equality
+ * comparisons. If he writes ON() then only "quals" is set. Note that NATURAL/USING are not equivalent to ON() since
+ * they also affect the output column list.
+ * </p>
+ * <p>
+ * alias is an Alias node representing the AS alias-clause attached to the join expression, or NULL if no clause. NB:
+ * presence or absence of the alias has a critical impact on semantics, because a join with an alias restricts
+ * visibility of the tables/columns inside it.
+ * </p>
+ * <p>
+ * join_using_alias is an Alias node representing the join correlation name that SQL:2016 and later allow to be attached
+ * to JOIN/USING. Its column alias list includes only the common column names from USING, and it does not restrict
+ * visibility of the join's input tables.
+ * </p>
+ * <p>
+ * During parse analysis, an RTE is created for the Join, and its index is filled into rtindex. This RTE is present
+ * mainly so that Vars can be created that refer to the outputs of the join. The planner sometimes generates JoinExprs
+ * internally; these can have rtindex = 0 if there are no join alias variables referencing such joins.
+ * </p>
+ * <p>
  * Join expression. Copied from /postgresql-9.3.4/src/include/nodes/primnodes.h
- *
+ * </p>
+ * 
  * @author Splendid Data Product Development B.V.
  * @since 0.0.1
  */
@@ -55,6 +77,14 @@ public class JoinExpr extends Node {
     @XmlElement(name = "using")
     public List<Value> usingClause;
 
+    /**
+     * alias attached to USING clause, if any
+     * 
+     * @since 14.0
+     */
+    @XmlElement
+    public Alias join_using_alias;
+
     /** qualifiers on join, if any */
     @XmlElement
     public Node quals;
@@ -80,11 +110,12 @@ public class JoinExpr extends Node {
         super(other);
         this.jointype = other.jointype;
         this.isNatural = other.isNatural;
-        this.larg = other.larg;
-        this.rarg = other.rarg;
-        this.usingClause = other.usingClause;
-        this.quals = other.quals;
-        this.alias = other.alias;
+        this.larg = other.larg.clone();
+        this.rarg = other.rarg.clone();
+        this.usingClause = other.usingClause.clone();
+        this.join_using_alias = other.join_using_alias.clone();
+        this.quals = other.quals.clone();
+        this.alias = other.alias.clone();
     }
 
     @Override
@@ -144,6 +175,9 @@ public class JoinExpr extends Node {
             }
         } else if (usingClause != null) {
             result.append(" using ").append(usingClause);
+            if (join_using_alias != null) {
+                result.append(" as ").append(join_using_alias);
+            }
         }
 
         if (alias != null) {
@@ -164,6 +198,9 @@ public class JoinExpr extends Node {
         }
         if (usingClause != null) {
             clone.usingClause = usingClause.clone();
+        }
+        if (join_using_alias != null) {
+            clone.join_using_alias = join_using_alias.clone();
         }
         if (quals != null) {
             clone.quals = quals.clone();

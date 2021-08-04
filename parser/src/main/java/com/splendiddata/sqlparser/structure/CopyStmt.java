@@ -203,6 +203,7 @@ public class CopyStmt extends Node {
                 case "force_quote":
                 case "force_not_null":
                 case "force_null":
+                case "convert_selectively":
                     if (option.arg != null) {
                         result.append(' ').append(option.arg);
                     }

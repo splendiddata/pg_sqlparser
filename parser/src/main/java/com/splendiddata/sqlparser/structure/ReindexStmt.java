@@ -1,29 +1,27 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
 
-import jakarta.xml.bind.annotation.XmlAttribute;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-
 import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.NodeTag;
 import com.splendiddata.sqlparser.enums.ReindexObjectType;
+
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElementWrapper;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
  * Copied from /postgresql-12beta2/src/include/nodes/parsenodes.h
@@ -46,16 +44,30 @@ public class ReindexStmt extends Node {
     @XmlAttribute
     public String name;
 
-    /** Reindex options flags */
-    @XmlAttribute
+    /**
+     * list of DefElem nodes
+     * 
+     * @since 14.0
+     */
+    @XmlElementWrapper(name = "params")
+    @XmlElement(name = "param")
+    public List<DefElem> params;
+
+    /**
+     * Reindex options flags
+     * 
+     * @deprecated since 14.0. The options are in params now
+     */
+    @Deprecated(forRemoval = true)
     public int options;
 
     /**
      * reindex concurrently?
      * 
      * @since 7.0 - Postgres 12
+     * @deprecated since 14.0. The options are in params now
      */
-    @XmlAttribute
+    @Deprecated(forRemoval = true)
     public boolean concurrent;
 
     /**
@@ -78,8 +90,9 @@ public class ReindexStmt extends Node {
             this.relation = toCopy.relation.clone();
         }
         this.name = toCopy.name;
-        this.options = toCopy.options;
-        this.concurrent = toCopy.concurrent;
+        if (toCopy.params != null) {
+            this.params = toCopy.params.clone();
+        }
     }
 
     @Override
@@ -87,6 +100,9 @@ public class ReindexStmt extends Node {
         ReindexStmt clone = (ReindexStmt) super.clone();
         if (relation != null) {
             clone.relation = relation.clone();
+        }
+        if (params != null) {
+            clone.params = params.clone();
         }
         return clone;
     }
@@ -97,8 +113,24 @@ public class ReindexStmt extends Node {
 
         result.append("reindex ");
 
-        if (options == 1) {
-            result.append("(verbose) ");
+        if (params != null) {
+            result.append("(");
+            String separator = "";
+            for (DefElem param : params) {
+                result.append(separator);
+                separator = ", ";
+                switch (param.defname) {
+                case "verbose":
+                    result.append("verbose");
+                    break;
+                case "concurrently":
+                    result.append("concurrently");
+                    break;
+                default:
+                    result.append(param); // This will fail, but at least the error will explain itself
+                }
+            }
+            result.append(") ");
         }
 
         switch (kind) {

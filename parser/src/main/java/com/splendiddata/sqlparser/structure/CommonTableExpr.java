@@ -55,6 +55,14 @@ public class CommonTableExpr extends Node {
     @XmlElement
     public Node ctequery;
 
+    /** @since 14.0 */ 
+    @XmlElement
+    public CTESearchClause search_clause;
+
+    /** @since 14.0 */
+    @XmlElement
+    public CTECycleClause cycle_clause;
+
     /**
      * Constructor
      *
@@ -75,6 +83,12 @@ public class CommonTableExpr extends Node {
         this.aliascolnames = other.aliascolnames;
         this.ctequery = other.ctequery;
         this.ctematerialized = other.ctematerialized;
+        if (other.search_clause != null) {
+            this.search_clause = other.search_clause.clone();
+        }
+        if (other.cycle_clause != null) {
+            this.cycle_clause = other.cycle_clause.clone();
+        }
     }
 
     @Override
@@ -109,6 +123,12 @@ public class CommonTableExpr extends Node {
         }
 
         result.append('(').append(ctequery).append(')');
+        if (search_clause != null) {
+            result.append(" ").append(search_clause);
+        }
+        if (cycle_clause != null) {
+            result.append(" ").append(cycle_clause);
+        }
         return result.toString();
     }
 
@@ -120,6 +140,12 @@ public class CommonTableExpr extends Node {
         }
         if (ctequery != null) {
             clone.ctequery = ctequery.clone();
+        }
+        if (search_clause != null) {
+            clone .search_clause = search_clause.clone();
+        }
+        if (cycle_clause != null) {
+            clone .cycle_clause = cycle_clause.clone();
         }
         return clone;
     }

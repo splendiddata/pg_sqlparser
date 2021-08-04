@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -41,6 +38,14 @@ public class ColumnDef extends Node {
     /** type of column */
     @XmlElement
     public TypeName typeName;
+
+    /**
+     * compression method for column
+     * 
+     * @since 14.0
+     */
+    @XmlAttribute
+    public String compression;
 
     /** number of times column is inherited */
     @XmlAttribute
@@ -116,6 +121,7 @@ public class ColumnDef extends Node {
         if (original.typeName != null) {
             this.typeName = original.typeName.clone();
         }
+        this.compression = original.compression;
         this.inhcount = original.inhcount;
         this.is_local = original.is_local;
         this.is_not_null = original.is_not_null;
@@ -163,6 +169,11 @@ public class ColumnDef extends Node {
             space = " ";
         }
 
+        if (compression != null) {
+            result.append(space).append("compression ").append(compression);
+            space = " ";
+        }
+        
         if (raw_default != null) {
             result.append(space).append("using ").append(raw_default);
             space = " ";

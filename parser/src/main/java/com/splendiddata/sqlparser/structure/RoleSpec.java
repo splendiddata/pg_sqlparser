@@ -72,6 +72,7 @@ public class RoleSpec extends Node {
         case ROLESPEC_CURRENT_USER:
         case ROLESPEC_PUBLIC:
         case ROLESPEC_SESSION_USER:
+        case ROLESPEC_CURRENT_ROLE:
             return roletype.toString();
         default:
             throw new AssertionError("RoleSpecType " + roletype

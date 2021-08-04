@@ -450,7 +450,7 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
                     /*
                      * The SplitColQualList method needs replacement
                      */
-                    .replace("SplitColQualList($4, &n->constraints, &n->collClause,", "splitColQualList($4, n,");
+                    .replace("SplitColQualList($5, &n->constraints, &n->collClause,", "splitColQualList($5, n,");
         }
     }),
 
@@ -645,6 +645,25 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
                      * to a List<DefElem>, which will not succeed of course.
                      */
                     .replace("{ $$ = lappend($1, $2); }", "{ if (yystack.valueAt (0) instanceof DefElem) { $$ = lappend($1, $2); } }");
+        }
+    }),
+    /** @since 14 */
+    joined_table(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line
+                    /*
+                     * Repair some odd casts
+                     */
+                    .replaceAll("linitial_node\\(List, castNode\\(List\\.class, (\\$\\d)\\)\\)", "(List)((List)$1).get(0)")
+                    .replaceAll("lsecond_node\\(Alias, castNode\\(List\\.class, (\\$\\d)\\)\\)", "(Alias)((List)$1).get(1)");
+        }
+    }),
+    /** @since 14 */
+    PLpgSQL_Expr(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line
+                    .replace("if ($9)", "if ($9 != null)")
+                    .replace("if (!n->sortClause" , "if (n.sortClause == null");
         }
     }),
 

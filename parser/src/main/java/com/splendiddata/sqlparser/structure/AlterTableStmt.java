@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -18,6 +18,7 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 import com.splendiddata.sqlparser.enums.NodeTag;
 import com.splendiddata.sqlparser.enums.ObjectType;
@@ -39,9 +40,22 @@ public class AlterTableStmt extends Node {
     @XmlElement(name = "cmd_name")
     public List<AlterTableCmd> cmds;
 
-    /** type of object */
-    @XmlAttribute
+    /**
+     * type of object
+     * 
+     * @deprecated since Postgres version 14. Please use {@link #objtype} instead
+     */
+    @XmlTransient
+    @Deprecated(forRemoval = true)
     public ObjectType relkind;
+
+    /**
+     * type of object
+     * 
+     * @since Postgres version 14.
+     */
+    @XmlAttribute
+    public ObjectType objtype;
 
     /** skip error if table missing */
     @XmlAttribute
@@ -68,7 +82,7 @@ public class AlterTableStmt extends Node {
         if (original.cmds != null) {
             this.cmds = original.cmds.clone();
         }
-        this.relkind = original.relkind;
+        this.objtype = original.objtype;
         this.missing_ok = original.missing_ok;
     }
 
@@ -88,7 +102,7 @@ public class AlterTableStmt extends Node {
     public String toString() {
         StringBuilder result = new StringBuilder();
 
-        result.append("alter ").append(relkind);
+        result.append("alter ").append(objtype);
 
         if (missing_ok) {
             result.append(" if exists");
@@ -98,7 +112,7 @@ public class AlterTableStmt extends Node {
             result.append(' ').append(relation);
         }
 
-        String tableOrAttribute = ObjectType.OBJECT_TYPE.equals(relkind) ? "attribute" : "column";
+        String tableOrAttribute = ObjectType.OBJECT_TYPE.equals(objtype) ? "attribute" : "column";
         String separator = " ";
         for (AlterTableCmd cmd : cmds) {
             result.append(separator).append(cmd.toString(tableOrAttribute));

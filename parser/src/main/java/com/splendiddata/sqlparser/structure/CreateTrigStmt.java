@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -65,6 +65,14 @@ public class CreateTrigStmt extends Node {
      * Copied from /postgresql-9.4.1/src/include/catalog/pg_trigger.h
      */
     public static final int TRIGGER_TYPE_INSTEAD = 1 << 6;
+
+    /**
+     * replace trigger if already exists
+     * 
+     * @since 14.0
+     */
+    @XmlAttribute
+    public boolean replace;
 
     /** TRIGGER's name */
     @XmlAttribute
@@ -148,6 +156,7 @@ public class CreateTrigStmt extends Node {
      */
     public CreateTrigStmt(CreateTrigStmt original) {
         super(original);
+        this.replace = original.replace;
         this.trigname = original.trigname;
         if (original.relation != null) {
             this.relation = original.relation.clone();
@@ -207,6 +216,10 @@ public class CreateTrigStmt extends Node {
         StringBuilder result = new StringBuilder();
 
         result.append("create");
+
+        if (replace) {
+            result.append(" or replace");
+        }
 
         if (isconstraint) {
             result.append(" constraint");

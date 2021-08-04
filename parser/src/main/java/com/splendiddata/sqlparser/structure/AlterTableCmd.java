@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -314,6 +314,9 @@ public class AlterTableCmd extends Node {
         case AT_SetStorage:
             return new StringBuilder().append("alter column ").append(ParserUtil.identifierToSql(name))
                     .append(" set storage ").append(def).toString();
+        case AT_SetCompression:
+            return new StringBuilder().append("alter column ").append(ParserUtil.identifierToSql(name))
+                    .append(" set compression ").append(def).toString();
         case AT_SetTableSpace:
             return new StringBuilder().append("set tablespace ").append(ParserUtil.identifierToSql(name)).toString();
         case AT_ValidateConstraint:
@@ -335,6 +338,8 @@ public class AlterTableCmd extends Node {
             return "attach partition " + def;
         case AT_DetachPartition:
             return "detach partition " + def;
+        case AT_DetachPartitionFinalize:
+            return "detach partition " + def + " finalize";
         case AT_AddIdentity:
             return new StringBuilder(" alter column ").append(name).append(" add ").append(def).toString();
         case AT_DropIdentity:

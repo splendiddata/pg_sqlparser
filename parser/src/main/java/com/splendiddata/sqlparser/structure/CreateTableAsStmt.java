@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -17,6 +17,7 @@ package com.splendiddata.sqlparser.structure;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.NodeTag;
@@ -51,9 +52,18 @@ public class CreateTableAsStmt extends Node {
     @XmlElement
     public IntoClause into;
 
-    /** OBJECT_TABLE or OBJECT_MATVIEW */
-    @XmlElement
+    /**
+     * OBJECT_TABLE or OBJECT_MATVIEW
+     * 
+     * @deprecated since 14.0. Please use objtype instead
+     */
+    @XmlTransient
+    @Deprecated(forRemoval=true)
     public ObjectType relkind;
+
+    /** OBJECT_TABLE or OBJECT_MATVIEW */
+    @XmlAttribute
+    public ObjectType objtype;
 
     /** it was written as SELECT INTO */
     @XmlAttribute
@@ -84,7 +94,7 @@ public class CreateTableAsStmt extends Node {
         if (original.into != null) {
             this.into = original.into.clone();
         }
-        this.relkind = original.relkind;
+        this.objtype = original.objtype;
         this.is_select_into = original.is_select_into;
         this.if_not_exists = original.if_not_exists;
     }
@@ -126,7 +136,7 @@ public class CreateTableAsStmt extends Node {
                 }
             }
 
-            result.append(relkind);
+            result.append(objtype);
 
             if (if_not_exists) {
                 result.append(" if not exists");

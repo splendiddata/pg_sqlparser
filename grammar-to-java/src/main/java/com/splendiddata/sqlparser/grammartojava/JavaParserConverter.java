@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -441,69 +441,21 @@ public class JavaParserConverter extends AbstractMojo implements FileVisitor<Pat
                  */
                 .replaceAll("yyval = \\(\\(yystack(.*?)\\s*\\?", "yyval = ((Boolean)(yystack$1.booleanValue() ?")
                 /*
-                 * And for Character values
-                 */
-                .replaceAll("(\\s*)\\(\\((\\(ival\\))?(\\()?yystack.valueAt(.*?)\\.charValue",
-                        "$1(((Character)$3yystack.valueAt$4.charValue")
-                /*
-                 * relpersistence and fk_matchtype are on the stack as Character objects, that cannot be converted to
-                 * int by autoboxing.
-                 */
-                .replaceAll("\\.(relpersistence|fk_matchtype)(\\s*)=\\s*\\(\\s*\\(\\s*ival(.*)\\);",
-                        ".$1$2= ((Character$3).charValue();")
-                /*
-                 * SublinkType is not an integer but an enum
-                 */
-                .replaceAll("\\.subLinkType\\s*=\\s*\\(\\s*\\(\\s*ival", ".subLinkType = ((SubLinkType")
-                .replaceAll("\\(ival\\)\\s*(.*)==\\s*SubLinkType\\.(\\w*)", "SubLinkType.$2.equals($1)")
-                /*
-                 * LockClauseStrength is not an integer but an enum
-                 */
-                .replaceAll("\\.strength\\s*=\\s*\\(\\s*\\(\\s*ival", ".strength = ((LockClauseStrength")
-                /*
                  * CmdType is not an integer but an enum
                  */
-                .replaceAll("\\.event\\s*=\\s*\\(\\s*\\(\\s*ival", ".event = ((CmdType")
-                /*
-                 * GrantObjectType is not an integer but an enum
-                 */
-                .replaceAll("\\.objtype\\s*=\\s*\\(\\s*\\(\\s*ival", ".objtype = ((GrantObjectType")
-                /*
-                 * CoercionContext is not an integer but an enum
-                 */
-                .replaceAll("\\(\\s*CoercionContext\\s*\\)\\s*\\(\\s*\\(\\s*ival", "((CoercionContext")
-                /*
-                 * with into, the IntoClause class is meant
-                 */
-                .replaceAll("\\(\\s*into\\s*\\)", "(IntoClause)")
-                /*
-                 * with is short for WithClause
-                 */
-                .replaceAll("\\(\\s*with\\s*\\)", "(WithClause)")
+                .replaceAll("\\.event\\s*=\\s*\\(\\s*\\(\\s*Integer", ".event = ((CmdType")
                 /*
                  * and range means the class RangeVar
                  */
                 .replaceAll("\\(\\s*range\\s*\\)", "(RangeVar)")
                 /*
-                 * alias with a leading upper case letter
-                 */
-                .replaceAll("\\(\\s*alias\\s*\\)", "(Alias)")
-                /*
                  * fun_param is short for FunctionParameter
                  */
                 .replaceAll("\\(\\s*fun_param\\s*\\)", "(FunctionParameter)")
                 /*
-                 * Who qould have guessed: defelt translates to DefElem whateer that may be)
+                 * Who qould have guessed: defelt translates to DefElem whatever that may be)
                  */
                 .replaceAll("\\(\\s*defelt\\s*\\)", "(DefElem)")
-                /*
-                 * I like the "fun" better
-                 */
-                .replaceAll("\\(\\s*funwithargs\\s*\\)", "(FuncWithArgs)")
-                /*
-                 * A keyword is just a String
-                 */
-                .replaceAll("\\(\\s*keyword\\s*\\)", "(String)")
                 /*
                  * who would have guessed that by a class cast to Iconst in fact a class cast to TypeName was meant?
                  */

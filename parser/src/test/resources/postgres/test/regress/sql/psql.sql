@@ -44,7 +44,6 @@
 -- Deactivated for SplendidDataTest: \gx
 -- Deactivated for SplendidDataTest: SELECT 3 as three, 4 as four \gx
 -- Deactivated for SplendidDataTest: \g
-
 -- Deactivated for SplendidDataTest: \unset FETCH_COUNT
 
 -- \g/\gx with pset options
@@ -57,12 +56,14 @@
 -- \gset
 
 -- Deactivated for SplendidDataTest: select 10 as test01, 20 as test02, 'Hello' as test03 \gset pref01_
-
 -- Deactivated for SplendidDataTest: \echo :pref01_test01 :pref01_test02 :pref01_test03
 
 -- should fail: bad variable name
 -- Deactivated for SplendidDataTest: select 10 as "bad name"
 -- Deactivated for SplendidDataTest: \gset
+
+-- Deactivated for SplendidDataTest: select 97 as "EOF", 'ok' as _foo \gset IGNORE
+-- Deactivated for SplendidDataTest: \echo :IGNORE_foo :IGNOREEOF
 
 -- multiple backslash commands in one line
 -- Deactivated for SplendidDataTest: select 1 as x, 2 as y \gset pref01_ \\ \echo :pref01_x
@@ -86,7 +87,6 @@
 -- Deactivated for SplendidDataTest: select 3 as x, 4 as y \gset pref01_ \echo :pref01_x \echo :pref01_y
 -- Deactivated for SplendidDataTest: select 10 as test01, 20 as test02 from generate_series(1,3) \gset
 -- Deactivated for SplendidDataTest: select 10 as test01, 20 as test02 from generate_series(1,0) \gset
-
 -- Deactivated for SplendidDataTest: \unset FETCH_COUNT
 
 -- \gdesc
@@ -144,7 +144,6 @@ SELECT 1 AS x, 'Hello', 2 AS y, true AS "dirty\name";
 -- Deactivated for SplendidDataTest: union all
 -- Deactivated for SplendidDataTest: select 'drop table gexec_test', 'select ''2000-01-01''::date as party_over'
 -- Deactivated for SplendidDataTest: \gexec
-
 -- Deactivated for SplendidDataTest: \unset FETCH_COUNT
 
 -- show all pset options
@@ -156,12 +155,9 @@ prepare q as select array_to_string(array_agg(repeat('x',2*n)),E'\n') as "ab
 
 c", array_to_string(array_agg(repeat('y',20-2*n)),E'\n') as "a
 bc" from generate_series(1,10) as n(n) group by n>1 order by n>1;
-
 -- Deactivated for SplendidDataTest: \pset linestyle ascii
-
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \pset columns 40
-
 -- Deactivated for SplendidDataTest: \pset border 0
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -169,7 +165,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -177,7 +172,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 2
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -185,10 +179,8 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset expanded on
 -- Deactivated for SplendidDataTest: \pset columns 20
-
 -- Deactivated for SplendidDataTest: \pset border 0
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -196,7 +188,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -204,7 +195,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 2
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -212,12 +202,9 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset linestyle old-ascii
-
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \pset columns 40
-
 -- Deactivated for SplendidDataTest: \pset border 0
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -225,7 +212,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -233,7 +219,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 2
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -241,10 +226,8 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset expanded on
 -- Deactivated for SplendidDataTest: \pset columns 20
-
 -- Deactivated for SplendidDataTest: \pset border 0
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -252,7 +235,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -260,7 +242,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 2
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -273,12 +254,9 @@ deallocate q;
 
 -- test single-line header and data
 prepare q as select repeat('x',2*n) as "0123456789abcdef", repeat('y',20-2*n) as "0123456789" from generate_series(1,10) as n;
-
 -- Deactivated for SplendidDataTest: \pset linestyle ascii
-
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \pset columns 40
-
 -- Deactivated for SplendidDataTest: \pset border 0
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -286,7 +264,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -294,7 +271,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 2
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -302,10 +278,8 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset expanded on
 -- Deactivated for SplendidDataTest: \pset columns 30
-
 -- Deactivated for SplendidDataTest: \pset border 0
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -313,7 +287,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -321,7 +294,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 2
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -329,10 +301,8 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset expanded on
 -- Deactivated for SplendidDataTest: \pset columns 20
-
 -- Deactivated for SplendidDataTest: \pset border 0
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -340,7 +310,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -348,7 +317,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 2
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -356,12 +324,9 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset linestyle old-ascii
-
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \pset columns 40
-
 -- Deactivated for SplendidDataTest: \pset border 0
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -369,7 +334,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -377,7 +341,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 2
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -385,9 +348,7 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset expanded on
-
 -- Deactivated for SplendidDataTest: \pset border 0
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -395,7 +356,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -403,7 +363,6 @@ execute q;
 execute q;
 -- Deactivated for SplendidDataTest: \pset format wrapped
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 2
 -- Deactivated for SplendidDataTest: \pset format unaligned
 execute q;
@@ -413,7 +372,6 @@ execute q;
 execute q;
 
 deallocate q;
-
 -- Deactivated for SplendidDataTest: \pset linestyle ascii
 -- Deactivated for SplendidDataTest: \pset border 1
 
@@ -422,9 +380,7 @@ deallocate q;
 create table psql_serial_tab (id serial);
 
 -- test header/footer/tuples_only behavior in aligned/unaligned/wrapped cases
-
 -- Deactivated for SplendidDataTest: \pset format aligned
-
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \d psql_serial_tab_id_seq
 -- Deactivated for SplendidDataTest: \pset tuples_only true
@@ -437,9 +393,7 @@ create table psql_serial_tab (id serial);
 -- Deactivated for SplendidDataTest: \pset tuples_only false
 -- empty table is a special case for this format
 select 1 where false;
-
 -- Deactivated for SplendidDataTest: \pset format unaligned
-
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \d psql_serial_tab_id_seq
 -- Deactivated for SplendidDataTest: \pset tuples_only true
@@ -450,9 +404,7 @@ select 1 where false;
 -- Deactivated for SplendidDataTest: \pset tuples_only true
 -- Deactivated for SplendidDataTest: \df exp
 -- Deactivated for SplendidDataTest: \pset tuples_only false
-
 -- Deactivated for SplendidDataTest: \pset format wrapped
-
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \d psql_serial_tab_id_seq
 -- Deactivated for SplendidDataTest: \pset tuples_only true
@@ -464,36 +416,50 @@ select 1 where false;
 -- Deactivated for SplendidDataTest: \df exp
 -- Deactivated for SplendidDataTest: \pset tuples_only false
 
--- check conditional tableam display
+-- check conditional am display
+-- Deactivated for SplendidDataTest: \pset expanded off
 
--- Create a heap2 table am handler with heapam handler
+CREATE SCHEMA tableam_display;
+CREATE ROLE regress_display_role;
+ALTER SCHEMA tableam_display OWNER TO regress_display_role;
+SET search_path TO tableam_display;
 CREATE ACCESS METHOD heap_psql TYPE TABLE HANDLER heap_tableam_handler;
+SET ROLE TO regress_display_role;
+-- Use only relations with a physical size of zero.
 CREATE TABLE tbl_heap_psql(f1 int, f2 char(100)) using heap_psql;
 CREATE TABLE tbl_heap(f1 int, f2 char(100)) using heap;
+CREATE VIEW view_heap_psql AS SELECT f1 from tbl_heap_psql;
+CREATE MATERIALIZED VIEW mat_view_heap_psql USING heap_psql AS SELECT f1 from tbl_heap_psql;
 -- Deactivated for SplendidDataTest: \d+ tbl_heap_psql
 -- Deactivated for SplendidDataTest: \d+ tbl_heap
 -- Deactivated for SplendidDataTest: \set HIDE_TABLEAM off
 -- Deactivated for SplendidDataTest: \d+ tbl_heap_psql
 -- Deactivated for SplendidDataTest: \d+ tbl_heap
+-- AM is displayed for tables, indexes and materialized views.
+-- Deactivated for SplendidDataTest: \d+
+-- Deactivated for SplendidDataTest: \dt+
+-- Deactivated for SplendidDataTest: \dm+
+-- But not for views and sequences.
+-- Deactivated for SplendidDataTest: \dv+
 -- Deactivated for SplendidDataTest: \set HIDE_TABLEAM on
-DROP TABLE tbl_heap, tbl_heap_psql;
+-- Deactivated for SplendidDataTest: \d+
+RESET ROLE;
+RESET search_path;
+DROP SCHEMA tableam_display CASCADE;
 DROP ACCESS METHOD heap_psql;
+DROP ROLE regress_display_role;
 
 -- test numericlocale (as best we can without control of psql's locale)
-
 -- Deactivated for SplendidDataTest: \pset format aligned
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \pset numericlocale true
 
 select n, -n as m, n * 111 as x, '1e90'::float8 as f
 from generate_series(0,3) n;
-
 -- Deactivated for SplendidDataTest: \pset numericlocale false
 
 -- test asciidoc output format
-
 -- Deactivated for SplendidDataTest: \pset format asciidoc
-
 -- Deactivated for SplendidDataTest: \pset border 1
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \d psql_serial_tab_id_seq
@@ -509,33 +475,25 @@ from generate_series(0,3) n;
 prepare q as
   select 'some|text' as "a|title", '        ' as "empty ", n as int
   from generate_series(1,2) as n;
-
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \pset border 0
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 2
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset expanded on
 -- Deactivated for SplendidDataTest: \pset border 0
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 2
 execute q;
 
 deallocate q;
 
 -- test csv output format
-
 -- Deactivated for SplendidDataTest: \pset format csv
-
 -- Deactivated for SplendidDataTest: \pset border 1
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \d psql_serial_tab_id_seq
@@ -552,10 +510,8 @@ prepare q as
   select 'some"text' as "a""title", E'  <foo>\n<bar>' as "junk",
          '   ' as "empty", n as int
   from generate_series(1,2) as n;
-
 -- Deactivated for SplendidDataTest: \pset expanded off
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset expanded on
 execute q;
 
@@ -577,13 +533,10 @@ select '\' as d1, '' as d2;
 -- Deactivated for SplendidDataTest: \pset csv_fieldsep '\r'
 -- Deactivated for SplendidDataTest: \pset csv_fieldsep '"'
 -- Deactivated for SplendidDataTest: \pset csv_fieldsep ',,'
-
 -- Deactivated for SplendidDataTest: \pset csv_fieldsep ','
 
 -- test html output format
-
 -- Deactivated for SplendidDataTest: \pset format html
-
 -- Deactivated for SplendidDataTest: \pset border 1
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \d psql_serial_tab_id_seq
@@ -600,25 +553,19 @@ prepare q as
   select 'some"text' as "a&title", E'  <foo>\n<bar>' as "junk",
          '   ' as "empty", n as int
   from generate_series(1,2) as n;
-
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \pset border 0
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset tableattr foobar
 execute q;
 -- Deactivated for SplendidDataTest: \pset tableattr
-
 -- Deactivated for SplendidDataTest: \pset expanded on
 -- Deactivated for SplendidDataTest: \pset border 0
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset tableattr foobar
 execute q;
 -- Deactivated for SplendidDataTest: \pset tableattr
@@ -626,9 +573,7 @@ execute q;
 deallocate q;
 
 -- test latex output format
-
 -- Deactivated for SplendidDataTest: \pset format latex
-
 -- Deactivated for SplendidDataTest: \pset border 1
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \d psql_serial_tab_id_seq
@@ -645,39 +590,29 @@ prepare q as
   select 'some\more_text' as "a$title", E'  #<foo>%&^~|\n{bar}' as "junk",
          '   ' as "empty", n as int
   from generate_series(1,2) as n;
-
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \pset border 0
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 2
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 3
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset expanded on
 -- Deactivated for SplendidDataTest: \pset border 0
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 2
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 3
 execute q;
 
 deallocate q;
 
 -- test latex-longtable output format
-
 -- Deactivated for SplendidDataTest: \pset format latex-longtable
-
 -- Deactivated for SplendidDataTest: \pset border 1
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \d psql_serial_tab_id_seq
@@ -694,37 +629,27 @@ prepare q as
   select 'some\more_text' as "a$title", E'  #<foo>%&^~|\n{bar}' as "junk",
          '   ' as "empty", n as int
   from generate_series(1,2) as n;
-
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \pset border 0
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 2
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 3
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset tableattr lr
 execute q;
 -- Deactivated for SplendidDataTest: \pset tableattr
-
 -- Deactivated for SplendidDataTest: \pset expanded on
 -- Deactivated for SplendidDataTest: \pset border 0
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 2
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 3
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset tableattr lr
 execute q;
 -- Deactivated for SplendidDataTest: \pset tableattr
@@ -732,9 +657,7 @@ execute q;
 deallocate q;
 
 -- test troff-ms output format
-
 -- Deactivated for SplendidDataTest: \pset format troff-ms
-
 -- Deactivated for SplendidDataTest: \pset border 1
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \d psql_serial_tab_id_seq
@@ -751,60 +674,47 @@ prepare q as
   select 'some\text' as "a\title", E'  <foo>\n<bar>' as "junk",
          '   ' as "empty", n as int
   from generate_series(1,2) as n;
-
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \pset border 0
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 2
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset expanded on
 -- Deactivated for SplendidDataTest: \pset border 0
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 1
 execute q;
-
 -- Deactivated for SplendidDataTest: \pset border 2
 execute q;
 
 deallocate q;
 
 -- check ambiguous format requests
-
 -- Deactivated for SplendidDataTest: \pset format a
 -- Deactivated for SplendidDataTest: \pset format l
 
 -- clean up after output format tests
 
 drop table psql_serial_tab;
-
 -- Deactivated for SplendidDataTest: \pset format aligned
 -- Deactivated for SplendidDataTest: \pset expanded off
 -- Deactivated for SplendidDataTest: \pset border 1
 
 -- \echo and allied features
-
 -- Deactivated for SplendidDataTest: \echo this is a test
 -- Deactivated for SplendidDataTest: \echo -n without newline
 -- Deactivated for SplendidDataTest: \echo with -n newline
 -- Deactivated for SplendidDataTest: \echo '-n' with newline
-
 -- Deactivated for SplendidDataTest: \set foo bar
 -- Deactivated for SplendidDataTest: \echo foo = :foo
-
 -- Deactivated for SplendidDataTest: \qecho this is a test
 -- Deactivated for SplendidDataTest: \qecho foo = :foo
-
 -- Deactivated for SplendidDataTest: \warn this is a test
 -- Deactivated for SplendidDataTest: \warn foo = :foo
 
 -- tests for \if ... \endif
-
 -- Deactivated for SplendidDataTest: \if true
   select 'okay';
   select 'still okay';
@@ -1002,7 +912,6 @@ select
 -- Deactivated for SplendidDataTest: \else
 -- Deactivated for SplendidDataTest:   \echo 'should not print #9-2'
 -- Deactivated for SplendidDataTest: \endif
-
 -- Deactivated for SplendidDataTest: \if :{?no_such_variable}
 -- Deactivated for SplendidDataTest:   \echo 'should not print #10-1'
 -- Deactivated for SplendidDataTest: \else
@@ -1014,21 +923,18 @@ select
 -- Deactivated for SplendidDataTest: SELECT NOT :{?no_such_var} AS no_such_var_is_not_defined;
 
 -- SHOW_CONTEXT
-
 -- Deactivated for SplendidDataTest: \set SHOW_CONTEXT never
 do $$
 begin
   raise notice 'foo';
   raise exception 'bar';
 end $$;
-
 -- Deactivated for SplendidDataTest: \set SHOW_CONTEXT errors
 do $$
 begin
   raise notice 'foo';
   raise exception 'bar';
 end $$;
-
 -- Deactivated for SplendidDataTest: \set SHOW_CONTEXT always
 do $$
 begin
@@ -1039,12 +945,12 @@ end $$;
 -- test printing and clearing the query buffer
 SELECT 1;
 -- Deactivated for SplendidDataTest: \p
--- Deactivated for SplendidDataTest: SELECT 2 \r;
+-- Deactivated for SplendidDataTest: SELECT 2 \r
 -- Deactivated for SplendidDataTest: \p
 -- Deactivated for SplendidDataTest: SELECT 3 \p
 -- Deactivated for SplendidDataTest: UNION SELECT 4 \p
 -- Deactivated for SplendidDataTest: UNION SELECT 5
--- Deactivated for SplendidDataTest: ORDER BY 1;
+-- Deactivated for SplendidDataTest: ORDER BY 1
 -- Deactivated for SplendidDataTest: \r
 -- Deactivated for SplendidDataTest: \p
 
@@ -1057,7 +963,7 @@ SELECT 1 AS stuff UNION SELECT 2;
 -- Deactivated for SplendidDataTest: \echo 'number of rows:' :ROW_COUNT
 
 -- syntax error
--- Deactivated for SplendidDataTest: SELECT 1 UNION;
+-- Deactivated for SplendidDataTest: SELECT 1 UNION
 -- Deactivated for SplendidDataTest: \echo 'error:' :ERROR
 -- Deactivated for SplendidDataTest: \echo 'error code:' :SQLSTATE
 -- Deactivated for SplendidDataTest: \echo 'number of rows:' :ROW_COUNT
@@ -1087,13 +993,11 @@ DROP TABLE this_table_does_not_exist;
 -- Deactivated for SplendidDataTest: \echo 'error:' :ERROR
 -- Deactivated for SplendidDataTest: \echo 'error code:' :SQLSTATE
 -- Deactivated for SplendidDataTest: \echo 'last error message:' :LAST_ERROR_MESSAGE
-
 -- Deactivated for SplendidDataTest: \set VERBOSITY sqlstate
 SELECT 1/0;
 -- Deactivated for SplendidDataTest: \echo 'error:' :ERROR
 -- Deactivated for SplendidDataTest: \echo 'error code:' :SQLSTATE
 -- Deactivated for SplendidDataTest: \echo 'last error message:' :LAST_ERROR_MESSAGE
-
 -- Deactivated for SplendidDataTest: \set VERBOSITY default
 
 -- working \gdesc
@@ -1124,7 +1028,6 @@ select 1/(15-unique2) from tenk1 order by unique2 limit 19;
 -- Deactivated for SplendidDataTest: \echo 'number of rows:' :ROW_COUNT
 -- Deactivated for SplendidDataTest: \echo 'last error message:' :LAST_ERROR_MESSAGE
 -- Deactivated for SplendidDataTest: \echo 'last error code:' :LAST_ERROR_SQLSTATE
-
 -- Deactivated for SplendidDataTest: \unset FETCH_COUNT
 
 create schema testpart;
@@ -1175,13 +1078,10 @@ create table child_30_35 partition of child_30_40
 create table child_35_40 partition of child_30_40
    for values from (35) to (40);
 insert into parent_tab values (generate_series(30,39));
-
 -- Deactivated for SplendidDataTest: \dPt
 -- Deactivated for SplendidDataTest: \dPi
-
 -- Deactivated for SplendidDataTest: \dP testpart.*
 -- Deactivated for SplendidDataTest: \dP
-
 -- Deactivated for SplendidDataTest: \dPtn
 -- Deactivated for SplendidDataTest: \dPin
 -- Deactivated for SplendidDataTest: \dPn
@@ -1216,3 +1116,16 @@ drop role regress_partitioning_role;
 -- Deactivated for SplendidDataTest: \dAo * pg_catalog.jsonb_path_ops
 -- Deactivated for SplendidDataTest: \dAp btree float_ops
 -- Deactivated for SplendidDataTest: \dAp * pg_catalog.uuid_ops
+
+-- check \df, \do with argument specifications
+-- Deactivated for SplendidDataTest: \df *sqrt
+-- Deactivated for SplendidDataTest: \df *sqrt num*
+-- Deactivated for SplendidDataTest: \df int*pl
+-- Deactivated for SplendidDataTest: \df int*pl int4
+-- Deactivated for SplendidDataTest: \df int*pl * pg_catalog.int8
+-- Deactivated for SplendidDataTest: \df acl* aclitem[]
+-- Deactivated for SplendidDataTest: \df has_database_privilege oid text
+-- Deactivated for SplendidDataTest: \df has_database_privilege oid text -
+-- Deactivated for SplendidDataTest: \dfa bit* small*
+-- Deactivated for SplendidDataTest: \do - pg_catalog.int4
+-- Deactivated for SplendidDataTest: \do && anyarray *

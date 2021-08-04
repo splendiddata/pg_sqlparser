@@ -15,7 +15,7 @@
  * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
  */
 
-package com.splendiddata.sqlparser.plumming;
+package com.splendiddata.sqlparser.plumbing;
 
 import com.splendiddata.sqlparser.structure.List;
 import com.splendiddata.sqlparser.structure.Node;

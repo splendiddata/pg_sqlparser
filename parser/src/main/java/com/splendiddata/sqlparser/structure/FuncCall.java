@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -25,6 +25,7 @@ import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 import com.splendiddata.sqlparser.ParserUtil;
+import com.splendiddata.sqlparser.enums.CoercionForm;
 import com.splendiddata.sqlparser.enums.NodeTag;
 
 /**
@@ -88,7 +89,14 @@ public class FuncCall extends Expr {
     /** OVER clause, if any */
     @XmlElement
     public WindowDef over;
-
+    
+    /**
+     * how to display this node
+     * @since 14
+     */
+    @XmlAttribute
+    public CoercionForm funcformat;
+    
     /**
      * Constructor
      */
@@ -123,6 +131,7 @@ public class FuncCall extends Expr {
         this.agg_star = toCopy.agg_star;
         this.agg_distinct = toCopy.agg_distinct;
         this.func_variadic = toCopy.func_variadic;
+        this.funcformat = toCopy.funcformat;
     }
 
     /**

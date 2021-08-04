@@ -181,6 +181,22 @@ select x, not x as not_x, q2 from
   group by grouping sets(x, q2)
   order by x, q2;
 
+-- check qual push-down rules for a subquery with grouping sets
+explain (verbose, costs off)
+select * from (
+  select 1 as x, q1, sum(q2)
+  from int8_tbl i1
+  group by grouping sets(1, 2)
+) ss
+where x = 1 and q1 = 123;
+
+select * from (
+  select 1 as x, q1, sum(q2)
+  from int8_tbl i1
+  group by grouping sets(1, 2)
+) ss
+where x = 1 and q1 = 123;
+
 -- simple rescan tests
 
 select a, b, sum(v.x)
@@ -450,31 +466,52 @@ select v||'a', case when grouping(v||'a') = 1 then 1 else 0 end, count(*)
   from unnest(array[1,1], array['a','b']) u(i,v)
  group by rollup(i, v||'a') order by 1,3;
 
+-- Bug #16784
+create table bug_16784(i int, j int);
+analyze bug_16784;
+alter table bug_16784 set (autovacuum_enabled = 'false');
+update pg_class set reltuples = 10 where relname='bug_16784';
+
+insert into bug_16784 select g/10, g from generate_series(1,40) g;
+
+set work_mem='64kB';
+set enable_sort = false;
+
+select * from
+  (values (1),(2)) v(a),
+  lateral (select a, i, j, count(*) from
+             bug_16784 group by cube(i,j)) s
+  order by v.a, i, j;
+
 --
 -- Compare results between plans using sorting and plans using hash
 -- aggregation. Force spilling in both cases by setting work_mem low
--- and turning on enable_groupingsets_hash_disk.
+-- and altering the statistics.
 --
 
-SET enable_groupingsets_hash_disk = true;
-SET work_mem='64kB';
+create table gs_data_1 as
+select g%1000 as g1000, g%100 as g100, g%10 as g10, g
+   from generate_series(0,1999) g;
+
+analyze gs_data_1;
+alter table gs_data_1 set (autovacuum_enabled = 'false');
+update pg_class set reltuples = 10 where relname='gs_data_1';
+
+set work_mem='64kB';
 
 -- Produce results with sorting.
 
+set enable_sort = true;
 set enable_hashagg = false;
 set jit_above_cost = 0;
 
 explain (costs off)
-select g100, g10, sum(g::numeric), count(*), max(g::text) from
-  (select g%1000 as g1000, g%100 as g100, g%10 as g10, g
-   from generate_series(0,1999) g) s
-group by cube (g1000, g100,g10);
+select g100, g10, sum(g::numeric), count(*), max(g::text)
+from gs_data_1 group by cube (g1000, g100,g10);
 
 create table gs_group_1 as
-select g100, g10, sum(g::numeric), count(*), max(g::text) from
-  (select g%1000 as g1000, g%100 as g100, g%10 as g10, g
-   from generate_series(0,1999) g) s
-group by cube (g1000, g100,g10);
+select g100, g10, sum(g::numeric), count(*), max(g::text)
+from gs_data_1 group by cube (g1000, g100,g10);
 
 -- Produce results with hash aggregation.
 
@@ -482,17 +519,12 @@ set enable_hashagg = true;
 set enable_sort = false;
 
 explain (costs off)
-select g100, g10, sum(g::numeric), count(*), max(g::text) from
-  (select g%1000 as g1000, g%100 as g100, g%10 as g10, g
-   from generate_series(0,1999) g) s
-group by cube (g1000, g100,g10);
+select g100, g10, sum(g::numeric), count(*), max(g::text)
+from gs_data_1 group by cube (g1000, g100,g10);
 
 create table gs_hash_1 as
-select g100, g10, sum(g::numeric), count(*), max(g::text) from
-  (select g%1000 as g1000, g%100 as g100, g%10 as g10, g
-   from generate_series(0,1999) g) s
-group by cube (g1000, g100,g10);
-
+select g100, g10, sum(g::numeric), count(*), max(g::text)
+from gs_data_1 group by cube (g1000, g100,g10);
 
 set enable_sort = true;
 set work_mem to default;
@@ -506,6 +538,30 @@ set work_mem to default;
 drop table gs_group_1;
 drop table gs_hash_1;
 
-SET enable_groupingsets_hash_disk TO DEFAULT;
+-- GROUP BY DISTINCT
+
+-- "normal" behavior...
+select a, b, c
+from (values (1, 2, 3), (4, null, 6), (7, 8, 9)) as t (a, b, c)
+group by all rollup(a, b), rollup(a, c)
+order by a, b, c;
+
+-- ...which is also the default
+select a, b, c
+from (values (1, 2, 3), (4, null, 6), (7, 8, 9)) as t (a, b, c)
+group by rollup(a, b), rollup(a, c)
+order by a, b, c;
+
+-- "group by distinct" behavior...
+select a, b, c
+from (values (1, 2, 3), (4, null, 6), (7, 8, 9)) as t (a, b, c)
+group by distinct rollup(a, b), rollup(a, c)
+order by a, b, c;
+
+-- ...which is not the same as "select distinct"
+select distinct a, b, c
+from (values (1, 2, 3), (4, null, 6), (7, 8, 9)) as t (a, b, c)
+group by rollup(a, b), rollup(a, c)
+order by a, b, c;
 
 -- end

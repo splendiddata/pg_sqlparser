@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -70,6 +70,12 @@ public class GrantStmt extends Node {
     @XmlAttribute
     public boolean grant_option;
 
+    /**
+     * @since 14.0
+     */
+    @XmlElement
+    public RoleSpec grantor;
+
     /** drop behavior (for REVOKE) */
     @XmlAttribute
     public DropBehavior behavior;
@@ -102,6 +108,9 @@ public class GrantStmt extends Node {
             this.grantees = original.grantees.clone();
         }
         this.grant_option = original.grant_option;
+        if (original.grantor != null) {
+            this.grantor = original.grantor.clone();
+        }
         this.behavior = original.behavior;
     }
 
@@ -116,6 +125,9 @@ public class GrantStmt extends Node {
         }
         if (grantees != null) {
             clone.grantees = grantees.clone();
+        }
+        if (grantor != null) {
+            clone.grantor = grantor.clone();
         }
         return clone;
     }
@@ -260,6 +272,10 @@ public class GrantStmt extends Node {
                         .append(getClass().getName()).append(" ???????");
                 break;
             }
+        }
+
+        if (grantor != null) {
+            result.append(" granted by ").append(grantor);
         }
 
         return result.toString();

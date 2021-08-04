@@ -1,18 +1,15 @@
 /*
  * Copyright (c) Splendid Data Product Development B.V. 2020
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser;
@@ -25,13 +22,14 @@ import org.apache.logging.log4j.Logger;
 import com.splendiddata.sqlparser.enums.A_Expr_Kind;
 import com.splendiddata.sqlparser.enums.AttributeIdentity;
 import com.splendiddata.sqlparser.enums.BoolExprType;
+import com.splendiddata.sqlparser.enums.CoercionForm;
 import com.splendiddata.sqlparser.enums.DefElemAction;
 import com.splendiddata.sqlparser.enums.GroupingSetKind;
 import com.splendiddata.sqlparser.enums.NodeTag;
 import com.splendiddata.sqlparser.enums.RoleSpecType;
 import com.splendiddata.sqlparser.enums.Severity;
 import com.splendiddata.sqlparser.enums.TemporalWord;
-import com.splendiddata.sqlparser.plumming.base_yy_extra_type;
+import com.splendiddata.sqlparser.plumbing.base_yy_extra_type;
 import com.splendiddata.sqlparser.structure.A_Const;
 import com.splendiddata.sqlparser.structure.A_Expr;
 import com.splendiddata.sqlparser.structure.A_Indirection;
@@ -227,7 +225,11 @@ public class AbstractParser extends AbstractCProgram {
     }
 
     /**
-     * Creates a FuncCall object
+     * makeFuncCall -
+     * <p>
+     * Initialize a FuncCall struct with the information every caller must supply. Any non-default parameters have to be
+     * inserted by the caller.
+     * </p>
      * <p>
      * Copied from /postgresql-9.4.1/src/backend/nodes/makefuncs.c
      * </p>
@@ -236,11 +238,12 @@ public class AbstractParser extends AbstractCProgram {
      *            The List&lt;Value&gt; that represents the function's (qualified) name
      * @param args
      *            The List&lt;Node&gt; that represents the arguments of the function call
+     *            @param funcformat
      * @param locationAt
      *            The Location of the node in the source file
      * @return FuncCall The constructed FuncCall
      */
-    static FuncCall makeFuncCall(List<Value> name, List<Node> args, Location locationAt) {
+    static FuncCall makeFuncCall(List<Value> name, List<Node> args, CoercionForm funcformat, Location locationAt) {
         FuncCall n = makeNode(FuncCall.class);
 
         n.funcname = name;
@@ -251,7 +254,7 @@ public class AbstractParser extends AbstractCProgram {
         n.agg_star = false;
         n.agg_distinct = false;
         n.func_variadic = false;
-        n.over = null;
+        n.funcformat = funcformat;
         n.location = locationAt;
         return n;
     }

@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -20,6 +17,7 @@ package com.splendiddata.sqlparser.structure;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 import com.splendiddata.sqlparser.enums.NodeTag;
 
@@ -39,18 +37,22 @@ public class TableLikeClause extends Node {
      * Copied from TableLikeOption in /postgresql-10rc1/src/include/nodes/parsenodes.h
      */
     public static final int CREATE_TABLE_LIKE_COMMENTS = 1 << 0;
-    public static final int CREATE_TABLE_LIKE_CONSTRAINTS = 1 << 1;
-    public static final int CREATE_TABLE_LIKE_DEFAULTS = 1 << 2;
+    /**
+     * @since 14.0
+     */
+    public static final int CREATE_TABLE_LIKE_COMPRESSION = 1 << 1;
+    public static final int CREATE_TABLE_LIKE_CONSTRAINTS = 1 << 2;
+    public static final int CREATE_TABLE_LIKE_DEFAULTS = 1 << 3;
     /** @since 7.0 - Postgres 12 */
-    public static final int CREATE_TABLE_LIKE_GENERATED = 1 << 3;
+    public static final int CREATE_TABLE_LIKE_GENERATED = 1 << 4;
     /**
      * @since 5.0
      */
-    public static final int CREATE_TABLE_LIKE_IDENTITY = 1 << 4;
-    public static final int CREATE_TABLE_LIKE_INDEXES = 1 << 5;
+    public static final int CREATE_TABLE_LIKE_IDENTITY = 1 << 5;
+    public static final int CREATE_TABLE_LIKE_INDEXES = 1 << 6;
     /** @since 6.0 - Postgres version 11 */
-    public static final int CREATE_TABLE_LIKE_STATISTICS = 1 << 6;
-    public static final int CREATE_TABLE_LIKE_STORAGE = 1 << 7;
+    public static final int CREATE_TABLE_LIKE_STATISTICS = 1 << 7;
+    public static final int CREATE_TABLE_LIKE_STORAGE = 1 << 8;
     public static final int CREATE_TABLE_LIKE_ALL = 0x7FFFFFFF;
 
     /**
@@ -65,6 +67,19 @@ public class TableLikeClause extends Node {
     /** OR of TableLikeOption flags */
     @XmlAttribute
     public int options;
+
+    /**
+     * If table has been looked up, its OID.
+     * <p>
+     * But it hasn't been looked up as there is no catalog for it in the parser.
+     * </p>
+     * 
+     * @since 14.0
+     * @deprecated This is a runtime field inside Postgres that will never be used via the Java parser
+     */
+    @Deprecated
+    @XmlTransient
+    public Oid relationOid;
 
     /**
      * Constructor
@@ -113,6 +128,9 @@ public class TableLikeClause extends Node {
             }
             if ((options & CREATE_TABLE_LIKE_IDENTITY) == CREATE_TABLE_LIKE_IDENTITY) {
                 result.append(" including identity");
+            }
+            if ((options & CREATE_TABLE_LIKE_CONSTRAINTS) == CREATE_TABLE_LIKE_COMPRESSION) {
+                result.append(" including compression");
             }
             if ((options & CREATE_TABLE_LIKE_CONSTRAINTS) == CREATE_TABLE_LIKE_CONSTRAINTS) {
                 result.append(" including constraints");

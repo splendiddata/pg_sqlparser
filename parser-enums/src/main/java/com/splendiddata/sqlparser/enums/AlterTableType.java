@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.enums;
@@ -50,6 +47,12 @@ public enum AlterTableType {
     AT_ResetOptions,
     /** alter column set storage */
     AT_SetStorage,
+    /**
+     * alter column set compression
+     * 
+     * @since 14.0
+     */
+    AT_SetCompression,
     /** drop column */
     AT_DropColumn,
     /** internal to commands/tablecmds.c */
@@ -166,6 +169,12 @@ public enum AlterTableType {
      * @since 5.0
      */
     AT_DetachPartition,
+    /**
+     * DETACH PARTITION FINALIZE
+     * 
+     * @since 14.0
+     */
+    AT_DetachPartitionFinalize,
     /**
      * ADD IDENTITY
      * 
