@@ -54,6 +54,6 @@ public static void main(String[] args) {
 ```
 More information can be found in [https://github.com/splendiddata/pg_sqlparser/tree/main/doc/README.pdf](https://github.com/splendiddata/pg_sqlparser/tree/main/doc/README.pdf)
 
-##branches
+## Branches
 The Postgres_13 branch contains a parser based on the PostgreSQL 13 parser.<br>
 The main branch is based on the PostgreSQL 14 parser.
