@@ -110,12 +110,24 @@ public class JoinExpr extends Node {
         super(other);
         this.jointype = other.jointype;
         this.isNatural = other.isNatural;
-        this.larg = other.larg.clone();
-        this.rarg = other.rarg.clone();
-        this.usingClause = other.usingClause.clone();
-        this.join_using_alias = other.join_using_alias.clone();
-        this.quals = other.quals.clone();
-        this.alias = other.alias.clone();
+        if (other.larg != null) {
+            this.larg = other.larg.clone();
+        }
+        if (other.rarg != null) {
+            this.rarg = other.rarg.clone();
+        }
+        if (other.usingClause != null) {
+            this.usingClause = other.usingClause.clone();
+        }
+        if (other.join_using_alias != null) {
+            this.join_using_alias = other.join_using_alias.clone();
+        }
+        if (other.quals != null) {
+            this.quals = other.quals.clone();
+        }
+        if (other.alias != null) {
+            this.alias = other.alias.clone();
+        }
     }
 
     @Override
