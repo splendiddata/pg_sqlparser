@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -18,6 +18,7 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 import com.splendiddata.sqlparser.enums.NodeTag;
 import com.splendiddata.sqlparser.enums.ObjectType;
@@ -42,6 +43,16 @@ public class AlterTableStmt extends Node {
     /** type of object */
     @XmlAttribute
     public ObjectType relkind;
+
+    /**
+     * type of object
+     * 
+     * @since Postgres version 14.
+     * @deprecated Implemented for forward compatibility with Postgres 14 
+     */
+    @XmlTransient
+    @Deprecated
+    public ObjectType objtype;
 
     /** skip error if table missing */
     @XmlAttribute
