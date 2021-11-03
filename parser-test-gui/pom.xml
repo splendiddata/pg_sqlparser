@@ -136,7 +136,7 @@
                         <manifestEntries>
                             <License>https://www.gnu.org/licenses/gpl-3.0.en.html</License>
                             <Vendor>https://www.splendiddata.com</Vendor>
-                            <Copyright>Copyright (c) Splendid Data Product Development B.V. 2013</Copyright>
+                            <Copyright>Copyright (c) Splendid Data Product Development B.V. 2013 - 2021</Copyright>
                         </manifestEntries>
 					</archive>
 				</configuration>
