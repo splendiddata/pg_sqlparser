@@ -931,7 +931,9 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                 .replace("(limitClause &&", "(limitClause != null &&")
                         .replace("&& limitClause->limitOffset)", "&& limitClause.limitOffset != null)")
                         .replace("&& limitClause->limitCount)", "&& limitClause.limitCount != null)")
-                        .replace("(!stmt->sortClause &&", "(stmt.sortClause == null &&");
+                        .replace("(!stmt->sortClause &&", "(stmt.sortClause == null &&")
+                        .replace("&& stmt->lockingClause)", "&& stmt->lockingClause != null)")
+                        .replace("lfirst_node(LockingClause, lc)", "(LockingClause)lc.data");
                 break;
             default:
                 convertedLine = input;

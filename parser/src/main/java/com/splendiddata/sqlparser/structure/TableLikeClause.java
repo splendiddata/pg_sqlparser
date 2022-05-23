@@ -1,18 +1,15 @@
 /*
  * Copyright (c) Splendid Data Product Development B.V. 2020
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -67,6 +64,13 @@ public class TableLikeClause extends Node {
     public int options;
 
     /**
+     * If table has been looked up, its OID
+     * 
+     * @since 13.2
+     */
+    public Oid relationOid;
+
+    /**
      * Constructor
      */
     public TableLikeClause() {
@@ -85,6 +89,9 @@ public class TableLikeClause extends Node {
             this.relation = original.relation.clone();
         }
         this.options = original.options;
+        if (original.relationOid != null) {
+            this.relationOid = original.relationOid;
+        }
     }
 
     @Override
@@ -92,6 +99,9 @@ public class TableLikeClause extends Node {
         TableLikeClause clone = (TableLikeClause) super.clone();
         if (relation != null) {
             clone.relation = relation.clone();
+        }
+        if(relationOid != null) {
+            clone.relationOid = relationOid.clone();
         }
         return clone;
     }
