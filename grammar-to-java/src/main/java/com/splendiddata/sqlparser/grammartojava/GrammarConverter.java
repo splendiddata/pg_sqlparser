@@ -1,18 +1,15 @@
 /*
  * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.grammartojava;
@@ -144,12 +141,11 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
      * A pattern to identify the function name in a function definition in the epilog section
      */
     private static final Pattern EPILOG_FUNCTION_DEFINITION_PATTERN = Pattern.compile("^(\\w+)\\(.*");
-    
+
     /**
      * Pattern to interpret the first line of the bison --version response
      */
-    private static final Pattern BISON_VERSION_PATTERN = Pattern
-            .compile("bison \\(GNU Bison\\) ([\\d.]+).*");
+    private static final Pattern BISON_VERSION_PATTERN = Pattern.compile("bison \\(GNU Bison\\) ([\\d.]+).*");
     /**
      * What Bison version are we working with?
      */
@@ -332,8 +328,7 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                             .replace("%type <selem>", "%type <StatsElem>")
                             .replace("%type <setquantifier>", "%type <SetQuantifier>")
                             .replace("%type <groupclause>", "%type <GroupClause>")
-                            .replace("%type <alias>", "%type <Alias>")
-                            .replace("%type <into>", "%type <IntoClause>")
+                            .replace("%type <alias>", "%type <Alias>").replace("%type <into>", "%type <IntoClause>")
                             .replace("%type <with>", "%type <WithClause>");
                     /*
                      * declaration lines are written unchanged
@@ -581,7 +576,8 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                         /*
                          * SetQuantifier from "enum".
                          */
-                        .replaceAll("(\\W)(" + SetQuantifier.REPLACEMENT_REGEXP_PART + ")(\\W)", "$1SetQuantifier.$2$3");
+                        .replaceAll("(\\W)(" + SetQuantifier.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1SetQuantifier.$2$3");
                 /*
                  * Replace some constants that are defined in the type that uses them
                  */
@@ -942,11 +938,12 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                 }
                 return null;
             case "insertSelectOptions":
-                convertedLine = input
-                .replace("(limitClause &&", "(limitClause != null &&")
+                convertedLine = input.replace("(limitClause &&", "(limitClause != null &&")
                         .replace("&& limitClause->limitOffset)", "&& limitClause.limitOffset != null)")
                         .replace("&& limitClause->limitCount)", "&& limitClause.limitCount != null)")
-                        .replace("(!stmt->sortClause &&", "(stmt.sortClause == null &&");
+                        .replace("(!stmt->sortClause &&", "(stmt.sortClause == null &&")
+                        .replace("&& stmt->lockingClause)", "&& stmt->lockingClause != null)")
+                        .replace("lfirst_node(LockingClause, lc)", "(LockingClause)lc.data");
                 break;
             default:
                 convertedLine = input;
