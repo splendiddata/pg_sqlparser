@@ -12,16 +12,43 @@
 --	(this also tests the query rewrite system)
 --
 
+-- directory paths and dlsuffix are passed to us in environment variables
+-- Deactivated for SplendidDataTest: \getenv abs_srcdir PG_ABS_SRCDIR
+-- Deactivated for SplendidDataTest: \getenv libdir PG_LIBDIR
+-- Deactivated for SplendidDataTest: \getenv dlsuffix PG_DLSUFFIX
+
+-- Deactivated for SplendidDataTest: \set regresslib :libdir '/regress' :dlsuffix
+
+CREATE FUNCTION interpt_pp(path, path)
+    RETURNS point
+    AS :'regresslib'
+    LANGUAGE C STRICT;
+
+CREATE TABLE real_city (
+	pop			int4,
+	cname		text,
+	outline 	path
+);
+
+-- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/real_city.data'
+COPY real_city FROM :'filename';
+ANALYZE real_city;
+
+SELECT *
+   INTO TABLE ramp
+   FROM ONLY road
+   WHERE name ~ '.*Ramp';
+
 CREATE VIEW street AS
    SELECT r.name, r.thepath, c.cname AS cname
    FROM ONLY road r, real_city c
-   WHERE c.outline ## r.thepath;
+   WHERE c.outline ?# r.thepath;
 
 CREATE VIEW iexit AS
    SELECT ih.name, ih.thepath,
 	interpt_pp(ih.thepath, r.thepath) AS exit
    FROM ihighway ih, ramp r
-   WHERE ih.thepath ## r.thepath;
+   WHERE ih.thepath ?# r.thepath;
 
 CREATE VIEW toyemp AS
    SELECT name, age, location, 12*salary AS annualsal
@@ -48,12 +75,13 @@ CREATE VIEW key_dependent_view_no_cols AS
 -- CREATE OR REPLACE VIEW
 --
 
-CREATE TABLE viewtest_tbl (a int, b int);
+CREATE TABLE viewtest_tbl (a int, b int, c numeric(10,1), d text COLLATE "C");
+
 COPY viewtest_tbl FROM stdin;
--- Deactivated for SplendidDataTest: 5	10
--- Deactivated for SplendidDataTest: 10	15
--- Deactivated for SplendidDataTest: 15	20
--- Deactivated for SplendidDataTest: 20	25
+-- Deactivated for SplendidDataTest: 5	10	1.1	xy
+-- Deactivated for SplendidDataTest: 10	15	2.2	xyz
+-- Deactivated for SplendidDataTest: 15	20	3.3	xyzz
+-- Deactivated for SplendidDataTest: 20	25	4.4	xyzzy
 -- Deactivated for SplendidDataTest: \.
 
 CREATE OR REPLACE VIEW viewtest AS
@@ -65,7 +93,7 @@ CREATE OR REPLACE VIEW viewtest AS
 SELECT * FROM viewtest;
 
 CREATE OR REPLACE VIEW viewtest AS
-	SELECT a, b FROM viewtest_tbl WHERE a > 5 ORDER BY b DESC;
+	SELECT a, b, c, d FROM viewtest_tbl WHERE a > 5 ORDER BY b DESC;
 
 SELECT * FROM viewtest;
 
@@ -79,11 +107,19 @@ CREATE OR REPLACE VIEW viewtest AS
 
 -- should fail
 CREATE OR REPLACE VIEW viewtest AS
-	SELECT a, b::numeric FROM viewtest_tbl;
+	SELECT a, b::numeric, c, d FROM viewtest_tbl;
+
+-- should fail
+CREATE OR REPLACE VIEW viewtest AS
+	SELECT a, b, c::numeric(10,2), d FROM viewtest_tbl;
+
+-- should fail
+CREATE OR REPLACE VIEW viewtest AS
+	SELECT a, b, c, d COLLATE "POSIX" FROM viewtest_tbl;
 
 -- should work
 CREATE OR REPLACE VIEW viewtest AS
-	SELECT a, b, 0 AS c FROM viewtest_tbl;
+	SELECT a, b, c, d, 0 AS e FROM viewtest_tbl;
 
 DROP VIEW viewtest;
 DROP TABLE viewtest_tbl;
@@ -226,9 +262,19 @@ CREATE VIEW mysecview5 WITH (security_barrier=100)	-- Error
        AS SELECT * FROM tbl1 WHERE a > 100;
 CREATE VIEW mysecview6 WITH (invalid_option)		-- Error
        AS SELECT * FROM tbl1 WHERE a < 100;
+CREATE VIEW mysecview7 WITH (security_invoker=true)
+       AS SELECT * FROM tbl1 WHERE a = 100;
+CREATE VIEW mysecview8 WITH (security_invoker=false, security_barrier=true)
+       AS SELECT * FROM tbl1 WHERE a > 100;
+CREATE VIEW mysecview9 WITH (security_invoker)
+       AS SELECT * FROM tbl1 WHERE a < 100;
+CREATE VIEW mysecview10 WITH (security_invoker=100)	-- Error
+       AS SELECT * FROM tbl1 WHERE a <> 100;
 SELECT relname, relkind, reloptions FROM pg_class
        WHERE oid in ('mysecview1'::regclass, 'mysecview2'::regclass,
-                     'mysecview3'::regclass, 'mysecview4'::regclass)
+                     'mysecview3'::regclass, 'mysecview4'::regclass,
+                     'mysecview7'::regclass, 'mysecview8'::regclass,
+                     'mysecview9'::regclass)
        ORDER BY relname;
 
 CREATE OR REPLACE VIEW mysecview1
@@ -239,9 +285,17 @@ CREATE OR REPLACE VIEW mysecview3 WITH (security_barrier=true)
        AS SELECT * FROM tbl1 WHERE a < 256;
 CREATE OR REPLACE VIEW mysecview4 WITH (security_barrier=false)
        AS SELECT * FROM tbl1 WHERE a <> 256;
+CREATE OR REPLACE VIEW mysecview7
+       AS SELECT * FROM tbl1 WHERE a > 256;
+CREATE OR REPLACE VIEW mysecview8 WITH (security_invoker=true)
+       AS SELECT * FROM tbl1 WHERE a < 256;
+CREATE OR REPLACE VIEW mysecview9 WITH (security_invoker=false, security_barrier=true)
+       AS SELECT * FROM tbl1 WHERE a <> 256;
 SELECT relname, relkind, reloptions FROM pg_class
        WHERE oid in ('mysecview1'::regclass, 'mysecview2'::regclass,
-                     'mysecview3'::regclass, 'mysecview4'::regclass)
+                     'mysecview3'::regclass, 'mysecview4'::regclass,
+                     'mysecview7'::regclass, 'mysecview8'::regclass,
+                     'mysecview9'::regclass)
        ORDER BY relname;
 
 -- Check that unknown literals are converted to "text" in CREATE VIEW,
@@ -249,7 +303,7 @@ SELECT relname, relkind, reloptions FROM pg_class
 
 CREATE VIEW unspecified_types AS
   SELECT 42 as i, 42.5 as num, 'foo' as u, 'foo'::unknown as u2, null as n;
-\d+ unspecified_types
+-- Deactivated for SplendidDataTest: \d+ unspecified_types
 SELECT * FROM unspecified_types;
 
 -- This test checks that proper typmods are assigned in a multi-row VALUES
@@ -260,7 +314,7 @@ CREATE VIEW tt1 AS
        ('abc'::varchar(3), '0123456789', 42, 'abcd'::varchar(4)),
        ('0123456789', 'abc'::varchar(3), 42.12, 'abc'::varchar(4))
   ) vv(a,b,c,d);
-\d+ tt1
+-- Deactivated for SplendidDataTest: \d+ tt1
 SELECT * FROM tt1;
 SELECT a::varchar(3) FROM tt1;
 DROP VIEW tt1;
@@ -284,48 +338,48 @@ CREATE VIEW aliased_view_4 AS
   select * from temp_view_test.tt1
     where exists (select 1 from tt1 where temp_view_test.tt1.y1 = tt1.f1);
 
-\d+ aliased_view_1
-\d+ aliased_view_2
-\d+ aliased_view_3
-\d+ aliased_view_4
+-- Deactivated for SplendidDataTest: \d+ aliased_view_1
+-- Deactivated for SplendidDataTest: \d+ aliased_view_2
+-- Deactivated for SplendidDataTest: \d+ aliased_view_3
+-- Deactivated for SplendidDataTest: \d+ aliased_view_4
 
 ALTER TABLE tx1 RENAME TO a1;
 
-\d+ aliased_view_1
-\d+ aliased_view_2
-\d+ aliased_view_3
-\d+ aliased_view_4
+-- Deactivated for SplendidDataTest: \d+ aliased_view_1
+-- Deactivated for SplendidDataTest: \d+ aliased_view_2
+-- Deactivated for SplendidDataTest: \d+ aliased_view_3
+-- Deactivated for SplendidDataTest: \d+ aliased_view_4
 
 ALTER TABLE tt1 RENAME TO a2;
 
-\d+ aliased_view_1
-\d+ aliased_view_2
-\d+ aliased_view_3
-\d+ aliased_view_4
+-- Deactivated for SplendidDataTest: \d+ aliased_view_1
+-- Deactivated for SplendidDataTest: \d+ aliased_view_2
+-- Deactivated for SplendidDataTest: \d+ aliased_view_3
+-- Deactivated for SplendidDataTest: \d+ aliased_view_4
 
 ALTER TABLE a1 RENAME TO tt1;
 
-\d+ aliased_view_1
-\d+ aliased_view_2
-\d+ aliased_view_3
-\d+ aliased_view_4
+-- Deactivated for SplendidDataTest: \d+ aliased_view_1
+-- Deactivated for SplendidDataTest: \d+ aliased_view_2
+-- Deactivated for SplendidDataTest: \d+ aliased_view_3
+-- Deactivated for SplendidDataTest: \d+ aliased_view_4
 
 ALTER TABLE a2 RENAME TO tx1;
 ALTER TABLE tx1 SET SCHEMA temp_view_test;
 
-\d+ aliased_view_1
-\d+ aliased_view_2
-\d+ aliased_view_3
-\d+ aliased_view_4
+-- Deactivated for SplendidDataTest: \d+ aliased_view_1
+-- Deactivated for SplendidDataTest: \d+ aliased_view_2
+-- Deactivated for SplendidDataTest: \d+ aliased_view_3
+-- Deactivated for SplendidDataTest: \d+ aliased_view_4
 
 ALTER TABLE temp_view_test.tt1 RENAME TO tmp1;
 ALTER TABLE temp_view_test.tmp1 SET SCHEMA testviewschm2;
 ALTER TABLE tmp1 RENAME TO tx1;
 
-\d+ aliased_view_1
-\d+ aliased_view_2
-\d+ aliased_view_3
-\d+ aliased_view_4
+-- Deactivated for SplendidDataTest: \d+ aliased_view_1
+-- Deactivated for SplendidDataTest: \d+ aliased_view_2
+-- Deactivated for SplendidDataTest: \d+ aliased_view_3
+-- Deactivated for SplendidDataTest: \d+ aliased_view_4
 
 -- Test aliasing of joins
 
@@ -334,7 +388,7 @@ select * from
   (select * from (tbl1 cross join tbl2) same) ss,
   (tbl3 cross join tbl4) same;
 
-\d+ view_of_joins
+-- Deactivated for SplendidDataTest: \d+ view_of_joins
 
 create table tbl1a (a int, c int);
 create view view_of_joins_2a as select * from tbl1 join tbl1a using (a);
@@ -572,6 +626,11 @@ create view tt17v as select * from int8_tbl i where i in (values(i));
 select * from tt17v;
 select pg_get_viewdef('tt17v', true);
 select * from int8_tbl i where i.* in (values(i.*::int8_tbl));
+
+create table tt15v_log(o tt15v, n tt15v, incr bool);
+create rule updlog as on update to tt15v do also
+  insert into tt15v_log values(old, new, row(old,old) < row(new,new));
+-- Deactivated for SplendidDataTest: \d+ tt15v
 
 -- check unique-ification of overlength names
 

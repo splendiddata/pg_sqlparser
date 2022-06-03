@@ -5,7 +5,6 @@
  */
 
 
-
 -- only use parallelism when explicitly intending to do so
 SET max_parallel_maintenance_workers = 0;
 SET max_parallel_workers = 0;

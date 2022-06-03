@@ -1,6 +1,17 @@
+/*
+ * This file has been altered by SplendidData.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So input for the copy statements is removed.
+ * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
+ */
+ 
+ 
 --
 -- ARRAYS
 --
+
+-- directory paths are passed to us in environment variables
+-- Deactivated for SplendidDataTest: \getenv abs_srcdir PG_ABS_SRCDIR
 
 CREATE TABLE arrtest (
 	a 			int2[],
@@ -11,6 +22,16 @@ CREATE TABLE arrtest (
 	f			char(5)[],
 	g			varchar(5)[]
 );
+
+CREATE TABLE array_op_test (
+	seqno		int4,
+	i			int4[],
+	t			text[]
+);
+
+-- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/array.data'
+COPY array_op_test FROM :'filename';
+ANALYZE array_op_test;
 
 --
 -- only the 'e' array is 0-based, the others are 1-based.
@@ -152,6 +173,10 @@ SELECT * FROM arrtest_s;
 UPDATE arrtest_s SET a[:] = '{23, 24, 25}';  -- fail, too small
 INSERT INTO arrtest_s VALUES(NULL, NULL);
 UPDATE arrtest_s SET a[:] = '{11, 12, 13, 14, 15}';  -- fail, no good with null
+
+-- we want to work with a point_tbl that includes a null
+CREATE TEMP TABLE point_tbl AS SELECT * FROM public.point_tbl;
+INSERT INTO POINT_TBL(f1) VALUES (NULL);
 
 -- check with fixed-length-array type, such as point
 SELECT f1[0:1] FROM POINT_TBL;
@@ -317,6 +342,8 @@ SELECT ARRAY[[1,2],[3,4]] || ARRAY[5,6] AS "{{1,2},{3,4},{5,6}}";
 SELECT ARRAY[0,0] || ARRAY[1,1] || ARRAY[2,2] AS "{0,0,1,1,2,2}";
 SELECT 0 || ARRAY[1,2] || 3 AS "{0,1,2,3}";
 SELECT ARRAY[1.1] || ARRAY[2,3,4];
+SELECT array_agg(x) || array_agg(x) FROM (VALUES (ROW(1,2)), (ROW(3,4))) v(x);
+SELECT ROW(1,2) || array_agg(x) FROM (VALUES (ROW(3,4)), (ROW(5,6))) v(x);
 
 SELECT * FROM array_op_test WHERE i @> '{32}' ORDER BY seqno;
 SELECT * FROM array_op_test WHERE i && '{32}' ORDER BY seqno;

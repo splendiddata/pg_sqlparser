@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.enums;
@@ -41,10 +38,9 @@ public enum ObjectType {
     /**
      * Domain constraint
      * <p>
-     * toString() will return an empty string because in
-     * com.splendiddata.sqlparser.structure.RenameStmt#toString() it should return "domain" and in
-     * com.splendiddata.sqlparser.structure.CommentStmt#toString() it should return "constraint". Wit the empty
-     * string return, classes can decide for themselves what to put.
+     * toString() will return an empty string because in com.splendiddata.sqlparser.structure.RenameStmt#toString() it
+     * should return "domain" and in com.splendiddata.sqlparser.structure.CommentStmt#toString() it should return
+     * "constraint". Wit the empty string return, classes can decide for themselves what to put.
      * </p>
      */
     OBJECT_DOMCONSTRAINT(""),
@@ -61,10 +57,12 @@ public enum ObjectType {
     OBJECT_OPCLASS("operator class"),
     OBJECT_OPERATOR("operator"),
     OBJECT_OPFAMILY("operator family"),
+    /** @since Postgres 15 */
+    OBJECT_PARAMETER_ACL("????? OBJECT_PARAMETER_ACL in " + ObjectType.class.getName() + " ?????"),
     OBJECT_POLICY("policy"),
     /** @since 6.0 - Postgres version 11 */
     OBJECT_PROCEDURE("procedure"),
-    /**@since 5.0 */
+    /** @since 5.0 */
     OBJECT_PUBLICATION("publication"),
     OBJECT_ROLE("role"),
     /** @since 6.0 - Postgres version 11 */
@@ -72,9 +70,9 @@ public enum ObjectType {
     OBJECT_RULE("rule"),
     OBJECT_SCHEMA("schema"),
     OBJECT_SEQUENCE("sequence"),
-    /**@since 5.0 */
+    /** @since 5.0 */
     OBJECT_SUBSCRIPTION("subscription"),
-    /**@since 5.0 */
+    /** @since 5.0 */
     OBJECT_STATISTIC_EXT("statistics"),
     OBJECT_TABCONSTRAINT("constraint"),
     OBJECT_TABLE("table"),

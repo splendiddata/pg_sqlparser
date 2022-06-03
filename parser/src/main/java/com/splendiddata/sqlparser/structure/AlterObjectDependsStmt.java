@@ -77,7 +77,7 @@ public class AlterObjectDependsStmt extends Node {
     /**
      * set true to remove dep rather than add
      * 
-     * @since 8.0 - Poatgres version 13
+     * @since 8.0 - Postgres version 13
      */
     public boolean remove;
 

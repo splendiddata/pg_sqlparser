@@ -784,7 +784,7 @@ public class JavaParserConverter extends AbstractMojo implements FileVisitor<Pat
         tokenEnum.println("                return;");
         tokenEnum.println("            }");
         tokenEnum.println("        }");
-        tokenEnum.println("        this.name = name().toLowerCase();");
+        tokenEnum.println("        this.name = name().toLowerCase().replaceAll(\"^(\\\\w+?)_p$\", \"$1\");");
         tokenEnum.println("        this.category = 0;");
         tokenEnum.println("    }");
         tokenEnum.println();

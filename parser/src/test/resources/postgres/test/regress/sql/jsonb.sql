@@ -1,3 +1,21 @@
+/*
+ * This file has been altered by SplendidData.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So input for the copy statements is removed.
+ * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
+ */
+ 
+ 
+-- directory paths are passed to us in environment variables
+-- Deactivated for SplendidDataTest:\getenv abs_srcdir PG_ABS_SRCDIR
+
+CREATE TABLE testjsonb (
+       j jsonb
+);
+
+-- Deactivated for SplendidDataTest:\set filename :abs_srcdir '/data/jsonb.data'
+COPY testjsonb FROM :'filename';
+
 -- Strings.
 SELECT '""'::jsonb;				-- OK.
 SELECT $$''$$::jsonb;			-- ERROR, single quotes are not allowed
@@ -1177,7 +1195,7 @@ select jsonb_set('{"a": {"b": [1, 2, 3]}}', '{a, b, NULL}', '"new_value"');
 
 -- jsonb_set_lax
 
-\pset null NULL
+-- Deactivated for SplendidDataTest: \pset null NULL
 
 -- pass though non nulls to jsonb_set
 select jsonb_set_lax('{"a":1,"b":2}','{b}','5') ;
@@ -1194,7 +1212,7 @@ select jsonb_set_lax('{"a":1,"b":2}', '{b}', null, null_value_treatment => 'retu
 select jsonb_set_lax('{"a":1,"b":2}', '{b}', null, null_value_treatment => 'delete_key') as delete_key;
 select jsonb_set_lax('{"a":1,"b":2}', '{b}', null, null_value_treatment => 'use_json_null') as use_json_null;
 
-\pset null ''
+-- Deactivated for SplendidDataTest: \pset null ''
 
 -- jsonb_insert
 select jsonb_insert('{"a": [0,1,2]}', '{a, 1}', '"new_value"');

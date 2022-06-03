@@ -15,6 +15,7 @@
 package com.splendiddata.sqlparser;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,6 +26,11 @@ import com.splendiddata.sqlparser.enums.BoolExprType;
 import com.splendiddata.sqlparser.enums.CoercionForm;
 import com.splendiddata.sqlparser.enums.DefElemAction;
 import com.splendiddata.sqlparser.enums.GroupingSetKind;
+import com.splendiddata.sqlparser.enums.JsonBehaviorType;
+import com.splendiddata.sqlparser.enums.JsonEncoding;
+import com.splendiddata.sqlparser.enums.JsonFormatType;
+import com.splendiddata.sqlparser.enums.JsonTablePlanType;
+import com.splendiddata.sqlparser.enums.JsonValueType;
 import com.splendiddata.sqlparser.enums.NodeTag;
 import com.splendiddata.sqlparser.enums.RoleSpecType;
 import com.splendiddata.sqlparser.enums.Severity;
@@ -43,8 +49,15 @@ import com.splendiddata.sqlparser.structure.CreateDomainStmt;
 import com.splendiddata.sqlparser.structure.CreateTrigStmt;
 import com.splendiddata.sqlparser.structure.DefElem;
 import com.splendiddata.sqlparser.structure.ErrCode;
+import com.splendiddata.sqlparser.structure.Expr;
 import com.splendiddata.sqlparser.structure.FuncCall;
 import com.splendiddata.sqlparser.structure.GroupingSet;
+import com.splendiddata.sqlparser.structure.JsonBehavior;
+import com.splendiddata.sqlparser.structure.JsonFormat;
+import com.splendiddata.sqlparser.structure.JsonIsPredicate;
+import com.splendiddata.sqlparser.structure.JsonKeyValue;
+import com.splendiddata.sqlparser.structure.JsonTablePlan;
+import com.splendiddata.sqlparser.structure.JsonValueExpr;
 import com.splendiddata.sqlparser.structure.List;
 import com.splendiddata.sqlparser.structure.ListCell;
 import com.splendiddata.sqlparser.structure.Location;
@@ -89,10 +102,25 @@ public class AbstractParser extends AbstractCProgram {
      * @return Value The created value
      */
     static Value makeInteger(long i) {
-        Value v = new Value();
-
-        v.type = NodeTag.T_Integer;
+        Value v = new Value(NodeTag.T_Integer);
         v.val.ival = (int) i;
+        return v;
+    }
+
+    /**
+     * Creates a boolean value
+     * <p>
+     * Copied from /postgresql-15beta1/src/backend/nodes/value.c
+     * </p>
+     *
+     * @param val
+     *            The boolean value of which to create a BooelanValue
+     * @return Value The created value
+     * @since Postgres 15
+     */
+    static Value makeBoolean(boolean val) {
+        Value v = new Value(NodeTag.T_Boolean);
+        v.val.boolval = val;
         return v;
     }
 
@@ -238,7 +266,7 @@ public class AbstractParser extends AbstractCProgram {
      *            The List&lt;Value&gt; that represents the function's (qualified) name
      * @param args
      *            The List&lt;Node&gt; that represents the arguments of the function call
-     *            @param funcformat
+     * @param funcformat
      * @param locationAt
      *            The Location of the node in the source file
      * @return FuncCall The constructed FuncCall
@@ -1303,5 +1331,284 @@ public class AbstractParser extends AbstractCProgram {
         v.relation = relation;
         v.va_cols = va_cols;
         return v;
+    }
+
+    /**
+     * Returns the boolean content of the arg
+     *
+     * @param arg
+     *            Value that should contain the boolean value
+     * @return boolean the content
+     * @since Postgres 15
+     */
+    protected static boolean boolVal(Node arg) {
+        return ((Value) arg).val.boolval;
+    }
+
+    /**
+     * makeJsonFormat -<br>
+     * creates a JsonFormat node
+     * <p>
+     * Copied from postgresql-15beta1/src/backend/nodes/makefuncs.c
+     * 
+     * @param type
+     *            The format_type
+     * @param encoding
+     *            The encoding
+     * @param noLocation
+     *            mostly -1 (= no locations)
+     * @return JsonFormat constructed from the provided input
+     * @since Postgres 15
+     */
+    protected static JsonFormat makeJsonFormat(JsonFormatType type, JsonEncoding encoding, int noLocation) {
+        return makeJsonFormat(type, encoding, null);
+    }
+
+    /**
+     * makeJsonFormat -<br>
+     * creates a JsonFormat node
+     * <p>
+     * Copied from postgresql-15beta1/src/backend/nodes/makefuncs.c
+     * 
+     * @param type
+     *            The format_type
+     * @param encoding
+     *            The encoding
+     * @param location
+     *            The location
+     * @return JsonFormat constructed from the provided input
+     * @since Postgres 15
+     */
+    protected static JsonFormat makeJsonFormat(JsonFormatType type, JsonEncoding encoding, Location location) {
+        JsonFormat jf = new JsonFormat();
+
+        jf.format_type = type;
+        jf.encoding = encoding;
+        jf.location = location;
+
+        return jf;
+    }
+
+    /**
+     * makeJsonIsPredicate -<br>
+     * creates a JsonIsPredicate node
+     * <p>
+     * Copied from postgresql-15beta1/src/backend/nodes/makefuncs.c
+     *
+     * @param expr
+     *            The expression
+     * @param format
+     *            The format
+     * @param item_type
+     *            The item type
+     * @param unique_keys
+     *            Are keys unique
+     * @param locationAt
+     *            Location of the object in the parsed source
+     * @return JsonIsPredicate constructed from the specified arguments
+     * @since Postgres 15
+     */
+    protected static JsonIsPredicate makeJsonIsPredicate(Node expr, JsonFormat format, JsonValueType item_type,
+            boolean unique_keys, Location locationAt) {
+        JsonIsPredicate n = new JsonIsPredicate();
+
+        n.expr = expr;
+        n.format = format;
+        n.item_type = item_type;
+        n.unique_keys = unique_keys;
+        n.location = locationAt;
+
+        return n;
+    }
+
+    /**
+     * makeJsonValueExpr -<br>
+     * creates a JsonValueExpr node
+     * <p>
+     * Copied from postgresql-15beta1/src/backend/nodes/makefuncs.c
+     *
+     * @param expr
+     *            the raw expression
+     * @param format
+     *            The format
+     * @return JsonValueExpr created from the arguments
+     * @since Postgres 15
+     */
+    protected static JsonValueExpr makeJsonValueExpr(Expr expr, JsonFormat format) {
+        JsonValueExpr jve = new JsonValueExpr();
+
+        jve.raw_expr = expr;
+        jve.formatted_expr = null;
+        jve.format = format;
+
+        return jve;
+    }
+
+    /**
+     * makeJsonBehavior - creates a JsonBehavior node
+     * <p>
+     * Copied from postgresql-15beta1/src/backend/nodes/makefuncs.c
+     *
+     * @param type
+     *            The behaviour type
+     * @param default_expr
+     *            The default expression
+     * @return JsonBehavior created from the arguments
+     * @since Postgres 15
+     */
+    protected static JsonBehavior makeJsonBehavior(JsonBehaviorType type, Node default_expr) {
+        JsonBehavior behavior = new JsonBehavior();
+
+        behavior.btype = type;
+        behavior.default_expr = default_expr;
+        return behavior;
+    }
+
+    /**
+     * makeJsonTableJoinedPlan -<br>
+     * creates a joined JsonTablePlan node
+     * <p>
+     * Copied from postgresql-15beta1/src/backend/nodes/makefuncs.c
+     *
+     * @param type
+     *            The table plan join type
+     * @param plan1
+     *            first plan
+     * @param plan2
+     *            second plan
+     * @param noLocation
+     *            integer (-1) means: no location
+     * @return JsonTablePlan
+     * @since Postgres 15
+     */
+    protected static JsonTablePlan makeJsonTableJoinedPlan(int type, Node plan1, Node plan2, int noLocation) {
+        return makeJsonTableJoinedPlan(type, plan1, plan2, null);
+    }
+
+    /**
+     * makeJsonTableJoinedPlan -<br>
+     * creates a joined JsonTablePlan node
+     * <p>
+     * Copied from postgresql-15beta1/src/backend/nodes/makefuncs.c
+     *
+     * @param type
+     *            The table plan join type
+     * @param plan1
+     *            first plan
+     * @param plan2
+     *            second plan
+     * @param location
+     *            position in the parsed input
+     * @return JsonTablePlan
+     * @since Postgres 15
+     */
+    protected static JsonTablePlan makeJsonTableJoinedPlan(int type, Node plan1, Node plan2, Location location) {
+        JsonTablePlan n = new JsonTablePlan();
+
+        n.plan_type = JsonTablePlanType.JSTP_JOINED;
+        n.join_type = type;
+        n.plan1 = (JsonTablePlan) plan1;
+        n.plan2 = (JsonTablePlan) plan2;
+        n.location = location;
+
+        return n;
+    }
+
+    /**
+     * makeJsonEncoding -<br>
+     * converts JSON encoding name to enum JsonEncoding
+     * <p>
+     * Copied from postgresql-15beta1/src/backend/nodes/makefuncs.c
+     *
+     * @param name
+     *            Name of the encoding
+     * @return JsonEncoding with the specified name
+     * @since Postgres 15
+     */
+    protected JsonEncoding makeJsonEncoding(String name) {
+        if (name.equalsIgnoreCase("utf8"))
+            return JsonEncoding.JS_ENC_UTF8;
+        if (name.equalsIgnoreCase("utf16"))
+            return JsonEncoding.JS_ENC_UTF16;
+        if (name.equalsIgnoreCase("utf32"))
+            return JsonEncoding.JS_ENC_UTF32;
+
+        ereport(Severity.ERROR, ErrCode.ERRCODE_INVALID_PARAMETER_VALUE,
+                errmsg("unrecognized JSON encoding: %s", name));
+
+        return JsonEncoding.JS_ENC_DEFAULT;
+    }
+
+    /**
+     * makeJsonKeyValue - creates a JsonKeyValue node
+     * <p>
+     * Copied from postgresql-15beta1/src/backend/nodes/makefuncs.c
+     *
+     * @param key
+     *            The key
+     * @param value
+     *            The value
+     * @return JsonKeyValue constructed with the specified key and value
+     * @since Postgres 15
+     */
+    protected static JsonKeyValue makeJsonKeyValue(Node key, Node value) {
+        JsonKeyValue n = new JsonKeyValue();
+
+        n.key = (Expr) key;
+        n.value = (JsonValueExpr) value;
+
+        return n;
+    }
+
+    /**
+     * Dumps the content of the yystack to the log file
+     * <p>
+     * YYSTACK is a generated private class inside PgSqlParser, so we'll have to trick a bit here. That is why the
+     * valueAt function is invoked the way it is.
+     * <p>
+     * Invocation can be injected via com.splendiddata.sqlparser.grammartojava.GrammarRuleSpecial like:
+     * <pre>
+     *    /**
+     *     * Dump the yystack to debug
+     *     *&#47
+     *    some_label(new GrammarRuleSpecialProcessing() {
+     *        public String processLine(String line) {
+     *           return line.replaceAll("^(\\s*)\\{", "$1{\n$1    dumpYystack(\"json_query_expr:\", yystack.height, i->yystack.valueAt(i));");
+     *        }
+     *    }),
+     * </pre>
+     *
+     * @param where
+     *            Indicates where the dumpYystack function was invoked, so that the content can be related to where it
+     *            was dumped in the PgSqlParser.
+     * @param height
+     *            The max index of the yystack
+     * @param valueAt
+     *            The valueAt(int) function in the private YYSTACK class in the PgSqlParser.
+     */
+    protected void dumpYystack(String where, int height, Function<Integer, Object> valueAt) {
+        StringBuilder msg = new StringBuilder().append("yystack at ").append(where);
+        if (height < 0) {
+            msg.append(" is empty");
+        } else {
+            msg.append(": height = ").append(height);
+            for (int i = 0; i <= height; i++) {
+                Object element = valueAt.apply(Integer.valueOf(i));
+                msg.append("\nelement ").append(i).append(" ");
+                if (element == null) {
+                    msg.append(" = null");
+                } else {
+                    msg.append(element.getClass().getName()).append(": ");
+                    if (element instanceof Node) {
+                        msg.append(ParserUtil.stmtToXml(element));
+                    } else if (element instanceof Enum) {
+                        msg.append(((Enum<?>)element).name());
+                    } else {
+                        msg.append(element);
+                    }
+                }
+            }
+        }
+        log.info(msg);
     }
 }

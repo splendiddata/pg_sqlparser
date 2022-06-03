@@ -366,6 +366,8 @@ public class AlterTableCmd extends Node {
                 }
             }
             return result.toString();
+        case AT_SetAccessMethod:
+            return " set access method " + ParserUtil.identifierToSql(name);
         default:
             return ParserUtil.reportUnknownValue("subtype", subtype, getClass());
         }

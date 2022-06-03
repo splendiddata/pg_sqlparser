@@ -12,10 +12,12 @@
 
 BEGIN;
 
-SELECT *
-   INTO TABLE xacttest
-   FROM aggtest;
-
+CREATE TABLE xacttest (a smallint, b real);
+INSERT INTO xacttest VALUES
+  (56, 7.8),
+  (100, 99.097),
+  (0, 0.09561),
+  (42, 324.78);
 INSERT INTO xacttest (a, b) VALUES (777, 777.777);
 
 END;
@@ -28,10 +30,10 @@ BEGIN;
 
 CREATE TABLE disappear (a int4);
 
-DELETE FROM aggtest;
+DELETE FROM xacttest;
 
 -- should be empty
-SELECT * FROM aggtest;
+SELECT * FROM xacttest;
 
 ABORT;
 
@@ -39,7 +41,7 @@ ABORT;
 SELECT oid FROM pg_class WHERE relname = 'disappear';
 
 -- should have members again
-SELECT * FROM aggtest;
+SELECT * FROM xacttest;
 
 
 -- Read-only tests
@@ -512,7 +514,7 @@ DROP TABLE abc;
 
 create temp table i_table (f1 int);
 
--- psql will show only the last result in a multi-statement Query
+-- psql will show all results of a multi-statement Query
 -- Deactivated for SplendidDataTest: SELECT 1\; SELECT 2\; SELECT 3;
 
 -- this implicitly commits:

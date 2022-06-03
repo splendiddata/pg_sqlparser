@@ -40,7 +40,7 @@ public class ImportQual {
 
     @XmlElementWrapper(name = "table_names")
     @XmlElement(name = "table_name")
-    public List<String> table_names;
+    public List<RangeVar> table_names;
 
     @Override
     public String toString() {

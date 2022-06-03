@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -24,6 +21,7 @@ import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 import com.splendiddata.sqlparser.enums.NodeTag;
+import com.splendiddata.sqlparser.enums.OverridingKind;
 
 /**
  * Insert Statement
@@ -40,24 +38,6 @@ import com.splendiddata.sqlparser.enums.NodeTag;
  */
 @XmlRootElement(namespace = "parser")
 public class InsertStmt extends Node {
-    /**
-     * value 0
-     * 
-     * @since 5.0
-     */
-    public static final int OVERRIDING_NOT_SET = 0;
-    /**
-     * value 1
-     * 
-     * @since 5.0
-     */
-    public static final int OVERRIDING_USER_VALUE = 1;
-    /**
-     * value 2
-     * 
-     * @since 5.0
-     */
-    public static final int OVERRIDING_SYSTEM_VALUE = 2;
 
     /** relation to insert into */
     @XmlElement
@@ -86,13 +66,14 @@ public class InsertStmt extends Node {
     public WithClause withClause;
 
     /**
-     * OVERRIDING clause Can be 0, 1 or 2 for resp. {@link #OVERRIDING_NOT_SET}, {@link #OVERRIDING_USER_VALUE} or
-     * {@link #OVERRIDING_SYSTEM_VALUE}
+     * OVERRIDING clause
+     * <p>
+     * In Postgres 15 the type is altered from integer to an enum value
      * 
      * @since 5.0
      */
     @XmlAttribute
-    public int override;
+    public OverridingKind override = OverridingKind.OVERRIDING_NOT_SET;
 
     /**
      * Constructor

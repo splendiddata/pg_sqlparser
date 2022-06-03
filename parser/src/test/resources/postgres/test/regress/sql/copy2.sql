@@ -118,7 +118,7 @@ COPY x from stdin WITH DELIMITER AS ':' NULL AS E'\\X' ENCODING 'sql_ascii';
 -- Deactivated for SplendidDataTest: 4008:8:Delimiter:\::\:
 -- Deactivated for SplendidDataTest: \.
 
-COPY x TO stdout WHERE a = 1;
+-- Deactivated for SplendidDataTest: COPY x TO stdout WHERE a = 1;
 COPY x from stdin WHERE a = 50004;
 -- Deactivated for SplendidDataTest: 50003	24	34	44	54
 -- Deactivated for SplendidDataTest: 50004	25	35	45	55

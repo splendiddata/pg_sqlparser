@@ -310,12 +310,12 @@ public final class ParserUtil {
     }
 
     /**
-     * Returns parser version "14"
+     * Returns parser version "15"
      *
-     * @return String "14"
+     * @return String "15"
      */
     public static String getParserVersion() {
-        return "14";
+        return "15";
     }
 
     /**
@@ -324,7 +324,7 @@ public final class ParserUtil {
      * @return The major version of postgresql.
      */
     public static int getPostgresMajorVersion() {
-        return PostgresVersionMagicInteger.VERSION_FOURTEEN;
+        return PostgresVersionMagicInteger.VERSION_FIFTEEN;
     }
 
     /**
@@ -337,12 +337,12 @@ public final class ParserUtil {
     }
 
     /**
-     * Returns a String specifying for which Postgres version the parser is intended. In this version: "PostgreSQL 13".
+     * Returns a String specifying for which Postgres version the parser is intended. In this version: "PostgreSQL 15".
      *
-     * @return String "PostgreSQL 14"
+     * @return String "PostgreSQL 15"
      */
     public static String getForPosgresVersion() {
-        return "PostgreSQL 14";
+        return "PostgreSQL 15";
     }
 
     /**

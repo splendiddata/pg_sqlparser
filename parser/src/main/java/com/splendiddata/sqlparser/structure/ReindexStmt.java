@@ -126,6 +126,9 @@ public class ReindexStmt extends Node {
                 case "concurrently":
                     result.append("concurrently");
                     break;
+                case "tablespace":
+                    result.append("tablespace ").append(param.arg);
+                    break;
                 default:
                     result.append(param); // This will fail, but at least the error will explain itself
                 }

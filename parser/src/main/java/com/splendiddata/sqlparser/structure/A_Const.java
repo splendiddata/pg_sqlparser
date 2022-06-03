@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -35,13 +35,17 @@ public class A_Const extends Expr {
     /** value (includes type info, see value.h) */
     @XmlElement
     public Value val = new Value();
+    
+    /** SQL NULL constant
+     * @since Postgres 15
+     */
+    public boolean isnull;
 
     /**
      * Constructor
      */
     public A_Const() {
-        super();
-        type = NodeTag.T_A_Const;
+        super(NodeTag.T_A_Const);
     }
 
     /**
@@ -56,6 +60,9 @@ public class A_Const extends Expr {
 
     @Override
     public String toString() {
+        if (isnull) {
+            return "null";
+        }
         switch (val.type) {
         case T_String:
             return ParserUtil.toSqlTextString(val.toString());
@@ -63,6 +70,8 @@ public class A_Const extends Expr {
             return val.toString();
         case T_Float:
             return val.toString();
+        case T_Boolean:
+            return Boolean.toString(val.val.boolval);
         case T_Null:
             return "null";
         case T_BitString:

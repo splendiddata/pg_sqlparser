@@ -15,7 +15,7 @@
  * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
  */
 
-package com.splendiddata.sqlparser.structure;
+package com.splendiddata.sqlparser.plumbing;
 
 /**
  * This is an obsolete class that is required by the generated parser. In C it is a definition that translates to int.

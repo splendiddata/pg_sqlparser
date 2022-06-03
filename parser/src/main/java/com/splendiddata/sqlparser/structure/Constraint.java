@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -88,6 +85,15 @@ public class Constraint extends Node {
     /** @since 5.0 */
     @XmlAttribute
     public AttributeIdentity generated_when;
+
+    /* Fields used for unique constraints (UNIQUE and PRIMARY KEY): */
+    /**
+     * null treatment for UNIQUE constraints
+     * 
+     * @since Postgres 15
+     */
+    @XmlAttribute
+    public boolean nulls_not_distinct;
 
     /** String nodes naming referenced column(s) */
     @XmlElementWrapper(name = "keys")
@@ -169,6 +175,13 @@ public class Constraint extends Node {
     @XmlAttribute
     public int fk_del_action;
 
+    /**
+     * ON DELETE SET NULL/DEFAULT (col1, col2)
+     * 
+     * @since Postgres 15
+     */
+    public List<Node> fk_del_set_cols;
+
     /** skip validation of existing rows? */
     @XmlAttribute
     public boolean skip_validation;
@@ -202,6 +215,7 @@ public class Constraint extends Node {
         }
         this.cooked_expr = original.cooked_expr;
         this.generated_when = original.generated_when;
+        this.nulls_not_distinct = original.nulls_not_distinct;
         if (original.keys != null) {
             this.keys = original.keys.clone();
         }
@@ -232,6 +246,9 @@ public class Constraint extends Node {
         this.fk_matchtype = original.fk_matchtype;
         this.fk_upd_action = original.fk_upd_action;
         this.fk_del_action = original.fk_del_action;
+        if (original.fk_del_set_cols != null) {
+            this.fk_del_set_cols = original.fk_del_set_cols.clone();
+        }
         this.skip_validation = original.skip_validation;
         this.initially_valid = original.initially_valid;
     }
@@ -265,6 +282,9 @@ public class Constraint extends Node {
         }
         if (pk_attrs != null) {
             clone.pk_attrs = pk_attrs.clone();
+        }
+        if (fk_del_set_cols != null) {
+            clone.fk_del_set_cols = fk_del_set_cols.clone();
         }
         return clone;
     }
@@ -335,7 +355,7 @@ public class Constraint extends Node {
             }
 
             if (pktable != null) {
-                result.append("references");
+                result.append(" references");
                 char separator = ' ';
                 if (pktable.schemaname != null) {
                     result.append(separator).append(pktable.schemaname);
@@ -398,6 +418,10 @@ public class Constraint extends Node {
             default:
                 break;
             }
+
+            if (fk_del_set_cols != null) {
+                result.append(' ').append(fk_del_set_cols);
+            }
             break;
         case CONSTR_NOTNULL:
             result.append("not null");
@@ -425,7 +449,9 @@ public class Constraint extends Node {
             break;
         case CONSTR_UNIQUE:
             result.append("unique");
-
+            if (nulls_not_distinct) {
+                result.append(" nulls not distinct");
+            }
             if (keys != null) {
                 result.append(" (");
                 String sep = "";
@@ -501,8 +527,9 @@ public class Constraint extends Node {
             }
             return result.toString();
         default:
-           result.append(" ??? enum value ").append(contype.getClass().getName()).append('.').append(contype).append(" is unknown to ").append(this.getClass().getName()).append(".toString() ???");
-           return result.toString();
+            result.append(" ??? enum value ").append(contype.getClass().getName()).append('.').append(contype)
+                    .append(" is unknown to ").append(this.getClass().getName()).append(".toString() ???");
+            return result.toString();
         }
 
         if (options != null) {

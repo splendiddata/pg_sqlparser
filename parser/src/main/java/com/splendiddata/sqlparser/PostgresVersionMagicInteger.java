@@ -69,4 +69,7 @@ public class PostgresVersionMagicInteger {
     /** Version number 14 */
     public static final int VERSION_FOURTEEN = 14;
 
+    /** Version number 15 */
+    public static final int VERSION_FIFTEEN = 15;
+
 }

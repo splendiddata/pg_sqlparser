@@ -26,7 +26,7 @@ CREATE TABLE collate_test1 (
     b text COLLATE "C" NOT NULL
 );
 
-\d collate_test1
+-- Deactivated for SplendidDataTest: \d collate_test1
 
 CREATE TABLE collate_test_fail (
     a int COLLATE "C",
@@ -37,7 +37,7 @@ CREATE TABLE collate_test_like (
     LIKE collate_test1
 );
 
-\d collate_test_like
+-- Deactivated for SplendidDataTest: \d collate_test_like
 
 CREATE TABLE collate_test2 (
     a int,
@@ -278,8 +278,29 @@ SELECT collation for ((SELECT b FROM collate_test1 LIMIT 1));
 CREATE VIEW collate_on_int AS
 SELECT c1+1 AS c1p FROM
   (SELECT ('4' COLLATE "C")::INT AS c1) ss;
-\d+ collate_on_int
+-- Deactivated for SplendidDataTest: \d+ collate_on_int
 
+-- Check conflicting or redundant options in CREATE COLLATION
+-- LC_COLLATE
+CREATE COLLATION coll_dup_chk (LC_COLLATE = "POSIX", LC_COLLATE = "NONSENSE", LC_CTYPE = "POSIX");
+-- LC_CTYPE
+CREATE COLLATION coll_dup_chk (LC_CTYPE = "POSIX", LC_CTYPE = "NONSENSE", LC_COLLATE = "POSIX");
+-- PROVIDER
+CREATE COLLATION coll_dup_chk (PROVIDER = icu, PROVIDER = NONSENSE, LC_COLLATE = "POSIX", LC_CTYPE = "POSIX");
+-- LOCALE
+CREATE COLLATION case_sensitive (LOCALE = '', LOCALE = "NONSENSE");
+-- DETERMINISTIC
+CREATE COLLATION coll_dup_chk (DETERMINISTIC = TRUE, DETERMINISTIC = NONSENSE, LOCALE = '');
+-- VERSION
+CREATE COLLATION coll_dup_chk (VERSION = '1', VERSION = "NONSENSE", LOCALE = '');
+-- LOCALE conflicts with LC_COLLATE and LC_CTYPE
+CREATE COLLATION coll_dup_chk (LC_COLLATE = "POSIX", LC_CTYPE = "POSIX", LOCALE = '');
+-- LOCALE conflicts with LC_COLLATE
+CREATE COLLATION coll_dup_chk (LC_COLLATE = "POSIX", LOCALE = '');
+-- LOCALE conflicts with LC_CTYPE
+CREATE COLLATION coll_dup_chk (LC_CTYPE = "POSIX", LOCALE = '');
+-- FROM conflicts with any other option
+CREATE COLLATION coll_dup_chk (FROM = "C", VERSION = "1");
 
 --
 -- Clean up.  Many of these table names will be re-used if the user is

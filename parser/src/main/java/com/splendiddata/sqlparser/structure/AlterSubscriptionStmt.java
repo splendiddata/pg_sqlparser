@@ -166,6 +166,10 @@ public class AlterSubscriptionStmt extends Node {
             }
             separator = " with (";
             break;
+        case ALTER_SUBSCRIPTION_SKIP:
+            result.append(" skip");
+            separator = " (";
+            break;
         default:
             return ParserUtil.reportUnknownValue(AlterSubscriptionType.class.getName(), kind, getClass());
         }

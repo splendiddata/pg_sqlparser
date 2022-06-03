@@ -34,9 +34,9 @@ public enum CmdType {
     CMD_INSERT("insert"),
     CMD_DELETE("delete"),
     /** cmds like create, destroy, copy, vacuum, etc. */
-    CMD_UTILITY(""),
+    CMD_UTILITY("utility"),
     /** dummy command for instead nothing rules with qual */
-    CMD_NOTHING("");
+    CMD_NOTHING("do nothing");
 
     /**
      * String containing all values with "|" characters between them, that can be used as argument in a regular

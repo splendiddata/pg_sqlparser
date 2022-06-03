@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.enums;
@@ -219,6 +216,18 @@ public enum NodeTag {
     /** @since 6.0 - Postgres version 11 */
     T_OnConflictExpr,
     T_IntoClause,
+    /** @since Postgres 15 */
+    T_JsonFormat,
+    /** @since Postgres 15 */
+    T_JsonValueExpr,
+    /** @since Postgres 15 */
+    T_JsonScalarExpr,
+    /** @since Postgres 15 */
+    T_JsonSerializeExpr,
+    /** @since Postgres 15 */
+    T_JsonParseExpr,
+    /** @since Postgres 15 */
+    T_JsonReturning,
 
     /*
      * TAGS FOR EXPRESSION STATE NODES (execnodes.h)
@@ -399,6 +408,8 @@ public enum NodeTag {
     T_Value,
     T_Integer,
     T_Float,
+    /** @since Postgres 15 */
+    T_Boolean,
     T_String,
     T_BitString,
     T_Null,
@@ -425,6 +436,8 @@ public enum NodeTag {
     T_InsertStmt,
     T_DeleteStmt,
     T_UpdateStmt,
+    /** @since Postgres 15 */
+    T_MergeStmt,
     T_SelectStmt,
     /** @since 14.0 */
     T_ReturnStmt,
@@ -480,6 +493,8 @@ public enum NodeTag {
     T_CheckPointStmt,
     T_CreateSchemaStmt,
     T_AlterDatabaseStmt,
+    /** @since Postgres 15 */
+    T_AlterDatabaseRefreshCollStmt,
     T_AlterDatabaseSetStmt,
     T_AlterRoleSetStmt,
     T_CreateConversionStmt,
@@ -622,6 +637,8 @@ public enum NodeTag {
     /** @since 14.0 */
     T_CTECycleClause,
     T_CommonTableExpr,
+    /** @since Postgres 15 */
+    T_MergeWhenClause,
     T_RoleSpec,
     /** @since 5.0 */
     T_TriggerTransition,
@@ -637,6 +654,42 @@ public enum NodeTag {
     T_PartitionCmd,
     /** @since 6.0 - Postgres version 11 */
     T_VacuumRelation,
+    /** @since Postgres 15 */
+    T_PublicationObjSpec,
+    /** @since Postgres 15 */
+    T_JsonObjectConstructor,
+    /** @since Postgres 15 */
+    T_JsonArrayConstructor,
+    /** @since Postgres 15 */
+    T_JsonArrayQueryConstructor,
+    /** @since Postgres 15 */
+    T_JsonAggConstructor,
+    /** @since Postgres 15 */
+    T_JsonObjectAgg,
+    /** @since Postgres 15 */
+    T_JsonArrayAgg,
+    /** @since Postgres 15 */
+    T_JsonFuncExpr,
+    /** @since Postgres 15 */
+    T_PublicationTable,
+    /** @since Postgres 15 */
+    T_JsonIsPredicate,
+    /** @since Postgres 15 */
+    T_JsonTable,
+    /** @since Postgres 15 */
+    T_JsonTableColumn,
+    /** @since Postgres 15 */
+    T_JsonTablePlan,
+    /** @since Postgres 15 */
+    T_JsonCommon,
+    /** @since Postgres 15 */
+    T_JsonArgument,
+    /** @since Postgres 15 */
+    T_JsonKeyValue,
+    /** @since Postgres 15 */
+    T_JsonBehavior,
+    /** @since Postgres 15 */
+    T_JsonOutput,
 
     /*
      * TAGS FOR REPLICATION GRAMMAR PARSE NODES (replnodes.h)

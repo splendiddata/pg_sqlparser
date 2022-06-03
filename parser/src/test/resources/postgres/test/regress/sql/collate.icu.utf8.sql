@@ -374,10 +374,8 @@ $$;
 CREATE COLLATION test0 FROM "C"; -- fail, duplicate name
 do $$
 BEGIN
-  EXECUTE 'CREATE COLLATION test1 (provider = icu, lc_collate = ' ||
-          quote_literal(current_setting('lc_collate')) ||
-          ', lc_ctype = ' ||
-          quote_literal(current_setting('lc_ctype')) || ');';
+  EXECUTE 'CREATE COLLATION test1 (provider = icu, locale = ' ||
+          quote_literal(current_setting('lc_collate')) || ');';
 END
 $$;
 -- Deactivated for SplendidDataTest: CREATE COLLATION test3 (provider = icu, lc_collate = 'en_US.utf8'); -- fail, need lc_ctype
@@ -416,6 +414,10 @@ DROP ROLE regress_test_role;
 -- ALTER
 
 ALTER COLLATION "en-x-icu" REFRESH VERSION;
+
+-- also test for database while we are here
+-- Deactivated for SplendidDataTest: SELECT current_database() AS datname \gset
+-- Deactivated for SplendidDataTest: ALTER DATABASE :"datname" REFRESH COLLATION VERSION;
 
 
 -- dependencies

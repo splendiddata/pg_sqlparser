@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -51,6 +48,15 @@ public class CreatePublicationStmt extends Node {
     @XmlElement(name = "table")
     public List<RangeVar> tables;
 
+    /**
+     * Optional list of publication objects
+     * 
+     * @since Postgres 15
+     */
+    @XmlElementWrapper(name = "pubobjects")
+    @XmlElement(name = "pubobject")
+    public List<PublicationObjSpec> pubobjects;
+
     /** Special publication for all tables in db */
     @XmlAttribute
     public boolean for_all_tables;
@@ -77,6 +83,9 @@ public class CreatePublicationStmt extends Node {
         if (original.tables != null) {
             this.tables = original.tables.clone();
         }
+        if (original.pubobjects != null) {
+            this.pubobjects = original.pubobjects.clone();
+        }
         this.for_all_tables = original.for_all_tables;
     }
 
@@ -89,12 +98,16 @@ public class CreatePublicationStmt extends Node {
         if (tables != null) {
             clone.tables = tables.clone();
         }
+        if (pubobjects != null) {
+            clone.pubobjects = pubobjects.clone();
+        }
         return clone;
     }
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder().append("create publication ").append(ParserUtil.identifierToSql(pubname));
+        StringBuilder result = new StringBuilder().append("create publication ")
+                .append(ParserUtil.identifierToSql(pubname));
         if (for_all_tables) {
             result.append(" for all tables");
         } else if (tables != null && !tables.isEmpty()) {
@@ -102,6 +115,13 @@ public class CreatePublicationStmt extends Node {
             for (RangeVar table : tables) {
                 result.append(separator).append(table);
                 separator = ", ";
+            }
+        }
+        if (pubobjects != null && !pubobjects.isEmpty()) {
+            String sep = " for ";
+            for (PublicationObjSpec pubObject : pubobjects) {
+                result.append(sep).append(pubObject);
+                sep = ", ";
             }
         }
         if (options != null && !options.isEmpty()) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -37,7 +37,9 @@ public enum AlterSubscriptionType {
     ALTER_SUBSCRIPTION_DROP_PUBLICATION,
     ALTER_SUBSCRIPTION_PUBLICATION,
     ALTER_SUBSCRIPTION_REFRESH,
-    ALTER_SUBSCRIPTION_ENABLED;
+    ALTER_SUBSCRIPTION_ENABLED,
+    /** @since Postgres 15 */
+    ALTER_SUBSCRIPTION_SKIP;
 
     /**
      * String containing all values with "|" characters between them, that can be used as argument in a regular

@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.grammartojava;
@@ -481,7 +478,7 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
                     /*
                      * The RoleSpec might not be initialised
                      */
-                    .replace("RoleSpec *n;", "RoleSpec n = null;");
+                    .replaceAll("RoleSpec\\s+\\*n;", "RoleSpec n = null;");
         }
     }),
 
@@ -640,11 +637,12 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
         public String processLine(String line) {
             return line
                     /*
-                     * Temporary work around as the "from version" in the create extension statement is still known as an option
-                     * but is not supported any more. A syntax error will be given, but the grammar now attempts to add a String
-                     * to a List<DefElem>, which will not succeed of course.
+                     * Temporary work around as the "from version" in the create extension statement is still known as
+                     * an option but is not supported any more. A syntax error will be given, but the grammar now
+                     * attempts to add a String to a List<DefElem>, which will not succeed of course.
                      */
-                    .replace("{ $$ = lappend($1, $2); }", "{ if (yystack.valueAt (0) instanceof DefElem) { $$ = lappend($1, $2); } }");
+                    .replace("{ $$ = lappend($1, $2); }",
+                            "{ if (yystack.valueAt (0) instanceof DefElem) { $$ = lappend($1, $2); } }");
         }
     }),
     /** @since 14 */
@@ -654,19 +652,104 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
                     /*
                      * Repair some odd casts
                      */
-                    .replaceAll("linitial_node\\(List, castNode\\(List\\.class, (\\$\\d)\\)\\)", "(List)((List)$1).get(0)")
-                    .replaceAll("lsecond_node\\(Alias, castNode\\(List\\.class, (\\$\\d)\\)\\)", "(Alias)((List)$1).get(1)");
+                    .replaceAll("linitial_node\\(List, castNode\\(List\\.class, (\\$\\d)\\)\\)",
+                            "(List)((List)$1).get(0)")
+                    .replaceAll("lsecond_node\\(Alias, castNode\\(List\\.class, (\\$\\d)\\)\\)",
+                            "(Alias)((List)$1).get(1)");
         }
     }),
     /** @since 14 */
     PLpgSQL_Expr(new GrammarRuleSpecialProcessing() {
         public String processLine(String line) {
-            return line
-                    .replace("if ($9)", "if ($9 != null)")
-                    .replace("if (!n->sortClause" , "if (n.sortClause == null");
+            return line.replace("if ($9)", "if ($9 != null)").replace("if (!n->sortClause", "if (n.sortClause == null");
         }
     }),
-
+    /** @since Postgres 15 */
+    key_actions(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line.replaceAll("n->(\\w+)\\s*=\\s*palloc\\(sizeof\\((\\w+)\\)\\);", "n.$1 = new $2();");
+        }
+    }),
+    /** @since Postgres 15 */
+    NumericOnly(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line.replaceAll("(\\s+)Float(\\s+)", "$1Value$2");
+        }
+    }),
+    /** @since Postgres 15 */
+    key_update(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line.replace("->cols", "->cols != null");
+        }
+    }),
+    /** @since Postgres 15 */
+    PublicationObjSpec(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line.replace("if ($2 || $3)", "if ($2 != null || $3 != null)")
+                    .replace("$$->name", "((PublicationObjSpec)$$).name")
+                    .replace("$$->location", "((PublicationObjSpec)$$).location");
+        }
+    }),
+    /** @since Postgres 15 */
+    extended_relation_expr(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line.replace("$$->inh", "((RangeVar)$$).inh").replace("$$->alias", "((RangeVar)$$).alias");
+        }
+    }),
+    /** @since Postgres 15 */
+    JsonType(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line.replace("$$->location", "((TypeName)$$).location");
+        }
+    }),
+    /** @since Postgres 15 */
+    json_table_default_plan_choices(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line.replace("$1", "((Integer)$1).intValue()");
+        }
+    }),
+    /** @since Postgres 15 */
+    zone_value(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line.replace(".ival.ival", ".val.ival");
+        }
+    }),
+    /** @since Postgres 15 */
+    json_table_regular_column_definition(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line.replace("$5", "!JsonQuotes.JS_QUOTES_KEEP.equals($5)");
+        }
+    }),
+    /** @since Postgres 15 */
+    json_value_on_behavior_clause_opt(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line.replace("{", "{ yyval = new YYSTypeJsonOnBehaviour(); ").replace("$$",
+                    "((YYSTypeJsonOnBehaviour)$$)");
+        }
+    }),
+    /** @since Postgres 15 */
+    json_query_on_behavior_clause_opt(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line.replace("{", "{ yyval = new YYSTypeJsonOnBehaviour(); ").replace("$$",
+                    "((YYSTypeJsonOnBehaviour)$$)");
+        }
+    }),
+    /** @since Postgres 15 */
+    json_wrapper_clause_opt(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line.replace("0;", "JsonWrapper.JSW_NONE;");
+        }
+    }),
+//
+// Example of injecting dumpYystack
+//    /**
+//     * Dump the yystack to debug
+//     */
+//    json_query_expr(new GrammarRuleSpecialProcessing() {
+//        public String processLine(String line) {
+//            return line.replaceAll("^(\\s*)\\{", "$1{\n$1    dumpYystack(\"json_query_expr:\", yystack.height, i->yystack.valueAt(i));");
+//        }
+//    }),
     /**
      * We're in the epilog section
      */

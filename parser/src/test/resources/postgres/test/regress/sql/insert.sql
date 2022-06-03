@@ -110,7 +110,7 @@ create rule irule2 as on insert to inserttest2 do also
 create rule irule3 as on insert to inserttest2 do also
   insert into inserttest (f4[1].if1, f4[1].if2[2])
   select new.f1, new.f2;
-\d+ inserttest2
+-- Deactivated for SplendidDataTest: \d+ inserttest2
 
 drop table inserttest2;
 drop table inserttest;
@@ -258,33 +258,6 @@ insert into list_parted (b) values (1);
 select tableoid::regclass::text, a, min(b) as min_b, max(b) as max_b from list_parted group by 1, 2 order by 1;
 
 -- direct partition inserts should check hash partition bound constraint
-
--- Use hand-rolled hash functions and operator classes to get predictable
--- result on different machines.  The hash function for int4 simply returns
--- the sum of the values passed to it and the one for text returns the length
--- of the non-empty string value passed to it or 0.
-
-create or replace function part_hashint4_noop(value int4, seed int8)
-returns int8 as $$
-select value + seed;
-$$ language sql immutable;
-
-create operator class part_test_int4_ops
-for type int4
-using hash as
-operator 1 =,
-function 2 part_hashint4_noop(int4, int8);
-
-create or replace function part_hashtext_length(value text, seed int8)
-RETURNS int8 AS $$
-select length(coalesce(value, ''))::int8
-$$ language sql immutable;
-
-create operator class part_test_text_ops
-for type text
-using hash as
-operator 1 =,
-function 2 part_hashtext_length(text, int8);
 
 create table hash_parted (
 	a int

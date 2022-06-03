@@ -133,6 +133,17 @@ public class AbstractCProgram implements SqlParserErrorReporter {
     }
 
     /**
+     * Returns a formatted error detail message
+     *
+     * @param format
+     * @param args
+     * @return String
+     */
+    static String errdetail(String format, Object... args) {
+        return String.format(format, args);
+    }
+
+    /**
      * Report an error
      *
      * @param error
@@ -158,7 +169,11 @@ public class AbstractCProgram implements SqlParserErrorReporter {
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("report error: " + errorData);
+            if (log.isTraceEnabled()) {
+                log.debug("report error: " + errorData, new Exception("trace"));
+            } else {
+                log.debug("report error: " + errorData);
+            }
         }
         errorReporter.reportError(errorData);
     }

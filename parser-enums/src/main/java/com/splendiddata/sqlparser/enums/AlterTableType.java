@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -105,6 +105,12 @@ public enum AlterTableType {
     AT_AddOidsRecurse,
     /** SET WITHOUT OIDS */
     AT_DropOids,
+    /**
+     * SET ACCESS METHOD
+     * 
+     * @since Postgres 15
+     */
+    AT_SetAccessMethod,
     /** SET TABLESPACE */
     AT_SetTableSpace,
     /** SET (...) -- AM specific parameters */

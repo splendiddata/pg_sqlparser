@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -40,6 +40,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import com.splendiddata.sqlparser.enums.A_Expr_Kind;
+import com.splendiddata.sqlparser.enums.AlterPublicationAction;
 import com.splendiddata.sqlparser.enums.AlterSubscriptionType;
 import com.splendiddata.sqlparser.enums.AlterTSConfigType;
 import com.splendiddata.sqlparser.enums.AlterTableType;
@@ -60,6 +61,16 @@ import com.splendiddata.sqlparser.enums.GrantTargetType;
 import com.splendiddata.sqlparser.enums.GroupingSetKind;
 import com.splendiddata.sqlparser.enums.ImportForeignSchemaType;
 import com.splendiddata.sqlparser.enums.JoinType;
+import com.splendiddata.sqlparser.enums.JsonBehaviorType;
+import com.splendiddata.sqlparser.enums.JsonEncoding;
+import com.splendiddata.sqlparser.enums.JsonExprOp;
+import com.splendiddata.sqlparser.enums.JsonFormatType;
+import com.splendiddata.sqlparser.enums.JsonQuotes;
+import com.splendiddata.sqlparser.enums.JsonTableColumnType;
+import com.splendiddata.sqlparser.enums.JsonTablePlanJoinType;
+import com.splendiddata.sqlparser.enums.JsonTablePlanType;
+import com.splendiddata.sqlparser.enums.JsonValueType;
+import com.splendiddata.sqlparser.enums.JsonWrapper;
 import com.splendiddata.sqlparser.enums.LimitOption;
 import com.splendiddata.sqlparser.enums.LockClauseStrength;
 import com.splendiddata.sqlparser.enums.LockWaitPolicy;
@@ -69,8 +80,10 @@ import com.splendiddata.sqlparser.enums.NullTestType;
 import com.splendiddata.sqlparser.enums.ObjectType;
 import com.splendiddata.sqlparser.enums.OnCommitAction;
 import com.splendiddata.sqlparser.enums.OnConflictAction;
+import com.splendiddata.sqlparser.enums.OverridingKind;
 import com.splendiddata.sqlparser.enums.PartitionRangeDatumKind;
 import com.splendiddata.sqlparser.enums.PartitionStrategy;
+import com.splendiddata.sqlparser.enums.PublicationObjSpecType;
 import com.splendiddata.sqlparser.enums.ReindexObjectType;
 import com.splendiddata.sqlparser.enums.RelPersistence;
 import com.splendiddata.sqlparser.enums.ReplicaIdentityType;
@@ -291,9 +304,7 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                                             + "\n%type <Integer>  opt_column cursor_options opt_hold opt_set_data")
                             .replaceAll("%type <ival>\\s+OptTemp", "%type <RelPersistence> OptTemp")
                             .replaceAll("%type <ival>\\s+generated_when override_kind",
-                                    "%type <AttributeIdentity> generated_when\n%type <Integer> override_kind")
-                            .replaceAll("%type <ival>\\s+key_actions key_delete key_match key_update key_action",
-                                    "%type <Integer> key_actions key_delete key_update key_action\n%type <FkConstrMatch> key_match")
+                                    "%type <AttributeIdentity> generated_when\n%type <OverridingKind> override_kind")
                             .replace("%type <list>", "%type <List>").replace("%type <ival>", "%type <Integer>")
                             .replace("%type <defelt>", "%type <DefElem>")
                             .replace("%type <dbehavior>", "%type <DropBehavior>")
@@ -329,7 +340,25 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                             .replace("%type <setquantifier>", "%type <SetQuantifier>")
                             .replace("%type <groupclause>", "%type <GroupClause>")
                             .replace("%type <alias>", "%type <Alias>").replace("%type <into>", "%type <IntoClause>")
-                            .replace("%type <with>", "%type <WithClause>");
+                            .replace("%type <with>", "%type <WithClause>")
+                            .replace("%type <keyaction>", "%type <KeyAction>")
+                            .replace("%type <keyactions>", "%type <KeyActions>")
+                            .replace("%type <mergewhen>", "%type <MergeWhenClause>")
+                            .replace("%type <publicationobjectspec>", "%type <PublicationObjSpec>")
+                            .replaceAll("%type\\s<Integer>\\s+key_match", "%type <FkConstrMatch> key_match")
+                            .replaceAll("%type\\s<Integer>\\s+json_encoding", "%type <JsonEncoding> json_encoding")
+                            .replaceAll("^\\s+json_table_default_plan_choices",
+                                    "%type <Integer> json_table_default_plan_choices")
+                            .replaceAll("^\\s+json_predicate_type_constraint_opt",
+                                    "%type <JsonValueType> json_predicate_type_constraint_opt")
+                            .replace("%type <on_behavior>", "%type <YYSTypeJsonOnBehaviour>")
+                            .replace("%type <jsbehavior>", "%type <JsonBehavior>")
+                            .replace("%type <js_quotes>", "%type <JsonQuotes>")
+                            .replaceAll("^\\s+json_wrapper_clause_opt", "%type <JsonWrapper> json_wrapper_clause_opt")
+                            .replaceAll("^\\s+json_conditional_or_unconditional_opt",
+                                    "%type <Integer> json_conditional_or_unconditional_opt")
+
+                    ;
                     /*
                      * declaration lines are written unchanged
                      */
@@ -576,13 +605,71 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                         /*
                          * SetQuantifier from "enum".
                          */
-                        .replaceAll("(\\W)(" + SetQuantifier.REPLACEMENT_REGEXP_PART + ")(\\W)",
-                                "$1SetQuantifier.$2$3");
+                        .replaceAll("(\\W)(" + SetQuantifier.REPLACEMENT_REGEXP_PART + ")(\\W)", "$1SetQuantifier.$2$3")
+                        /*
+                         * SetQuantifier from "enum".
+                         */
+                        .replaceAll("(\\W)(" + OverridingKind.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1OverridingKind.$2$3")
+                        /*
+                         * JsonWrapper from "enum".
+                         */
+                        .replaceAll("(\\W)(" + JsonWrapper.REPLACEMENT_REGEXP_PART + ")(\\W)", "$1JsonWrapper.$2$3")
+                        /*
+                         * JsonQuotes from "enum".
+                         */
+                        .replaceAll("(\\W)(" + JsonQuotes.REPLACEMENT_REGEXP_PART + ")(\\W)", "$1JsonQuotes.$2$3")
+                        /*
+                         * JsonTableColumnType from "enum".
+                         */
+                        .replaceAll("(\\W)(" + JsonTableColumnType.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1JsonTableColumnType.$2$3")
+                        /*
+                         * JsonFormatType from "enum".
+                         */
+                        .replaceAll("(\\W)(" + JsonFormatType.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1JsonFormatType.$2$3")
+                        /*
+                         * JsonEncoding from "enum".
+                         */
+                        .replaceAll("(\\W)(" + JsonEncoding.REPLACEMENT_REGEXP_PART + ")(\\W)", "$1JsonEncoding.$2$3")
+                        /*
+                         * JsonTablePlanType from "enum".
+                         */
+                        .replaceAll("(\\W)(" + JsonTablePlanType.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1JsonTablePlanType.$2$3")
+                        /*
+                         * JsonTablePlanJoinType from "enum".
+                         */
+                        .replaceAll("(\\W)(" + JsonTablePlanJoinType.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1JsonTablePlanJoinType.$2$3")
+                        /*
+                         * PublicationObjSpecType from "enum".
+                         */
+                        .replaceAll("(\\W)(" + PublicationObjSpecType.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1PublicationObjSpecType.$2$3")
+                        /*
+                         * AlterPublicationAction from "enum".
+                         */
+                        .replaceAll("(\\W)(" + AlterPublicationAction.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1AlterPublicationAction.$2$3")
+                        /*
+                         * JsonBehaviorType from "enum".
+                         */
+                        .replaceAll("(\\W)(" + JsonBehaviorType.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1JsonBehaviorType.$2$3")
+                        /*
+                         * JsonValueType from "enum".
+                         */
+                        .replaceAll("(\\W)(" + JsonValueType.REPLACEMENT_REGEXP_PART + ")(\\W)", "$1JsonValueType.$2$3")
+                        /*
+                         * JsonExprOp from "enum".
+                         */
+                        .replaceAll("(\\W)(" + JsonExprOp.REPLACEMENT_REGEXP_PART + ")(\\W)", "$1JsonExprOp.$2$3");
                 /*
                  * Replace some constants that are defined in the type that uses them
                  */
-                convertedLine = convertedLine.replace("OVERRIDING_USER_VALUE", "InsertStmt.OVERRIDING_USER_VALUE")
-                        .replace("OVERRIDING_SYSTEM_VALUE", "InsertStmt.OVERRIDING_SYSTEM_VALUE")
+                convertedLine = convertedLine
                         .replaceAll("(?<=\\W)(CREATE_TABLE_LIKE_\\w+)(?=\\W)", "TableLikeClause.$1")
                         .replaceAll("(?<=\\W)(FKCONSTR_ACTION_\\w+)(?=\\W)", "Constraint.$1")
                         .replaceAll("(?<=\\W)(CLUOPT_\\w+)(?=\\W)", "ClusterStmt.$1")
@@ -634,6 +721,8 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                         if (convertedLine.matches("\\s*\\(errcode.*")) {
                             convertedLine = convertedLine.replace("(errcode(", " ErrCode.").replace(")", "");
                             bracketsRemoved++;
+                        } else if (convertedLine.matches("\\s*errcode.*")) {
+                            convertedLine = convertedLine.replace("errcode(", " ErrCode.").replace(")", "");
                         } else if (convertedLine.matches("\\s*\\(errmsg.*")) {
                             convertedLine = convertedLine.replace("(errmsg", " errmsg");
                             bracketsRemoved++;
@@ -674,6 +763,10 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                      * Change the c "->" pointer constructs to "."
                      */
                     convertedLine = convertedLine.replace("->", ".")
+                            /*
+                             * But i->yystack.valueAt(i) is intended to be a closure, so repair that. 
+                             */
+                            .replaceAll("(\\w+)\\.yystack\\.valueAt\\(\\1\\)", "$1->yystack.valueAt($1)")
                             /*
                              * Replace all char* by String
                              */
@@ -845,7 +938,7 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                 convertedLine = "A_Const " + input;
                 break;
             case "makeBoolAConst":
-                convertedLine = "TypeCast " + input;
+                convertedLine = "A_Const " + input;
                 break;
             case "makeSetOp":
                 convertedLine = "SelectStmt " + input;
@@ -870,6 +963,9 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                 break;
             case "makeRecursiveViewSelect":
                 convertedLine = "SelectStmt " + input;
+                break;
+            case "doNegateFloat":
+                convertedLine = "void " + input.replace("(Float", "(Value");
                 break;
             case "SplitColQualList":
                 /*
@@ -899,11 +995,13 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                 /*
                  * The return type is A_Const, so better define it that way
                  */
-                convertedLine = input.replace("Node *n", "A_Const n");
+                convertedLine = input.replaceAll("Node\\s+\\*n", "A_Const n")
+                        .replaceAll("castNode\\(Float.class,\\s*v\\)->fval", "((Value)v).val.str")
+                        .replaceAll("castNode\\(Integer.class,\\s*v\\)->ival", "((Value)v).val.ival");
                 break;
-            case "makeRangeVarFromAnyName":
+            case "makeRangeVarFromQualifiedName":
                 /*
-                 * The makeRangeVarFromAnyName itself is not changed, but the comment following it belongs to
+                 * The makeRangeVarFromQualifiedName itself is not changed, but the comment following it belongs to
                  * SplitColQualList, which is to be removed completely
                  */
                 convertedLine = input.replaceAll("^\\/\\*.*$", "");
@@ -944,6 +1042,16 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                         .replace("(!stmt->sortClause &&", "(stmt.sortClause == null &&")
                         .replace("&& stmt->lockingClause)", "&& stmt->lockingClause != null)")
                         .replace("lfirst_node(LockingClause, lc)", "(LockingClause)lc.data");
+                break;
+            case "makeOrderedSetArgs":
+                convertedLine = input.replaceAll("(\\s)Integer(\\s)", "$1Value$2");
+                break;
+            case "doNegate":
+                convertedLine = input.replace("con->val.fval", "con.val").replaceAll("^\\{",
+                        "{\n    if (n instanceof TypeCast)\n    {\n        ((TypeCast)n).arg = doNegate(((TypeCast)n).arg, location);\n        return n;\n    }");
+                break;
+            case "preprocess_pubobj_list":
+                convertedLine = input.replaceAll("!(\\w[\\w\\.\\->]*)", "$1 == null");
                 break;
             default:
                 convertedLine = input;
@@ -988,6 +1096,9 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                  * In Java zero or null is not the same as boolean false
                  */
                 .replaceAll("if\\s*\\(\\s*(\\w*|\\w*->\\w*)\\s*\\)", "if ($1 != null)")
+                .replaceAll("if\\s*\\(\\s*!(\\w*|\\w*->\\w*)\\s*\\)", "if ($1 == null)")
+                .replaceAll("if\\s*\\(\\s*(\\w*|\\w*->\\w*)\\s*&&\\s*(\\w*|\\w*(->\\w*)+)\\)",
+                        "if ($1 != null && $2 != null)")
                 /*
                  * End condition in a for loop
                  */
@@ -1027,7 +1138,13 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                 /*
                  * Remove the cast to (Node) from the return statement
                  */
-                .replaceAll("return\\s+\\(Node\\s*\\*\\s*\\)\\s*", "return ");
+                .replaceAll("return\\s+\\(Node\\s*\\*\\s*\\)\\s*", "return ")
+                /*
+                 * 
+                 */
+                .replace(".ival.ival", ".val.ival").replace(".sval.sval", ".val.str").replace(".fval.fval", ".val.str")
+                .replace(".boolval.boolval", ".val.boolval").replace(".bsval.bsval", ".val.str")
+                .replaceAll("->val.\\w+val.type", "->val.type");
         return convertedLine;
     }
 
@@ -1038,9 +1155,7 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
      *            The output file to write to
      */
     private void writeHeading(PrintWriter out) {
-        out.print("%define package ");
-        out.println(packageName);
-        bisonVersion.insertHeadingLines(out);
+        bisonVersion.insertHeadingLines(out, packageName);
         out.println("%parse-param   {core_yyscan_t yyscanner}");
         out.println("%lex-param   {SqlScanner yyscanner}");
         out.println("%code imports {");
@@ -1049,6 +1164,8 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
         out.println();
         out.println("import com.splendiddata.sqlparser.enums.*;");
         out.println("import com.splendiddata.sqlparser.plumbing.base_yy_extra_type;");
+        out.println("import com.splendiddata.sqlparser.plumbing.YYLTYPE;");
+        out.println("import com.splendiddata.sqlparser.plumbing.YYSTypeJsonOnBehaviour;");
         out.println("import com.splendiddata.sqlparser.structure.*;");
         out.println("}");
         out.println("%code {");

@@ -4,7 +4,10 @@
  * So input for the copy statements is removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
-
+ 
+ 
+-- directory paths are passed to us in environment variables
+-- Deactivated for SplendidDataTest: \getenv abs_srcdir PG_ABS_SRCDIR
 
 --
 -- Sanity checks for text search catalogs
@@ -46,6 +49,17 @@ RIGHT JOIN pg_ts_config_map AS m
     ON (tt.cfgid=m.mapcfg AND tt.tokid=m.maptokentype)
 WHERE
     tt.cfgid IS NULL OR tt.tokid IS NULL;
+
+-- Load some test data
+CREATE TABLE test_tsvector(
+	t text,
+	a tsvector
+);
+-- Deactivated for SplendidDataTest: 
+-- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/tsearch.data'
+COPY test_tsvector FROM :'filename';
+
+ANALYZE test_tsvector;
 
 -- test basic text search behavior without indexes, then with
 
@@ -145,8 +159,8 @@ CREATE INDEX wowidx1 ON test_tsvector USING gist (a tsvector_ops(siglen=100,foo=
 CREATE INDEX wowidx1 ON test_tsvector USING gist (a tsvector_ops(siglen=100, siglen = 200));
 
 CREATE INDEX wowidx2 ON test_tsvector USING gist (a tsvector_ops(siglen=1));
-
-\d test_tsvector
+-- Deactivated for SplendidDataTest: 
+-- Deactivated for SplendidDataTest: \d test_tsvector
 
 DROP INDEX wowidx;
 
@@ -180,8 +194,8 @@ SELECT count(*) FROM test_tsvector WHERE a @@ '!wd:D';
 DROP INDEX wowidx2;
 
 CREATE INDEX wowidx ON test_tsvector USING gist (a tsvector_ops(siglen=484));
-
-\d test_tsvector
+-- Deactivated for SplendidDataTest: 
+-- Deactivated for SplendidDataTest: \d test_tsvector
 
 EXPLAIN (costs off) SELECT count(*) FROM test_tsvector WHERE a @@ 'wr|qh';
 
@@ -560,16 +574,16 @@ to_tsquery('english','Lorem') && phraseto_tsquery('english','ullamcorper urna'),
 --Rewrite sub system
 
 CREATE TABLE test_tsquery (txtkeyword TEXT, txtsample TEXT);
-\set ECHO none
-\copy test_tsquery from stdin
--- Deactivated for SplendidDataTest: 'New York'	new & york | big & apple | nyc
+-- Deactivated for SplendidDataTest: \set ECHO none
+-- Deactivated for SplendidDataTest: \copy test_tsquery from stdin
+-- Deactivated for SplendidDataTest: 'New York'	new <-> york | big <-> apple | nyc
 -- Deactivated for SplendidDataTest: Moscow	moskva | moscow
 -- Deactivated for SplendidDataTest: 'Sanct Peter'	Peterburg | peter | 'Sanct Peterburg'
--- Deactivated for SplendidDataTest: 'foo bar qq'	foo & (bar | qq) & city
+-- Deactivated for SplendidDataTest: foo & bar & qq	foo & (bar | qq) & city
 -- Deactivated for SplendidDataTest: 1 & (2 <-> 3)	2 <-> 4
 -- Deactivated for SplendidDataTest: 5 <-> 6	5 <-> 7
 -- Deactivated for SplendidDataTest: \.
-\set ECHO all
+-- Deactivated for SplendidDataTest: \set ECHO all
 
 ALTER TABLE test_tsquery ADD COLUMN keyword tsquery;
 UPDATE test_tsquery SET keyword = to_tsquery('english', txtkeyword);

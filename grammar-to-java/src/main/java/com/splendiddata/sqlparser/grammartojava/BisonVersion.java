@@ -30,7 +30,9 @@ public enum BisonVersion {
         }
 
         @Override
-        public void insertHeadingLines(PrintWriter out) {
+        public void insertHeadingLines(PrintWriter out, String packageName) {
+            out.print("%define package ");
+            out.println(packageName);
             out.println("%define parser_class_name PgSqlParser");
             out.println("%define api.position.type Position");
             out.println("%define api.location.type Location");
@@ -102,7 +104,9 @@ public enum BisonVersion {
         }
 
         @Override
-        public void insertHeadingLines(PrintWriter out) {
+        public void insertHeadingLines(PrintWriter out, String packageName) {
+            out.print("%define package ");
+            out.println(packageName);
             out.println("%define parser_class_name {PgSqlParser}");
             out.println("%define api.position.type {Position}");
             out.println("%define api.location.type {Location}");
@@ -167,7 +171,9 @@ public enum BisonVersion {
         }
 
         @Override
-        public void insertHeadingLines(PrintWriter out) {
+        public void insertHeadingLines(PrintWriter out, String packageName) {
+            out.print("%define package ");
+            out.println(packageName);
             out.println("%define api.parser.class {PgSqlParser}");
             out.println("%define api.position.type {Position}");
             out.println("%define api.location.type {Location}");
@@ -232,7 +238,72 @@ public enum BisonVersion {
         }
 
         @Override
-        public void insertHeadingLines(PrintWriter out) {
+        public void insertHeadingLines(PrintWriter out, String packageName) {
+            out.print("%define package ");
+            out.println(packageName);
+            out.println("%define api.parser.class {PgSqlParser}");
+            out.println("%define api.position.type {Position}");
+            out.println("%define api.location.type {Location}");
+            out.println("%define api.parser.extends {AbstractParser}");
+            out.println("%define api.parser.public");
+        }
+
+        @Override
+        public void initYYActionBlock(PrintWriter out, int submethodNumber) {
+            out.println();
+            out.print("  private int yyaction_");
+            out.print(submethodNumber);
+            out.println("(int yyn, YYStack yystack, int yylen) {");
+            out.println("      Object yyval;");
+            out.println("      Location yyloc = yylloc (yystack, yylen);");
+            out.println();
+            out.println("      /* If YYLEN is nonzero, implement the default value of the action:");
+            out.println("         '$$ = $1'.  Otherwise, use the top of the stack.");
+            out.println();
+            out.println("         Otherwise, the following line sets YYVAL to garbage.");
+            out.println("         This behavior is undocumented and Bison");
+            out.println("          users should not rely upon it.  */");
+            out.println("      if (yylen > 0) {");
+            out.println("            yyval = yystack.valueAt (yylen - 1);");
+            out.println("      } else {");
+            out.println("            yyval = yystack.valueAt (0);");
+            out.println("      }");
+            out.println();
+            out.println("      switch (yyn) {");
+        }
+
+        @Override
+        public void finishYYActionBlock(PrintWriter out) {
+            out.println("    }");
+            out.println();
+            out.println("    yystack.pop (yylen);");
+            out.println("    yylen = 0;");
+            out.println();
+            out.println("    /* Shift the result of the reduction.  */");
+            out.println("    int yystate = yyLRGotoState (yystack.stateAt (0), yyr1_[yyn]);");
+            out.println("    yystack.push (yystate, yyval, yyloc);");
+            out.println("    return YYNEWSTATE;");
+            out.println("  }");
+        }
+    },
+    BISON_VERSION_3_7 {
+        @Override
+        public boolean replacePrefixLine(String line, PrintWriter out) {
+            if ("%name-prefix=\"base_yy\"".equals(line)) {
+                out.println("%define api.prefix {base_yy}");
+                return true;
+            }
+            if ("%pure-parser".equals(line)) {
+                // Parsers in Java are always "pure", so skip the line
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public void insertHeadingLines(PrintWriter out, String packageName) {
+            out.print("%define api.package ");
+            out.println(packageName);
             out.println("%define api.parser.class {PgSqlParser}");
             out.println("%define api.position.type {Position}");
             out.println("%define api.location.type {Location}");
@@ -295,8 +366,10 @@ public enum BisonVersion {
      *
      * @param out
      *            The PrintWriter into which the heading lines are to be inserted
+     * @param packageName
+     *            The package name of the implemented parser
      */
-    public abstract void insertHeadingLines(PrintWriter out);
+    public abstract void insertHeadingLines(PrintWriter out, String packageName);
 
     /**
      * Prints the first part of initYYAction_nn() method in the JavaParserConverter
@@ -347,8 +420,12 @@ public enum BisonVersion {
                     case "4":
                         version = BISON_VERSION_3_3;
                         break;
-                    default:
+                    case "5":
+                    case "6":
                         version = BISON_VERSION_3_5;
+                        break;
+                    default:
+                        version = BISON_VERSION_3_7;
                         break;
                     }
                 }
@@ -356,7 +433,7 @@ public enum BisonVersion {
                 break;
             }
         }
-//        System.out.println("BisonVersion.fromVersionString(" + versionString + ") = " + version);
+        //        System.out.println("BisonVersion.fromVersionString(" + versionString + ") = " + version);
         return version;
     }
 

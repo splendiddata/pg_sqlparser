@@ -1,18 +1,15 @@
 /*
  * Copyright (c) Splendid Data Product Development B.V. 2020
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser;
@@ -95,7 +92,7 @@ public class SqlFileRegressionTest {
             log.error("getSqlTestFiles()->failed, basde directory = " + projectDirectory.toAbsolutePath(), e);
         }
 
-        return paths.stream();
+        return paths.stream().sorted();
     }
 
     @ParameterizedTest
@@ -104,7 +101,7 @@ public class SqlFileRegressionTest {
         String fileName = file.getFileName().toString();
         parserErrors.clear();
 
-        log.debug("start " + fileName);
+        log.info("start " + fileName);
         if (log.isTraceEnabled()) {
             StringWriter str = new StringWriter();
             try (PrintWriter out = new PrintWriter(str);
@@ -143,7 +140,7 @@ public class SqlFileRegressionTest {
                             "The parsed and reparsed statement " + ParserUtil.stmtToXml(originallyParsedStatement)
                                     + " should give the same result in: " + fileName);
                 }
-                
+
                 /*
                  * Test clone
                  */
@@ -151,11 +148,12 @@ public class SqlFileRegressionTest {
                 Assertions.assertEquals(sql, clonedStatement.toString(),
                         "The cloned statement " + ParserUtil.stmtToXml(originallyParsedStatement)
                                 + " should give the same result in: " + fileName);
-                
+
                 /*
                  * Test copy constructor
                  */
-                Node copiedStatement = originallyParsedStatement.getClass().getConstructor(originallyParsedStatement.getClass()).newInstance(originallyParsedStatement);
+                Node copiedStatement = originallyParsedStatement.getClass()
+                        .getConstructor(originallyParsedStatement.getClass()).newInstance(originallyParsedStatement);
                 Assertions.assertEquals(sql, copiedStatement.toString(),
                         "The copied statement " + ParserUtil.stmtToXml(originallyParsedStatement)
                                 + " should give the same result in: " + fileName);
@@ -165,7 +163,7 @@ public class SqlFileRegressionTest {
             Assertions.fail("file: " + fileName + " threw:" + e);
         }
 
-        log.debug("finish " + fileName);
+        log.info("finish " + fileName);
     }
 
     /**
@@ -182,8 +180,10 @@ public class SqlFileRegressionTest {
         case T_Integer:
         case T_Float:
         case T_Null:
+        case T_Boolean:
+        case T_BitString:
             Assertions.assertEquals(Value.class, node.getClass(),
-                    "Value must be T_String, T_Integer or T_FLoat in: " + node);
+                    "Value must be T_String, T_Integer, T_FLoat, T_Boolean, T_BitString or T_Null in: " + node);
             break;
         default:
             Assertions.assertEquals("T_" + node.getClass().getSimpleName(), node.type.name(),
@@ -234,6 +234,12 @@ public class SqlFileRegressionTest {
                         cbuf[off + i + 1] = '-';
                         cbuf[off + i + 2] = '-';
                     }
+                } else if (cbuf[off + i] == ':' && i < result - 1 && cbuf[off + i + 1] == '\'' && i > 0
+                        && (cbuf[off + i - 1] == ' ' || cbuf[off + i - 1] == '(')) {
+                    /*
+                     * Remove the colon from :'some_filename' constructs
+                     */
+                    cbuf[off + i] = ' ';
                 }
             }
             return result;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -29,7 +29,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * @since 14.0
  */
 @XmlRootElement(namespace = "parser")
-public class GroupClause {
+public class GroupClause implements Cloneable {
 
     @XmlAttribute
     public boolean distinct;

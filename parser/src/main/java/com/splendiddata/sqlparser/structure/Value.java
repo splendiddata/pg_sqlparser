@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -55,6 +52,7 @@ public class Value extends Node {
      *            <li>{@link com.splendiddata.sqlparser.enums.NodeTag#T_Value}</li>
      *            <li>{@link com.splendiddata.sqlparser.enums.NodeTag#T_Integer}</li>
      *            <li>{@link com.splendiddata.sqlparser.enums.NodeTag#T_Float}</li>
+     *            <li>{@link com.splendiddata.sqlparser.enums.NodeTag#T_Boolean}</li>
      *            <li>{@link com.splendiddata.sqlparser.enums.NodeTag#T_String}</li>
      *            <li>{@link com.splendiddata.sqlparser.enums.NodeTag#T_BitString}</li>
      *            <li>{@link com.splendiddata.sqlparser.enums.NodeTag#T_Null}</li>
@@ -83,6 +81,9 @@ public class Value extends Node {
                 return new StringBuilder().append('(').append(result).append(')').toString();
             }
             return result;
+        }
+        if (NodeTag.T_Boolean.equals(type)) {
+            return Boolean.toString(val.boolval);
         }
         return val.toString();
     }

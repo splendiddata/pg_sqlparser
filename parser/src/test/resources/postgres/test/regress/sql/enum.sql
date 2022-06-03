@@ -4,8 +4,8 @@
  * So input for the copy statements is removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
-
-
+ 
+ 
 --
 -- Enum tests
 --

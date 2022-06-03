@@ -68,7 +68,7 @@ SELECT txid_snapshot '1:9223372036854775808:3';
 BEGIN;
 SELECT txid_current_if_assigned() IS NULL;
 -- Deactivated for SplendidDataTest: SELECT txid_current() \gset
--- Deactivated for SplendidDataTest: SELECT txid_current_if_assigned() IS NOT DISTINCT FROM BIGINT :'txid_current';
+SELECT txid_current_if_assigned() IS NOT DISTINCT FROM BIGINT :'txid_current';
 COMMIT;
 
 -- test xid status functions

@@ -1,12 +1,25 @@
 /*
  * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So input for the copy statements is removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
+ 
  
 --
 -- Test foreign-data wrapper and server management.
 --
+
+-- directory paths and dlsuffix are passed to us in environment variables
+-- Deactivated for SplendidDataTest: \getenv libdir PG_LIBDIR
+-- Deactivated for SplendidDataTest: \getenv dlsuffix PG_DLSUFFIX
+
+-- Deactivated for SplendidDataTest: \set regresslib :libdir '/regress' :dlsuffix
+
+CREATE FUNCTION test_fdw_handler()
+    RETURNS fdw_handler
+    AS :'regresslib', 'test_fdw_handler'
+    LANGUAGE C;
 
 -- Clean up in case a prior regression run failed
 
@@ -38,24 +51,24 @@ SELECT * FROM pg_user_mapping;
 -- CREATE FOREIGN DATA WRAPPER
 CREATE FOREIGN DATA WRAPPER foo VALIDATOR bar;            -- ERROR
 CREATE FOREIGN DATA WRAPPER foo;
-\dew
+-- Deactivated for SplendidDataTest: \dew
 
 CREATE FOREIGN DATA WRAPPER foo; -- duplicate
 DROP FOREIGN DATA WRAPPER foo;
 CREATE FOREIGN DATA WRAPPER foo OPTIONS (testing '1');
-\dew+
+-- Deactivated for SplendidDataTest: \dew+
 
 DROP FOREIGN DATA WRAPPER foo;
 CREATE FOREIGN DATA WRAPPER foo OPTIONS (testing '1', testing '2');   -- ERROR
 CREATE FOREIGN DATA WRAPPER foo OPTIONS (testing '1', another '2');
-\dew+
+-- Deactivated for SplendidDataTest: \dew+
 
 DROP FOREIGN DATA WRAPPER foo;
 SET ROLE regress_test_role;
 CREATE FOREIGN DATA WRAPPER foo; -- ERROR
 RESET ROLE;
 CREATE FOREIGN DATA WRAPPER foo VALIDATOR postgresql_fdw_validator;
-\dew+
+-- Deactivated for SplendidDataTest: \dew+
 
 -- HANDLER related checks
 CREATE FUNCTION invalid_fdw_handler() RETURNS int LANGUAGE SQL AS 'SELECT 1;';
@@ -65,29 +78,31 @@ CREATE FOREIGN DATA WRAPPER test_fdw HANDLER test_fdw_handler;
 DROP FOREIGN DATA WRAPPER test_fdw;
 
 -- ALTER FOREIGN DATA WRAPPER
+ALTER FOREIGN DATA WRAPPER foo OPTIONS (nonexistent 'fdw');         -- ERROR
+
 -- Deactivated for SplendidDataTest: ALTER FOREIGN DATA WRAPPER foo;                             -- ERROR
--- Deactivated for SplendidDataTest: ALTER FOREIGN DATA WRAPPER foo VALIDATOR bar;               -- ERROR
+ALTER FOREIGN DATA WRAPPER foo VALIDATOR bar;               -- ERROR
 ALTER FOREIGN DATA WRAPPER foo NO VALIDATOR;
-\dew+
+-- Deactivated for SplendidDataTest: \dew+
 
 ALTER FOREIGN DATA WRAPPER foo OPTIONS (a '1', b '2');
 ALTER FOREIGN DATA WRAPPER foo OPTIONS (SET c '4');         -- ERROR
 ALTER FOREIGN DATA WRAPPER foo OPTIONS (DROP c);            -- ERROR
 ALTER FOREIGN DATA WRAPPER foo OPTIONS (ADD x '1', DROP x);
-\dew+
+-- Deactivated for SplendidDataTest: \dew+
 
 ALTER FOREIGN DATA WRAPPER foo OPTIONS (DROP a, SET b '3', ADD c '4');
-\dew+
+-- Deactivated for SplendidDataTest: \dew+
 
 ALTER FOREIGN DATA WRAPPER foo OPTIONS (a '2');
 ALTER FOREIGN DATA WRAPPER foo OPTIONS (b '4');             -- ERROR
-\dew+
+-- Deactivated for SplendidDataTest: \dew+
 
 SET ROLE regress_test_role;
 ALTER FOREIGN DATA WRAPPER foo OPTIONS (ADD d '5');         -- ERROR
 SET ROLE regress_test_role_super;
 ALTER FOREIGN DATA WRAPPER foo OPTIONS (ADD d '5');
-\dew+
+-- Deactivated for SplendidDataTest: \dew+
 
 ALTER FOREIGN DATA WRAPPER foo OWNER TO regress_test_role;  -- ERROR
 ALTER FOREIGN DATA WRAPPER foo OWNER TO regress_test_role_super;
@@ -95,10 +110,10 @@ ALTER ROLE regress_test_role_super NOSUPERUSER;
 SET ROLE regress_test_role_super;
 ALTER FOREIGN DATA WRAPPER foo OPTIONS (ADD e '6');         -- ERROR
 RESET ROLE;
-\dew+
+-- Deactivated for SplendidDataTest: \dew+
 
 ALTER FOREIGN DATA WRAPPER foo RENAME TO foo1;
-\dew+
+-- Deactivated for SplendidDataTest: \dew+
 ALTER FOREIGN DATA WRAPPER foo1 RENAME TO foo;
 
 -- HANDLER related checks
@@ -110,14 +125,14 @@ DROP FUNCTION invalid_fdw_handler();
 -- DROP FOREIGN DATA WRAPPER
 DROP FOREIGN DATA WRAPPER nonexistent;                      -- ERROR
 DROP FOREIGN DATA WRAPPER IF EXISTS nonexistent;
-\dew+
+-- Deactivated for SplendidDataTest: \dew+
 
 DROP ROLE regress_test_role_super;                          -- ERROR
 SET ROLE regress_test_role_super;
 DROP FOREIGN DATA WRAPPER foo;
 RESET ROLE;
 DROP ROLE regress_test_role_super;
-\dew+
+-- Deactivated for SplendidDataTest: \dew+
 
 CREATE FOREIGN DATA WRAPPER foo;
 CREATE SERVER s1 FOREIGN DATA WRAPPER foo;
@@ -125,17 +140,17 @@ COMMENT ON SERVER s1 IS 'foreign server';
 CREATE USER MAPPING FOR current_user SERVER s1;
 CREATE USER MAPPING FOR current_user SERVER s1;				-- ERROR
 CREATE USER MAPPING IF NOT EXISTS FOR current_user SERVER s1; -- NOTICE
-\dew+
-\des+
-\deu+
+-- Deactivated for SplendidDataTest: \dew+
+-- Deactivated for SplendidDataTest: \des+
+-- Deactivated for SplendidDataTest: \deu+
 DROP FOREIGN DATA WRAPPER foo;                              -- ERROR
 SET ROLE regress_test_role;
 DROP FOREIGN DATA WRAPPER foo CASCADE;                      -- ERROR
 RESET ROLE;
 DROP FOREIGN DATA WRAPPER foo CASCADE;
-\dew+
-\des+
-\deu+
+-- Deactivated for SplendidDataTest: \dew+
+-- Deactivated for SplendidDataTest: \des+
+-- Deactivated for SplendidDataTest: \deu+
 
 -- exercise CREATE SERVER
 CREATE SERVER s1 FOREIGN DATA WRAPPER foo;                  -- ERROR
@@ -151,7 +166,7 @@ CREATE SERVER s6 VERSION '16.0' FOREIGN DATA WRAPPER foo OPTIONS (host 'a', dbna
 CREATE SERVER s7 TYPE 'oracle' VERSION '17.0' FOREIGN DATA WRAPPER foo OPTIONS (host 'a', dbname 'b');
 CREATE SERVER s8 FOREIGN DATA WRAPPER postgresql OPTIONS (foo '1'); -- ERROR
 CREATE SERVER s8 FOREIGN DATA WRAPPER postgresql OPTIONS (host 'localhost', dbname 's8db');
-\des+
+-- Deactivated for SplendidDataTest: \des+
 SET ROLE regress_test_role;
 CREATE SERVER t1 FOREIGN DATA WRAPPER foo;                 -- ERROR: no usage on FDW
 RESET ROLE;
@@ -159,7 +174,7 @@ GRANT USAGE ON FOREIGN DATA WRAPPER foo TO regress_test_role;
 SET ROLE regress_test_role;
 CREATE SERVER t1 FOREIGN DATA WRAPPER foo;
 RESET ROLE;
-\des+
+-- Deactivated for SplendidDataTest: \des+
 
 REVOKE USAGE ON FOREIGN DATA WRAPPER foo FROM regress_test_role;
 GRANT USAGE ON FOREIGN DATA WRAPPER foo TO regress_test_indirect;
@@ -169,7 +184,7 @@ RESET ROLE;
 GRANT regress_test_indirect TO regress_test_role;
 SET ROLE regress_test_role;
 CREATE SERVER t2 FOREIGN DATA WRAPPER foo;
-\des+
+-- Deactivated for SplendidDataTest: \des+
 RESET ROLE;
 REVOKE regress_test_indirect FROM regress_test_role;
 
@@ -181,7 +196,7 @@ ALTER SERVER s2 VERSION '1.1';
 ALTER SERVER s3 OPTIONS ("tns name" 'orcl', port '1521');
 GRANT USAGE ON FOREIGN SERVER s1 TO regress_test_role;
 GRANT USAGE ON FOREIGN SERVER s6 TO regress_test_role2 WITH GRANT OPTION;
-\des+
+-- Deactivated for SplendidDataTest: \des+
 SET ROLE regress_test_role;
 ALTER SERVER s1 VERSION '1.1';                              -- ERROR
 ALTER SERVER s1 OWNER TO regress_test_role;                 -- ERROR
@@ -206,32 +221,32 @@ SET ROLE regress_test_role;
 ALTER SERVER s1 OWNER TO regress_test_indirect;
 RESET ROLE;
 DROP ROLE regress_test_indirect;                            -- ERROR
-\des+
+-- Deactivated for SplendidDataTest: \des+
 
 ALTER SERVER s8 RENAME to s8new;
-\des+
+-- Deactivated for SplendidDataTest: \des+
 ALTER SERVER s8new RENAME to s8;
 
 -- DROP SERVER
 DROP SERVER nonexistent;                                    -- ERROR
 DROP SERVER IF EXISTS nonexistent;
-\des
+-- Deactivated for SplendidDataTest: \des
 SET ROLE regress_test_role;
 DROP SERVER s2;                                             -- ERROR
 DROP SERVER s1;
 RESET ROLE;
-\des
+-- Deactivated for SplendidDataTest: \des
 ALTER SERVER s2 OWNER TO regress_test_role;
 SET ROLE regress_test_role;
 DROP SERVER s2;
 RESET ROLE;
-\des
+-- Deactivated for SplendidDataTest: \des
 CREATE USER MAPPING FOR current_user SERVER s3;
-\deu
+-- Deactivated for SplendidDataTest: \deu
 DROP SERVER s3;                                             -- ERROR
 DROP SERVER s3 CASCADE;
-\des
-\deu
+-- Deactivated for SplendidDataTest: \des
+-- Deactivated for SplendidDataTest: \deu
 
 -- CREATE USER MAPPING
 CREATE USER MAPPING FOR regress_test_missing_role SERVER s1;  -- ERROR
@@ -255,7 +270,7 @@ SET ROLE regress_test_role;
 CREATE USER MAPPING FOR current_user SERVER t1 OPTIONS (username 'bob', password 'boo');
 CREATE USER MAPPING FOR public SERVER t1;
 RESET ROLE;
-\deu
+-- Deactivated for SplendidDataTest: \deu
 
 -- ALTER USER MAPPING
 ALTER USER MAPPING FOR regress_test_missing_role SERVER s4 OPTIONS (gotcha 'true'); -- ERROR
@@ -268,7 +283,7 @@ ALTER USER MAPPING FOR current_user SERVER s5 OPTIONS (ADD modified '1');
 ALTER USER MAPPING FOR public SERVER s4 OPTIONS (ADD modified '1'); -- ERROR
 ALTER USER MAPPING FOR public SERVER t1 OPTIONS (ADD modified '1');
 RESET ROLE;
-\deu+
+-- Deactivated for SplendidDataTest: \deu+
 
 -- DROP USER MAPPING
 DROP USER MAPPING FOR regress_test_missing_role SERVER s4;  -- ERROR
@@ -282,13 +297,13 @@ SET ROLE regress_test_role;
 DROP USER MAPPING FOR public SERVER s8;                     -- ERROR
 RESET ROLE;
 DROP SERVER s7;
-\deu
+-- Deactivated for SplendidDataTest: \deu
 
 -- CREATE FOREIGN TABLE
 CREATE SCHEMA foreign_schema;
 CREATE SERVER s0 FOREIGN DATA WRAPPER dummy;
 -- Deactivated for SplendidDataTest: CREATE FOREIGN TABLE ft1 ();                                    -- ERROR
--- Deactivated for SplendidDataTest: CREATE FOREIGN TABLE ft1 () SERVER no_server;                   -- ERROR
+CREATE FOREIGN TABLE ft1 () SERVER no_server;                   -- ERROR
 CREATE FOREIGN TABLE ft1 (
 	c1 integer OPTIONS ("param 1" 'val1') PRIMARY KEY,
 	c2 text OPTIONS (param2 'val2', param3 'val3'),
@@ -396,7 +411,7 @@ ALTER FOREIGN TABLE ft1 ALTER COLUMN c1 SET STATISTICS 10000;
 ALTER FOREIGN TABLE ft1 ALTER COLUMN c1 SET (n_distinct = 100);
 ALTER FOREIGN TABLE ft1 ALTER COLUMN c8 SET STATISTICS -1;
 ALTER FOREIGN TABLE ft1 ALTER COLUMN c8 SET STORAGE PLAIN;
-\d+ ft1
+-- Deactivated for SplendidDataTest: \d+ ft1
 -- can't change the column type if it's used elsewhere
 CREATE TABLE use_ft1_column_type (x ft1);
 ALTER FOREIGN TABLE ft1 ALTER COLUMN c8 SET DATA TYPE integer;	-- ERROR
@@ -416,7 +431,7 @@ ALTER FOREIGN TABLE ft1 SET SCHEMA foreign_schema;
 ALTER FOREIGN TABLE ft1 SET TABLESPACE ts;                      -- ERROR
 ALTER FOREIGN TABLE foreign_schema.ft1 RENAME c1 TO foreign_column_1;
 ALTER FOREIGN TABLE foreign_schema.ft1 RENAME TO foreign_table_1;
-\d foreign_schema.foreign_table_1
+-- Deactivated for SplendidDataTest: \d foreign_schema.foreign_table_1
 
 -- alter noexisting table
 ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 ADD COLUMN c4 integer;
@@ -563,13 +578,13 @@ CREATE SERVER s10 FOREIGN DATA WRAPPER foo;
 CREATE USER MAPPING FOR public SERVER s10 OPTIONS (user 'secret');
 CREATE USER MAPPING FOR regress_unprivileged_role SERVER s10 OPTIONS (user 'secret');
 -- owner of server can see some option fields
-\deu+
+-- Deactivated for SplendidDataTest: \deu+
 RESET ROLE;
 -- superuser can see all option fields
-\deu+
+-- Deactivated for SplendidDataTest: \deu+
 -- unprivileged user cannot see any option field
 SET ROLE regress_unprivileged_role;
-\deu+
+-- Deactivated for SplendidDataTest: \deu+
 RESET ROLE;
 DROP SERVER s10 CASCADE;
 
@@ -631,10 +646,10 @@ CREATE TABLE fd_pt1 (
 );
 CREATE FOREIGN TABLE ft2 () INHERITS (fd_pt1)
   SERVER s0 OPTIONS (delimiter ',', quote '"', "be quoted" 'value');
--- Deactivated for SplendidDataTest: \d+ pt1
--- Deactivated for SplendidDataTest: \d+ ft2-- Deactivated for SplendidDataTest: 
+-- Deactivated for SplendidDataTest: \d+ fd_pt1
+-- Deactivated for SplendidDataTest: \d+ ft2
 DROP FOREIGN TABLE ft2;
--- Deactivated for SplendidDataTest: \d+ pt1
+-- Deactivated for SplendidDataTest: \d+ fd_pt1
 CREATE FOREIGN TABLE ft2 (
 	c1 integer NOT NULL,
 	c2 text,
@@ -661,7 +676,7 @@ ALTER TABLE fd_pt1 ADD COLUMN c5 integer DEFAULT 0;
 ALTER TABLE fd_pt1 ADD COLUMN c6 integer;
 ALTER TABLE fd_pt1 ADD COLUMN c7 integer NOT NULL;
 ALTER TABLE fd_pt1 ADD COLUMN c8 integer;
--- Deactivated for SplendidDataTest: \d+ pt1
+-- Deactivated for SplendidDataTest: \d+ fd_pt1
 -- Deactivated for SplendidDataTest: \d+ ft2
 -- Deactivated for SplendidDataTest: \d+ ct3
 -- Deactivated for SplendidDataTest: \d+ ft3
@@ -678,7 +693,7 @@ ALTER TABLE fd_pt1 ALTER COLUMN c1 SET STATISTICS 10000;
 ALTER TABLE fd_pt1 ALTER COLUMN c1 SET (n_distinct = 100);
 ALTER TABLE fd_pt1 ALTER COLUMN c8 SET STATISTICS -1;
 ALTER TABLE fd_pt1 ALTER COLUMN c8 SET STORAGE EXTERNAL;
--- Deactivated for SplendidDataTest: \d+ pt1
+-- Deactivated for SplendidDataTest: \d+ fd_pt1
 -- Deactivated for SplendidDataTest: \d+ ft2
 
 -- drop attributes recursively
@@ -713,7 +728,7 @@ ALTER FOREIGN TABLE ft2 INHERIT fd_pt1;                            -- ERROR
 ALTER FOREIGN TABLE ft2 ADD CONSTRAINT fd_pt1chk2 CHECK (c2 <> '');
 ALTER FOREIGN TABLE ft2 INHERIT fd_pt1;
 -- child does not inherit NO INHERIT constraints
--- Deactivated for SplendidDataTest: \d+ pt1
+-- Deactivated for SplendidDataTest: \d+ fd_pt1
 -- Deactivated for SplendidDataTest: \d+ ft2
 
 -- drop constraints recursively
@@ -746,11 +761,11 @@ TRUNCATE fd_pt1;  -- ERROR
 DROP TABLE fd_pt1 CASCADE;
 
 -- IMPORT FOREIGN SCHEMA
--- Deactivated for SplendidDataTest: IMPORT FOREIGN SCHEMA s1 FROM SERVER s9 INTO public; -- ERROR
--- Deactivated for SplendidDataTest: IMPORT FOREIGN SCHEMA s1 LIMIT TO (t1) FROM SERVER s9 INTO public; --ERROR
--- Deactivated for SplendidDataTest: IMPORT FOREIGN SCHEMA s1 EXCEPT (t1) FROM SERVER s9 INTO public; -- ERROR
--- Deactivated for SplendidDataTest: IMPORT FOREIGN SCHEMA s1 EXCEPT (t1, t2) FROM SERVER s9 INTO public
--- Deactivated for SplendidDataTest: OPTIONS (option1 'value1', option2 'value2'); -- ERROR
+IMPORT FOREIGN SCHEMA s1 FROM SERVER s9 INTO public; -- ERROR
+IMPORT FOREIGN SCHEMA s1 LIMIT TO (t1) FROM SERVER s9 INTO public; --ERROR
+IMPORT FOREIGN SCHEMA s1 EXCEPT (t1) FROM SERVER s9 INTO public; -- ERROR
+IMPORT FOREIGN SCHEMA s1 EXCEPT (t1, t2) FROM SERVER s9 INTO public
+OPTIONS (option1 'value1', option2 'value2'); -- ERROR
 
 -- DROP FOREIGN TABLE
 DROP FOREIGN TABLE no_table;                                    -- ERROR
@@ -770,8 +785,8 @@ CREATE TABLE fd_pt2 (
 ) PARTITION BY LIST (c1);
 CREATE FOREIGN TABLE fd_pt2_1 PARTITION OF fd_pt2 FOR VALUES IN (1)
   SERVER s0 OPTIONS (delimiter ',', quote '"', "be quoted" 'value');
-\d+ fd_pt2
-\d+ fd_pt2_1
+-- Deactivated for SplendidDataTest: \d+ fd_pt2
+-- Deactivated for SplendidDataTest: \d+ fd_pt2_1
 
 -- partition cannot have additional columns
 DROP FOREIGN TABLE fd_pt2_1;
@@ -781,21 +796,21 @@ CREATE FOREIGN TABLE fd_pt2_1 (
 	c3 date,
 	c4 char
 ) SERVER s0 OPTIONS (delimiter ',', quote '"', "be quoted" 'value');
-\d+ fd_pt2_1
+-- Deactivated for SplendidDataTest: \d+ fd_pt2_1
 ALTER TABLE fd_pt2 ATTACH PARTITION fd_pt2_1 FOR VALUES IN (1);       -- ERROR
 
 DROP FOREIGN TABLE fd_pt2_1;
-\d+ fd_pt2
+-- Deactivated for SplendidDataTest: \d+ fd_pt2
 CREATE FOREIGN TABLE fd_pt2_1 (
 	c1 integer NOT NULL,
 	c2 text,
 	c3 date
 ) SERVER s0 OPTIONS (delimiter ',', quote '"', "be quoted" 'value');
-\d+ fd_pt2_1
+-- Deactivated for SplendidDataTest: \d+ fd_pt2_1
 -- no attach partition validation occurs for foreign tables
 ALTER TABLE fd_pt2 ATTACH PARTITION fd_pt2_1 FOR VALUES IN (1);
-\d+ fd_pt2
-\d+ fd_pt2_1
+-- Deactivated for SplendidDataTest: \d+ fd_pt2
+-- Deactivated for SplendidDataTest: \d+ fd_pt2_1
 
 -- cannot add column to a partition
 ALTER TABLE fd_pt2_1 ADD c4 char;
@@ -803,8 +818,8 @@ ALTER TABLE fd_pt2_1 ADD c4 char;
 -- ok to have a partition's own constraints though
 ALTER TABLE fd_pt2_1 ALTER c3 SET NOT NULL;
 ALTER TABLE fd_pt2_1 ADD CONSTRAINT p21chk CHECK (c2 <> '');
-\d+ fd_pt2
-\d+ fd_pt2_1
+-- Deactivated for SplendidDataTest: \d+ fd_pt2
+-- Deactivated for SplendidDataTest: \d+ fd_pt2_1
 
 -- cannot drop inherited NOT NULL constraint from a partition
 ALTER TABLE fd_pt2_1 ALTER c1 DROP NOT NULL;
@@ -812,16 +827,16 @@ ALTER TABLE fd_pt2_1 ALTER c1 DROP NOT NULL;
 -- partition must have parent's constraints
 ALTER TABLE fd_pt2 DETACH PARTITION fd_pt2_1;
 ALTER TABLE fd_pt2 ALTER c2 SET NOT NULL;
-\d+ fd_pt2
-\d+ fd_pt2_1
+-- Deactivated for SplendidDataTest: \d+ fd_pt2
+-- Deactivated for SplendidDataTest: \d+ fd_pt2_1
 ALTER TABLE fd_pt2 ATTACH PARTITION fd_pt2_1 FOR VALUES IN (1);       -- ERROR
 ALTER FOREIGN TABLE fd_pt2_1 ALTER c2 SET NOT NULL;
 ALTER TABLE fd_pt2 ATTACH PARTITION fd_pt2_1 FOR VALUES IN (1);
 
 ALTER TABLE fd_pt2 DETACH PARTITION fd_pt2_1;
 ALTER TABLE fd_pt2 ADD CONSTRAINT fd_pt2chk1 CHECK (c1 > 0);
-\d+ fd_pt2
-\d+ fd_pt2_1
+-- Deactivated for SplendidDataTest: \d+ fd_pt2
+-- Deactivated for SplendidDataTest: \d+ fd_pt2_1
 ALTER TABLE fd_pt2 ATTACH PARTITION fd_pt2_1 FOR VALUES IN (1);       -- ERROR
 ALTER FOREIGN TABLE fd_pt2_1 ADD CONSTRAINT fd_pt2chk1 CHECK (c1 > 0);
 ALTER TABLE fd_pt2 ATTACH PARTITION fd_pt2_1 FOR VALUES IN (1);
@@ -858,7 +873,7 @@ DROP ROLE regress_unprivileged_role;
 DROP ROLE regress_test_role2;
 DROP FOREIGN DATA WRAPPER postgresql CASCADE;
 DROP FOREIGN DATA WRAPPER dummy CASCADE;
-\c
+-- Deactivated for SplendidDataTest: \c
 DROP ROLE regress_foreign_data_user;
 
 -- At this point we should have no wrappers, no servers, and no mappings.

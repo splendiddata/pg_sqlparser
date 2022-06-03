@@ -49,8 +49,12 @@ select '1'::xid8 >= '2'::xid8, '2'::xid8 >= '2'::xid8, '2'::xid8 >= '1'::xid8;
 -- we also have a 3way compare for btrees
 select xid8cmp('1', '2'), xid8cmp('2', '2'), xid8cmp('2', '1');
 
--- xid8 has btree and hash opclasses
+-- min() and max() for xid8
 create table xid8_t1 (x xid8);
+insert into xid8_t1 values ('0'), ('010'), ('42'), ('0xffffffffffffffff'), ('-1');
+select min(x), max(x) from xid8_t1;
+
+-- xid8 has btree and hash opclasses
 create index on xid8_t1 using btree(x);
 create index on xid8_t1 using hash(x);
 drop table xid8_t1;
@@ -118,7 +122,7 @@ SELECT pg_snapshot '1:9223372036854775808:3';
 BEGIN;
 SELECT pg_current_xact_id_if_assigned() IS NULL;
 -- Deactivated for SplendidDataTest: SELECT pg_current_xact_id() \gset
--- Deactivated for SplendidDataTest: SELECT pg_current_xact_id_if_assigned() IS NOT DISTINCT FROM xid8 :'pg_current_xact_id';
+SELECT pg_current_xact_id_if_assigned() IS NOT DISTINCT FROM xid8 :'pg_current_xact_id';
 COMMIT;
 
 -- test xid status functions

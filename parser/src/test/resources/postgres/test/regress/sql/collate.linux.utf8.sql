@@ -31,7 +31,7 @@ CREATE TABLE collate_test1 (
     b text COLLATE "en_US" NOT NULL
 );
 
-\d collate_test1
+-- Deactivated for SplendidDataTest: \d collate_test1
 
 CREATE TABLE collate_test_fail (
     a int,
@@ -52,7 +52,7 @@ CREATE TABLE collate_test_like (
     LIKE collate_test1
 );
 
-\d collate_test_like
+-- Deactivated for SplendidDataTest: \d collate_test_like
 
 CREATE TABLE collate_test2 (
     a int,
@@ -417,6 +417,10 @@ DROP ROLE regress_test_role;
 -- ALTER
 
 ALTER COLLATION "en_US" REFRESH VERSION;
+
+-- also test for database while we are here
+-- Deactivated for SplendidDataTest: SELECT current_database() AS datname \gset
+-- Deactivated for SplendidDataTest: ALTER DATABASE :"datname" REFRESH COLLATION VERSION;
 
 
 -- dependencies

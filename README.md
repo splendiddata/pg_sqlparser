@@ -56,4 +56,5 @@ More information can be found in [https://github.com/splendiddata/pg_sqlparser/t
 
 ## Branches
 The Postgres_13 branch contains a parser based on the PostgreSQL 13 parser.<br>
-The main branch is based on the PostgreSQL 14 parser.
+The Postgres_14 branch contains a parser based on the PostgreSQL 14 parser.<br>
+The main branch is based on the PostgreSQL 15(beta1) parser.
