@@ -1,18 +1,15 @@
 /*
  * Copyright (c) Splendid Data Product Development B.V. 2020
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser;
@@ -94,7 +91,7 @@ public class SqlParser {
                  * The RawStmt is just a wrapper that has no meaning for us. So let's strip it off.
                  */
                 if (stmt instanceof RawStmt) {
-                    it.set(((RawStmt)stmt).stmt);
+                    it.set(((RawStmt) stmt).stmt);
                 }
             }
         }
@@ -128,8 +125,11 @@ public class SqlParser {
     /**
      * @see com.splendiddata.sqlparser.ParserUtil#getPostgresMinorVersion()
      * @return int The minor version of the Postgres version on which this parser version is based
+     * @deprecated since Postgres 14. The minor version has been important until Postgres version 9.6. After that
+     *             release, only the major version still has significance.
      */
+    @Deprecated(forRemoval = true, since = "14")
     public static int getPostgresMinorVersion() {
-        return ParserUtil.getPostgresMinorVersion();
+        return 0;
     }
 }

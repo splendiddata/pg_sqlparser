@@ -1,18 +1,15 @@
 /*
  * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser;
@@ -329,15 +326,18 @@ public final class ParserUtil {
 
     /**
      * Returns the minor version of postgresql.
+     * 
+     * @deprecated since Postgres 14. The minor version was used until Postgres version 9.6.
      *
-     * @return The minor version of postgresql.
+     * @return int zero in all cases
      */
+    @Deprecated(forRemoval = true, since = "14")
     public static int getPostgresMinorVersion() {
-        return PostgresVersionMagicInteger.VERSION_ZERO;
+        return 0;
     }
 
     /**
-     * Returns a String specifying for which Postgres version the parser is intended. In this version: "PostgreSQL 13".
+     * Returns a String specifying for which Postgres version the parser is intended. In this version: "PostgreSQL 14".
      *
      * @return String "PostgreSQL 14"
      */
@@ -349,6 +349,9 @@ public final class ParserUtil {
      * Compares the current postgres version to the supplied version. The version consists of a major and a minor
      * version.
      * 
+     * @deprecated since 15. The minor version used to be important until Postgre 9.6. After that release, only the
+     *             major version has significance.
+     * 
      * @param majorVersion
      *            The major version.
      * @param minorVersion
@@ -357,14 +360,20 @@ public final class ParserUtil {
      *         version {@code 1} if major version &gt; current major version or major version is equal to current major
      *         version and minor version &gt; current minor version {@code -1} otherwise
      */
+    @Deprecated(forRemoval = true, since = "14")
     public static int compareCurrentPostgresVersionTo(final int majorVersion, final int minorVersion) {
+        return compareCurrentPostgresVersionTo(majorVersion);
+    }
 
-        int result = Integer.compare(getPostgresMajorVersion(), majorVersion);
-        if (result == 0) {
-            result = Integer.compare(getPostgresMinorVersion(), minorVersion);
-        }
-
-        return result;
+    /**
+     * Compares the current Postgres version to the supplied version.
+     * 
+     * @param majorVersion
+     *            The major version.
+     * @return
+     */
+    public static int compareCurrentPostgresVersionTo(final int majorVersion) {
+        return Integer.compare(getPostgresMajorVersion(), majorVersion);
     }
 
     /**
