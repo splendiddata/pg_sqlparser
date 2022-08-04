@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -219,6 +219,42 @@ public enum NodeTag {
     /** @since 6.0 - Postgres version 11 */
     T_OnConflictExpr,
     T_IntoClause,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonFormat,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonValueExpr,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonScalarExpr,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonSerializeExpr,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonParseExpr,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonReturning,
 
     /*
      * TAGS FOR EXPRESSION STATE NODES (execnodes.h)
@@ -399,6 +435,12 @@ public enum NodeTag {
     T_Value,
     T_Integer,
     T_Float,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_Boolean,
     T_String,
     T_BitString,
     T_Null,
@@ -425,7 +467,25 @@ public enum NodeTag {
     T_InsertStmt,
     T_DeleteStmt,
     T_UpdateStmt,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_MergeStmt,
     T_SelectStmt,
+    /**
+     * @since Postgres 14
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_ReturnStmt,
+    /**
+     * @since Postgres 14
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_PLAssignStmt,
     T_AlterTableStmt,
     T_AlterTableCmd,
     T_AlterDomainStmt,
@@ -476,6 +536,12 @@ public enum NodeTag {
     T_CheckPointStmt,
     T_CreateSchemaStmt,
     T_AlterDatabaseStmt,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_AlterDatabaseRefreshCollStmt,
     T_AlterDatabaseSetStmt,
     T_AlterRoleSetStmt,
     T_CreateConversionStmt,
@@ -577,6 +643,12 @@ public enum NodeTag {
     T_TypeName,
     T_ColumnDef,
     T_IndexElem,
+    /**
+     * @since Postgres 14
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_StatsElem,
     T_Constraint,
     T_DefElem,
     T_RangeTblEntry,
@@ -611,7 +683,25 @@ public enum NodeTag {
     T_WithClause,
     T_InferClause,
     T_OnConflictClause,
+    /**
+     * @since Postgres 14
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_CTESearchClause,
+    /**
+     * @since Postgres 14
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_CTECycleClause,
     T_CommonTableExpr,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_MergeWhenClause,
     T_RoleSpec,
     /** @since 5.0 */
     T_TriggerTransition,
@@ -627,6 +717,114 @@ public enum NodeTag {
     T_PartitionCmd,
     /** @since 6.0 - Postgres version 11 */
     T_VacuumRelation,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_PublicationObjSpec,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonObjectConstructor,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonArrayConstructor,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonArrayQueryConstructor,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonAggConstructor,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonObjectAgg,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonArrayAgg,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonFuncExpr,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_PublicationTable,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonIsPredicate,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonTable,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonTableColumn,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonTablePlan,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonCommon,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonArgument,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonKeyValue,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonBehavior,
+    /**
+     * @since Postgres 15
+     * @deprecated This enum value is not used in this version. It is here for forward compatibility.
+     */
+    @Deprecated
+    T_JsonOutput,
 
     /*
      * TAGS FOR REPLICATION GRAMMAR PARSE NODES (replnodes.h)
