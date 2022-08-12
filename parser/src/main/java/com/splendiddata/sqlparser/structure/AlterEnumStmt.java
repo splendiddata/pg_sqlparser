@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -25,7 +25,7 @@ import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.NodeTag;
 
 /**
- * Copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
+ * Initially copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
  * @since 0.0.1
@@ -57,15 +57,6 @@ public class AlterEnumStmt extends Node {
     public boolean newValIsAfter;
 
     /**
-     * no error if label already exists
-     * 
-     * @deprecated skipIfExists has been replaced by {@link #skipIfNewValExists} in version 5.0 (Postgres version 10)
-     */
-    @XmlAttribute
-    @Deprecated
-    public boolean skipIfExists;
-
-    /**
      * no error if new already exists
      * 
      * @since 5.0
@@ -92,7 +83,6 @@ public class AlterEnumStmt extends Node {
         this.newVal = original.newVal;
         this.newValNeighbor = original.newValNeighbor;
         this.newValIsAfter = original.newValIsAfter;
-        this.skipIfExists = original.skipIfExists;
         this.skipIfNewValExists = original.skipIfNewValExists;
     }
 
@@ -117,9 +107,6 @@ public class AlterEnumStmt extends Node {
         result.append("alter type ").append(ParserUtil.nameToSql(typeName));
         if (oldVal == null) {
             result.append(" add value");
-            if (skipIfNewValExists || skipIfExists) {
-                result.append(" if not exists");
-            }
 
             if (newVal != null) {
                 result.append(" '").append(newVal).append('\'');

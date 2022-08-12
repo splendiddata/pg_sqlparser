@@ -1,33 +1,29 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
-
-import jakarta.xml.bind.annotation.XmlAttribute;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlElementWrapper;
-import jakarta.xml.bind.annotation.XmlRootElement;
 
 import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.NodeTag;
 import com.splendiddata.sqlparser.enums.ObjectType;
 
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
 /**
- * Copied from /postgresql-9.6.1/src/include/nodes/parsenodes.h
+ * Initially copied from /postgresql-9.6.1/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
  * @since 4.0, Postgres version 9.6
@@ -49,26 +45,6 @@ public class AlterObjectDependsStmt extends Node {
      */
     @XmlElement
     public Node object;
-
-    /**
-     * name of the object.
-     * 
-     * @deprecated since 5.0 the objname has been replaced by {@link #object}
-     */
-    @XmlElementWrapper(name = "objname")
-    @XmlElement(name = "nameNode")
-    @Deprecated
-    public List<Value> objname;
-
-    /**
-     * Arguments if needed (eg, for functions).
-     * 
-     * @deprecated since 5.0 the objname has been replaced by {@link #object}
-     */
-    @XmlElementWrapper(name = "objargs")
-    @XmlElement(name = "objarg")
-    @Deprecated
-    public List<Node> objargs;
 
     /** Extension's name. */
     @XmlElement
@@ -106,16 +82,6 @@ public class AlterObjectDependsStmt extends Node {
         if (original.object != null) {
             this.object = original.object.clone();
         }
-        if (original.objname != null) {
-            throw new IllegalArgumentException(AlterExtensionContentsStmt.class.getName()
-                    + ".objname is not supported any more since version 5.0 (Postgres version 10)), contains: "
-                    + original.objname);
-        }
-        if (original.objargs != null) {
-            throw new IllegalArgumentException(AlterExtensionContentsStmt.class.getName()
-                    + ".objargs is not supported any more since version 5.0 (Postgres version 10)), contains: "
-                    + original.objargs);
-        }
         this.remove = original.remove;
     }
 
@@ -130,12 +96,6 @@ public class AlterObjectDependsStmt extends Node {
         }
         if (object != null) {
             clone.object = object.clone();
-        }
-        if (objname != null) {
-            clone.objname = objname.clone();
-        }
-        if (objargs != null) {
-            clone.objargs = objargs.clone();
         }
         if (extname != null) {
             clone.extname = extname.clone();

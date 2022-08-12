@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -27,7 +24,7 @@ import com.splendiddata.sqlparser.enums.NodeTag;
 /**
  * Alter Operator Set Restrict, Join
  * <p>
- * Copied from /postgresql-9.6beta1/src/include/nodes/parsenodes.h
+ * Initially copied from /postgresql-9.6beta1/src/include/nodes/parsenodes.h
  * </p>
  * 
  * @author Splendid Data Product Development B.V.
@@ -47,16 +44,6 @@ public class AlterOperatorStmt extends Node {
     @XmlElement
     public Node opername;
 
-    /**
-     * operator's argument TypeNames.
-     * 
-     * @deprecated since 5.0 - The {@link #opername} takes it all now
-     */
-    @XmlElementWrapper(name = "operargs")
-    @XmlElement(name = "operarg")
-    @Deprecated
-    public List<TypeName> operargs;
-
     /** List of DefElem nodes. */
     @XmlElementWrapper(name = "options")
     @XmlElement(name = "option")
@@ -71,11 +58,6 @@ public class AlterOperatorStmt extends Node {
         if (original.opername != null) {
             this.opername = original.opername.clone();
         }
-        if (original.operargs != null) {
-            throw new IllegalArgumentException(AlterExtensionContentsStmt.class.getName()
-                    + ".operargs is not supported any more since version 5.0 (Postgres version 10)), contains: "
-                    + original.operargs);
-        }
         if (original.options != null) {
             this.options = original.options.clone();
         }
@@ -86,9 +68,6 @@ public class AlterOperatorStmt extends Node {
         AlterOperatorStmt clone = (AlterOperatorStmt) super.clone();
         if (opername != null) {
             clone.opername = opername.clone();
-        }
-        if (operargs != null) {
-            clone.operargs = operargs.clone();
         }
         if (options != null) {
             clone.options = options.clone();

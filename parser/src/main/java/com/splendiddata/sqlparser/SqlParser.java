@@ -124,12 +124,4 @@ public class SqlParser {
     public static int getPostgresMajorVersion() {
         return ParserUtil.getPostgresMajorVersion();
     }
-
-    /**
-     * @see com.splendiddata.sqlparser.ParserUtil#getPostgresMinorVersion()
-     * @return int The minor version of the Postgres version on which this parser version is based
-     */
-    public static int getPostgresMinorVersion() {
-        return ParserUtil.getPostgresMinorVersion();
-    }
 }

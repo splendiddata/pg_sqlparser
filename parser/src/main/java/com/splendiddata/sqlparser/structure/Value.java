@@ -40,7 +40,7 @@ public class Value extends Node {
      * Constructor
      */
     public Value() {
-        // empty
+        super(NodeTag.T_Null);
     }
 
     /**
@@ -49,7 +49,6 @@ public class Value extends Node {
      * @param type
      *            Must be one of
      *            <ul>
-     *            <li>{@link com.splendiddata.sqlparser.enums.NodeTag#T_Value}</li>
      *            <li>{@link com.splendiddata.sqlparser.enums.NodeTag#T_Integer}</li>
      *            <li>{@link com.splendiddata.sqlparser.enums.NodeTag#T_Float}</li>
      *            <li>{@link com.splendiddata.sqlparser.enums.NodeTag#T_Boolean}</li>

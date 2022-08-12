@@ -1,38 +1,34 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
 
 import java.util.LinkedList;
 
-import jakarta.xml.bind.annotation.XmlAttribute;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlElementWrapper;
-import jakarta.xml.bind.annotation.XmlRootElement;
-
 import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.DropBehavior;
 import com.splendiddata.sqlparser.enums.NodeTag;
 import com.splendiddata.sqlparser.enums.ObjectType;
 
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
 /**
  * Alter Object Rename Statement
  * <p>
- * Copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
+ * Initially copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
  * </p>
  * 
  * @author Splendid Data Product Development B.V.
@@ -61,13 +57,6 @@ public class RenameStmt extends Node {
      */
     @XmlElement
     public Node object;
-
-    /** argument types, if applicable
-     * @deprecated since 5.0 - The function of objarg has moved to {@link #object} */
-    @XmlElementWrapper(name = "objarg")
-    @XmlElement
-    @Deprecated
-    public List<Node> objarg;
 
     /**
      * name of contained object (column, rule, trigger, etc)
@@ -111,11 +100,6 @@ public class RenameStmt extends Node {
         if (original.object != null) {
             this.object = original.object.clone();
         }
-        if (original.objarg != null) {
-            throw new IllegalArgumentException(AlterExtensionContentsStmt.class.getName()
-                    + ".objargs is not supported any more since version 5.0 (Postgres version 10)), contains: "
-                    + original.objarg);
-        }
         this.subname = original.subname;
         this.newname = original.newname;
         this.behavior = original.behavior;
@@ -130,9 +114,6 @@ public class RenameStmt extends Node {
         }
         if (object != null) {
             clone.object = object.clone();
-        }
-        if (objarg != null) {
-            clone.objarg = objarg.clone();
         }
         return clone;
     }
@@ -185,7 +166,8 @@ public class RenameStmt extends Node {
             switch (renameType) {
             case OBJECT_OPFAMILY:
             case OBJECT_OPCLASS:
-                @SuppressWarnings("unchecked") LinkedList<Value> nameList = new LinkedList<>((List<Value>) object);
+                @SuppressWarnings("unchecked")
+                LinkedList<Value> nameList = new LinkedList<>((List<Value>) object);
                 Value indexMethod = nameList.remove();
                 result.append(' ').append(ParserUtil.nameListToSql(nameList)).append(" using ")
                         .append(ParserUtil.identifierToSql(indexMethod.val.str));

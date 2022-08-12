@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,19 +19,18 @@ package com.splendiddata.sqlparser.structure;
 
 import java.util.LinkedList;
 
-import jakarta.xml.bind.annotation.XmlAttribute;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlElementWrapper;
-import jakarta.xml.bind.annotation.XmlRootElement;
-
 import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.NodeTag;
 import com.splendiddata.sqlparser.enums.ObjectType;
 
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+
 /**
  * Alter Object Owner Statement
  * <p>
- * Copied from /postgresql-9.5alpha2/src/include/nodes/parsenodes.h
+ * Initially copied from /postgresql-9.5alpha2/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
  * @since 3.0.0
@@ -54,16 +53,6 @@ public class AlterOwnerStmt extends Node {
      */
     @XmlElement
     public Node object;
-
-    /**
-     * argument types, if applicable
-     * 
-     * @deprecated since 5.0 - it's function is taken by {@link #object}
-     */
-    @XmlElementWrapper(name = "objarg")
-    @XmlElement(name = "arg")
-    @Deprecated
-    public List<Node> objarg;
 
     /** the new owner */
     @XmlElement
@@ -91,11 +80,6 @@ public class AlterOwnerStmt extends Node {
         if (original.object != null) {
             this.object = original.object.clone();
         }
-        if (original.objarg != null) {
-            throw new IllegalArgumentException(AlterExtensionContentsStmt.class.getName()
-                    + ".objarg is not supported any more since version 5.0 (Postgres version 10)), contains: "
-                    + original.objarg);
-        }
         if (original.newowner != null) {
             this.newowner = original.newowner.clone();
         }
@@ -109,9 +93,6 @@ public class AlterOwnerStmt extends Node {
         }
         if (object != null) {
             clone.object = object.clone();
-        }
-        if (objarg != null) {
-            clone.objarg = objarg.clone();
         }
         if (newowner != null) {
             clone.newowner = newowner.clone();

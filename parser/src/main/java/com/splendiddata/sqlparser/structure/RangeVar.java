@@ -1,30 +1,26 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
 
+import com.splendiddata.sqlparser.ParserUtil;
+import com.splendiddata.sqlparser.enums.NodeTag;
+import com.splendiddata.sqlparser.enums.RelPersistence;
+
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-
-import com.splendiddata.sqlparser.ParserUtil;
-import com.splendiddata.sqlparser.enums.InhOption;
-import com.splendiddata.sqlparser.enums.NodeTag;
-import com.splendiddata.sqlparser.enums.RelPersistence;
 
 /**
  * RangeVar - range variable, used in FROM clauses
@@ -54,15 +50,6 @@ public class RangeVar extends Node {
     /** the relation/sequence name */
     @XmlAttribute
     public String relname;
-
-    /**
-     * expand rel by inheritance? recursively act on children?
-     * 
-     * @deprecated since 5.0 inhOpt is referred to as {@link #inh}
-     */
-    @XmlAttribute
-    @Deprecated
-    public InhOption inhOpt;
 
     /**
      * expand rel by inheritance? recursively act on children?
@@ -102,19 +89,10 @@ public class RangeVar extends Node {
         if (toCopy.alias != null) {
             this.alias = toCopy.alias.clone();
         }
-
-        if (toCopy.inhOpt != null) {
-            throw new IllegalArgumentException(AlterExtensionContentsStmt.class.getName()
-                    + ".inhOpt is not supported any more since version 5.0 (Postgres version 10)), contains: "
-                    + toCopy.inhOpt);
-        }
     }
 
     @Override
     public String toString() {
-        if (inhOpt != null) {
-            throw new AssertionError("inhOpt has been replaced by inh in release 5.0: " + inh);
-        }
         StringBuilder result = new StringBuilder();
 
         if (Boolean.FALSE.equals(inh)) {

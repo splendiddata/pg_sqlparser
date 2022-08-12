@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -26,7 +26,7 @@ import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.NodeTag;
 
 /**
- * Copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
+ * Initially copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
  * @since 0.0.1
@@ -45,16 +45,6 @@ public class CreateOpClassItem extends Node {
      */
     @XmlElement
     public Node name;
-
-    /**
-     * argument types
-     * 
-     * @deprecated since 5.0 - arguments are now in {@link #name}
-     */
-    @XmlElementWrapper(name = "args")
-    @XmlElement(name = "arg")
-    @Deprecated
-    public List<TypeName> args;
 
     /** strategy num or support proc num */
     @XmlAttribute
@@ -84,11 +74,6 @@ public class CreateOpClassItem extends Node {
         if (original.name != null) {
             this.name = original.name.clone();
         }
-        if (original.args != null) {
-            throw new IllegalArgumentException(AlterExtensionContentsStmt.class.getName()
-                    + ".args is not supported any more since version 5.0 (Postgres version 10)), contains: "
-                    + original.args);
-        }
         this.number = original.number;
         if (original.order_family != null) {
             this.order_family = original.order_family.clone();
@@ -106,9 +91,6 @@ public class CreateOpClassItem extends Node {
         CreateOpClassItem clone = (CreateOpClassItem) super.clone();
         if (name != null) {
             clone.name = name.clone();
-        }
-        if (args != null) {
-            clone.args = args.clone();
         }
         if (order_family != null) {
             clone.order_family = order_family.clone();

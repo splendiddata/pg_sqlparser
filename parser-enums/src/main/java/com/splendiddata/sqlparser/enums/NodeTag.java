@@ -237,74 +237,74 @@ public enum NodeTag {
      * shared with other parts of the executor, as for example with AggrefExprState, which nodeAgg.c has to modify.
      */
     T_ExprState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_GenericExprState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_WholeRowVarExprState,
     T_AggrefExprState,
     T_WindowFuncExprState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_ArrayRefExprState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_FuncExprState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_ScalarArrayOpExprState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_BoolExprState,
     /** @since 6.0 - Postgres version 11 */
     T_SetExprState,
     T_SubPlanState,
     T_AlternativeSubPlanState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_FieldSelectState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_FieldStoreState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_CoerceViaIOState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_ArrayCoerceExprState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_ConvertRowtypeExprState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_CaseExprState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_CaseWhenState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_ArrayExprState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_RowExprState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_RowCompareExprState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_CoalesceExprState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_MinMaxExprState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_XmlExprState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_NullTestState,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_CoerceToDomainState,
     T_DomainConstraintState,
 
@@ -378,8 +378,8 @@ public enum NodeTag {
     T_RestrictInfo,
     T_PlaceHolderVar,
     T_SpecialJoinInfo,
-    /** @deprecated Not in use any more since version 6.0 (Posgres version 11) */
-    @Deprecated
+    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
+    @Deprecated(forRemoval = true)
     T_LateralJoinInfo,
     T_AppendRelInfo,
     T_PlaceHolderInfo,
@@ -405,6 +405,8 @@ public enum NodeTag {
     /*
      * TAGS FOR VALUE NODES (value.h)
      */
+    /** @deprecated Not in use any more since version (Postgres version 15) */
+    @Deprecated(forRemoval = true)
     T_Value,
     T_Integer,
     T_Float,
@@ -613,15 +615,6 @@ public enum NodeTag {
     T_WindowClause,
     /** @since 5.0 */
     T_ObjectWithArgs,
-    /** @deprecated Not in use any more since version 5.0 (Posgres version 10) */
-    @Deprecated
-    T_PrivGrantee,
-    /**
-     * @deprecated Not in use any more since version 5.0 (Posgres version 10). Probably replaced by
-     *             {@link #T_ObjectWithArgs}
-     */
-    @Deprecated
-    T_FuncWithArgs,
     T_AccessPriv,
     T_CreateOpClassItem,
     T_TableLikeClause,

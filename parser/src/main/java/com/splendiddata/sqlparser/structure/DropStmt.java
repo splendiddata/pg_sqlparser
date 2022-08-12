@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -30,7 +30,7 @@ import com.splendiddata.sqlparser.enums.NodeTag;
 import com.splendiddata.sqlparser.enums.ObjectType;
 
 /**
- * Copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
+ * Initially copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
  * @since 0.0.1
@@ -42,16 +42,6 @@ public class DropStmt extends Node {
     @XmlElementWrapper(name = "objects")
     @XmlElement(name = "object")
     public List<Node> objects;
-
-    /**
-     * list of sublists of arguments (as Values)
-     * 
-     * @deprecated since 5.0 - the arguments are in the objects list arguments
-     */
-    @XmlElementWrapper(name = "arguments")
-    @XmlElement(name = "argument")
-    @Deprecated
-    public List<List<?>> arguments;
 
     /** object type */
     @XmlAttribute
@@ -78,11 +68,6 @@ public class DropStmt extends Node {
         if (original.objects != null) {
             this.objects = original.objects.clone();
         }
-        if (original.arguments != null) {
-            throw new IllegalArgumentException(AlterExtensionContentsStmt.class.getName()
-                    + ".arguments is not supported any more since version 5.0 (Postgres version 10)), contains: "
-                    + original.arguments);
-        }
         this.removeType = original.removeType;
         this.behavior = original.behavior;
         this.missing_ok = original.missing_ok;
@@ -94,9 +79,6 @@ public class DropStmt extends Node {
         DropStmt clone = (DropStmt) super.clone();
         if (objects != null) {
             clone.objects = objects.clone();
-        }
-        if (arguments != null) {
-            clone.arguments = arguments.clone();
         }
         return clone;
     }

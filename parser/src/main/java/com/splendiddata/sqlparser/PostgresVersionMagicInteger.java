@@ -24,39 +24,6 @@ package com.splendiddata.sqlparser;
  */
 public class PostgresVersionMagicInteger {
 
-    /** Version number 0 */
-    public static final int VERSION_ZERO = 0;
-
-    /** Version number 1 */
-    public static final int VERSION_ONE = 1;
-
-    /** Version number 2 */
-    public static final int VERSION_TWO = 2;
-
-    /** Version number 3 */
-    public static final int VERSION_THREE = 3;
-
-    /** Version number 4 */
-    public static final int VERSION_FOUR = 4;
-
-    /** Version number 5 */
-    public static final int VERSION_FIVE = 5;
-
-    /** Version number 6 */
-    public static final int VERSION_SIX = 6;
-
-    /** Version number 7 */
-    public static final int VERSION_SEVEN = 7;
-
-    /** Version number 8 */
-    public static final int VERSION_EIGHT = 8;
-
-    /** Version number 9 */
-    public static final int VERSION_NINE = 9;
-
-    /** Version number 10 */
-    public static final int VERSION_TEN = 10;
-
     /** Version number 11 */
     public static final int VERSION_ELEVEN = 11;
 

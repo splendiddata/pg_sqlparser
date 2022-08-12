@@ -1,18 +1,15 @@
 /*
  * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser;
@@ -328,15 +325,6 @@ public final class ParserUtil {
     }
 
     /**
-     * Returns the minor version of postgresql.
-     *
-     * @return The minor version of postgresql.
-     */
-    public static int getPostgresMinorVersion() {
-        return PostgresVersionMagicInteger.VERSION_ZERO;
-    }
-
-    /**
      * Returns a String specifying for which Postgres version the parser is intended. In this version: "PostgreSQL 15".
      *
      * @return String "PostgreSQL 15"
@@ -351,20 +339,10 @@ public final class ParserUtil {
      * 
      * @param majorVersion
      *            The major version.
-     * @param minorVersion
-     *            The minor version.
-     * @return {@code 0} if major version is equal to current major version and minor version is equal to current minor
-     *         version {@code 1} if major version &gt; current major version or major version is equal to current major
-     *         version and minor version &gt; current minor version {@code -1} otherwise
+     * @return Integer.compare(getPostgresMajorVersion(), majorVersion)
      */
-    public static int compareCurrentPostgresVersionTo(final int majorVersion, final int minorVersion) {
-
-        int result = Integer.compare(getPostgresMajorVersion(), majorVersion);
-        if (result == 0) {
-            result = Integer.compare(getPostgresMinorVersion(), minorVersion);
-        }
-
-        return result;
+    public static int compareCurrentPostgresVersionTo(final int majorVersion) {
+        return Integer.compare(getPostgresMajorVersion(), majorVersion);
     }
 
     /**
