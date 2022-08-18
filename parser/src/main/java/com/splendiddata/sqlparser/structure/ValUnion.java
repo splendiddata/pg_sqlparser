@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,9 +19,10 @@ package com.splendiddata.sqlparser.structure;
 
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 /**
- * Content of a Value, copied from /postgresql-9.3.4/src/include/nodes/value.h
+ * Content of a Value, initially copied from /postgresql-9.3.4/src/include/nodes/value.h
  *
  * @author Splendid Data Product Development B.V.
  * @since 0.0.1
@@ -36,6 +37,16 @@ public class ValUnion implements Cloneable {
     /** string */
     @XmlAttribute
     public String str;
+
+    /**
+     * boolean value
+     * 
+     * @since Postgres 15
+     * @deprecated This attribute is not used in this version of Postgres. It is here for forward reference only.
+     */
+    @XmlTransient
+    @Deprecated
+    public boolean boolval;
 
     /**
      * Constructor
@@ -53,6 +64,7 @@ public class ValUnion implements Cloneable {
     public ValUnion(ValUnion toCopy) {
         ival = toCopy.ival;
         str = toCopy.str;
+        boolval = toCopy.boolval;
     }
 
     @Override

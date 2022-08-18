@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -25,7 +25,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import com.splendiddata.sqlparser.enums.NodeTag;
 
 /**
- * Just a value, copied from /postgresql-9.3.4/src/include/nodes/value.h
+ * Just a value, initially copied from /postgresql-9.3.4/src/include/nodes/value.h
  *
  * @author Splendid Data Product Development B.V.
  * @since 0.0.1
@@ -83,6 +83,9 @@ public class Value extends Node {
                 return new StringBuilder().append('(').append(result).append(')').toString();
             }
             return result;
+        }
+        if (NodeTag.T_Boolean.equals(type)) {
+            return Boolean.toString(val.boolval);
         }
         return val.toString();
     }
