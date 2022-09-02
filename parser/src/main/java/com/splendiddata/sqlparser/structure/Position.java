@@ -26,7 +26,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
-public class Position implements Cloneable {
+public class Position implements Cloneable, Comparable<Position> {
 
     private final long offset;
 
@@ -63,5 +63,13 @@ public class Position implements Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError("com.splendiddata.sqlparser.structure.Position.clone()->failed", e);
         }
+    }
+
+    @Override
+    public int compareTo(Position o) {
+        if (o == null) {
+            return 1;
+        }
+        return Long.compare(offset, o.offset);
     }
 }
