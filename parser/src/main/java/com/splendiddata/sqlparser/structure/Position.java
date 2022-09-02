@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -26,7 +26,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
-public class Position implements Cloneable {
+public class Position implements Cloneable, Comparable<Position> {
 
     private final long offset;
 
@@ -63,5 +63,13 @@ public class Position implements Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError("com.splendiddata.sqlparser.structure.Position.clone()->failed", e);
         }
+    }
+
+    @Override
+    public int compareTo(Position o) {
+        if (o == null) {
+            return 1;
+        }
+        return Long.compare(offset, o.offset);
     }
 }
