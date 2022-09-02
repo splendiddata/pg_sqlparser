@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -22,7 +22,7 @@ package com.splendiddata.sqlparser.structure;
  * A class defining a pair of positions. Positions, defined by the <code>Position</code> class, denote a point in the
  * input. Locations represent a part of the input through the beginning and ending positions.
  */
-public class Location implements Cloneable {
+public class Location implements Cloneable, Comparable<Location> {
     /** The first, inclusive, position in the range. */
     public Position begin;
 
@@ -81,5 +81,24 @@ public class Location implements Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError("com.splendiddata.sqlparser.structure.Location.clone()->failed", e);
         }
+    }
+
+    /**
+     * Compares the begin positions of the locations
+     * 
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    @Override
+    public int compareTo(Location o) {
+        if (o == null) {
+            return 1;
+        }
+        if (begin == null) {
+            if (o.begin == null) {
+                return 0;
+            }
+            return 1;
+        }
+        return begin.compareTo(o.begin);
     }
 }
