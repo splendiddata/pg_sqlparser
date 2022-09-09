@@ -237,11 +237,15 @@ public class JaxbIndexCreator extends AbstractMojo implements FileVisitor<Path> 
         case "XmlAttribute":
         case "XmlElement":
         case "XmlElementWrapper":
+        case "XmlEnum":
         case "XmlRootElement":
+        case "XmlType":
         case "jakarta.xml.bind.annotation.XmlAttribute":
         case "jakarta.xml.bind.annotation.XmlElement":
         case "jakarta.xml.bind.annotation.XmlElementWrapper":
+        case "jakarta.xml.bind.annotation.XmlEnum":
         case "jakarta.xml.bind.annotation.XmlRootElement":
+        case "jakarta.xml.bind.annotation.XmlType":
             break;
         default:
             if (log.isDebugEnabled()) {
