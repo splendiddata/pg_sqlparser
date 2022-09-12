@@ -203,40 +203,6 @@ public abstract class AbstractScanner extends AbstractCProgram implements com.sp
                         result = keyword.getValue();
                         position = currentPosition;
                         break;
-                    case UNIQUE:
-                        keyword = ScanKeyword.WITH_LA_UNIQUE;
-                        result = keyword.getValue();
-                        position = currentPosition;
-                        break;
-                    default:
-                        nextPosition = position;
-                        position = currentPosition;
-                        nextyylval = yylval;
-                        yylval = currentyylval;
-                        break;
-                    }
-                }
-                break;
-
-            case WITHOUT:
-                /* Replace WITHOUT by WITHOUT_LA if it's followed by TIME */
-                currentyylval = yylval;
-                currentPosition = position;
-                nextToken = scan();
-                nextKeyword = ScanKeyword.fromValue(nextToken);
-                if (nextKeyword == null) {
-                    nextPosition = position;
-                    position = currentPosition;
-                    nextyylval = yylval;
-                    yylval = currentyylval;
-                } else {
-                    switch (nextKeyword) {
-                    case TIME:
-                        keyword = ScanKeyword.WITHOUT_LA;
-                        result = keyword.getValue();
-                        position = currentPosition;
-                        //                        nextToken = 0;
-                        break;
                     default:
                         nextPosition = position;
                         position = currentPosition;

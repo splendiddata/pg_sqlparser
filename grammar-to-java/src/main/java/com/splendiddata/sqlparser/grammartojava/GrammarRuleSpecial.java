@@ -697,47 +697,9 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
         }
     }),
     /** @since Postgres 15 */
-    JsonType(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line.replace("$$->location", "((TypeName)$$).location");
-        }
-    }),
-    /** @since Postgres 15 */
-    json_table_default_plan_choices(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line.replace("$1", "((Integer)$1).intValue()");
-        }
-    }),
-    /** @since Postgres 15 */
     zone_value(new GrammarRuleSpecialProcessing() {
         public String processLine(String line) {
             return line.replace(".ival.ival", ".val.ival");
-        }
-    }),
-    /** @since Postgres 15 */
-    json_table_regular_column_definition(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line.replace("$5", "!JsonQuotes.JS_QUOTES_KEEP.equals($5)");
-        }
-    }),
-    /** @since Postgres 15 */
-    json_value_on_behavior_clause_opt(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line.replace("{", "{ yyval = new YYSTypeJsonOnBehaviour(); ").replace("$$",
-                    "((YYSTypeJsonOnBehaviour)$$)");
-        }
-    }),
-    /** @since Postgres 15 */
-    json_query_on_behavior_clause_opt(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line.replace("{", "{ yyval = new YYSTypeJsonOnBehaviour(); ").replace("$$",
-                    "((YYSTypeJsonOnBehaviour)$$)");
-        }
-    }),
-    /** @since Postgres 15 */
-    json_wrapper_clause_opt(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line.replace("0;", "JsonWrapper.JSW_NONE;");
         }
     }),
 //

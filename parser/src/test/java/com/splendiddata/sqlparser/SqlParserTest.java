@@ -191,16 +191,4 @@ public class SqlParserTest {
             log.trace(ParserUtil.stmtToXml(obj));
         }
     }
-
-    @Test
-    void postgres15ErrorOnError() throws IOException {
-        String sql = "SELECT JSON_EXISTS(jsonb '1', 'strict $.a' ERROR ON ERROR)";
-        log.debug("source sql = " + sql);
-        SqlParser parser = new SqlParser(new StringReader(sql));
-        Assertions.assertTrue(parser.parse());
-        for (Node obj : parser.getResult()) {
-            log.debug("parsed sql = " + obj);
-            log.trace(ParserUtil.stmtToXml(obj));
-        }
-    }
 }

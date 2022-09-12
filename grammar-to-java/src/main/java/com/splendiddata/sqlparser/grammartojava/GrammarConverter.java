@@ -351,7 +351,6 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                                     "%type <Integer> json_table_default_plan_choices")
                             .replaceAll("^\\s+json_predicate_type_constraint_opt",
                                     "%type <JsonValueType> json_predicate_type_constraint_opt")
-                            .replace("%type <on_behavior>", "%type <YYSTypeJsonOnBehaviour>")
                             .replace("%type <jsbehavior>", "%type <JsonBehavior>")
                             .replace("%type <js_quotes>", "%type <JsonQuotes>")
                             .replaceAll("^\\s+json_wrapper_clause_opt", "%type <JsonWrapper> json_wrapper_clause_opt")
@@ -1165,7 +1164,6 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
         out.println("import com.splendiddata.sqlparser.enums.*;");
         out.println("import com.splendiddata.sqlparser.plumbing.base_yy_extra_type;");
         out.println("import com.splendiddata.sqlparser.plumbing.YYLTYPE;");
-        out.println("import com.splendiddata.sqlparser.plumbing.YYSTypeJsonOnBehaviour;");
         out.println("import com.splendiddata.sqlparser.structure.*;");
         out.println("}");
         out.println("%code {");
