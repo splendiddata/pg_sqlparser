@@ -1,6 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.splendiddata</groupId>
@@ -118,16 +116,16 @@
 				<version>3.24.4</version>
 			</dependency>
 
-	        <dependency>
-	            <groupId>jakarta.xml.bind</groupId>
-	            <artifactId>jakarta.xml.bind-api</artifactId>
-	            <version>4.0.0</version>
-	        </dependency>
-	        <dependency>
-	            <groupId>org.glassfish.jaxb</groupId>
-	            <artifactId>jaxb-runtime</artifactId>
-	            <version>4.0.0</version>
-	        </dependency>
+			<dependency>
+				<groupId>jakarta.xml.bind</groupId>
+				<artifactId>jakarta.xml.bind-api</artifactId>
+				<version>4.0.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.glassfish.jaxb</groupId>
+				<artifactId>jaxb-runtime</artifactId>
+				<version>4.0.0</version>
+			</dependency>
 
 			<dependency>
 				<groupId>org.openjfx</groupId>
@@ -358,6 +356,19 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -369,7 +380,8 @@
 				<version>3.0.0</version>
 				<reportSets>
 					<reportSet>
-						<reports><!-- select reports -->
+						<reports>
+							<!-- select reports -->
 							<report>index</report>
 						</reports>
 					</reportSet>
