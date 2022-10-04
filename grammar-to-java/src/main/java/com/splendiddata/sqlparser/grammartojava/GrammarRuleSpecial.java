@@ -23,10 +23,18 @@ package com.splendiddata.sqlparser.grammartojava;
  */
 public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
     DEFAULT(),
-    
+
     parse_toplevel(new GrammarRuleSpecialProcessing() {
         public String processLine(String line) {
-            return line.replace("(void) yynerrs;", "yynerrs = 0;");
+            switch (GrammarConverter.bisonVersion) {
+            case BISON_VERSION_2:
+            case BISON_VERSION_3:
+            case BISON_VERSION_3_3:
+            case BISON_VERSION_3_5:
+                return line.replace("(void) yynerrs;", "yynerrs_ = 0;");
+            default:
+                return line.replace("(void) yynerrs;", "yynerrs = 0;");
+            }
         }
     }),
 
@@ -708,16 +716,16 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
             return line.replace(".ival.ival", ".val.ival");
         }
     }),
-//
-// Example of injecting dumpYystack
-//    /**
-//     * Dump the yystack to debug
-//     */
-//    json_query_expr(new GrammarRuleSpecialProcessing() {
-//        public String processLine(String line) {
-//            return line.replaceAll("^(\\s*)\\{", "$1{\n$1    dumpYystack(\"json_query_expr:\", yystack.height, i->yystack.valueAt(i));");
-//        }
-//    }),
+    //
+    // Example of injecting dumpYystack
+    //    /**
+    //     * Dump the yystack to debug
+    //     */
+    //    json_query_expr(new GrammarRuleSpecialProcessing() {
+    //        public String processLine(String line) {
+    //            return line.replaceAll("^(\\s*)\\{", "$1{\n$1    dumpYystack(\"json_query_expr:\", yystack.height, i->yystack.valueAt(i));");
+    //        }
+    //    }),
     /**
      * We're in the epilog section
      */
