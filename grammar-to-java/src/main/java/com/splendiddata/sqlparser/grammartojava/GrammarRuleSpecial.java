@@ -31,7 +31,7 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
             case BISON_VERSION_3:
             case BISON_VERSION_3_3:
             case BISON_VERSION_3_5:
-                return line.replace("(void) yynerrs;", "yynerrs_ = 0;");
+                return line.replace("(void) yynerrs;", "// yynerrs = 0;");
             default:
                 return line.replace("(void) yynerrs;", "yynerrs = 0;");
             }
