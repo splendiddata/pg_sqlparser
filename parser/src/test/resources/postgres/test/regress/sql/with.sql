@@ -811,6 +811,9 @@ DROP TABLE y;
 -- error cases
 --
 
+WITH x(n, b) AS (SELECT 1)
+SELECT * FROM x;
+
 -- INTERSECT
 WITH RECURSIVE x(n) AS (SELECT 1 INTERSECT SELECT n+1 FROM x)
 	SELECT * FROM x;
@@ -1174,7 +1177,7 @@ INSERT INTO bug6051 SELECT * FROM t1;
 SELECT * FROM bug6051;
 SELECT * FROM bug6051_2;
 
--- check INSERT...SELECT rule actions are disallowed on commands
+-- check INSERT ... SELECT rule actions are disallowed on commands
 -- that have modifyingCTEs
 CREATE OR REPLACE RULE bug6051_ins AS ON INSERT TO bug6051 DO INSTEAD
  INSERT INTO bug6051_2

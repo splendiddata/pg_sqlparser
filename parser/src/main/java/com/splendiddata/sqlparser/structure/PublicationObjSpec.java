@@ -78,9 +78,9 @@ public class PublicationObjSpec extends Node {
         case PUBLICATIONOBJ_TABLE:
             return pubtable.toString();
         case PUBLICATIONOBJ_TABLES_IN_CUR_SCHEMA:
-            return "all tables in schema current_schema";
+            return "tables in schema current_schema";
         case PUBLICATIONOBJ_TABLES_IN_SCHEMA:
-            return "all tables in schema " + ParserUtil.identifierToSql(name);
+            return "tables in schema " + ParserUtil.identifierToSql(name);
         case PUBLICATIONOBJ_CONTINUATION:
         default:
             break;

@@ -20,6 +20,7 @@ import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 import com.splendiddata.sqlparser.ParserUtil;
+import com.splendiddata.sqlparser.enums.A_Expr_Kind;
 import com.splendiddata.sqlparser.enums.AttributeIdentity;
 import com.splendiddata.sqlparser.enums.ConstrType;
 import com.splendiddata.sqlparser.enums.FkConstrMatch;
@@ -318,7 +319,27 @@ public class Constraint extends Node {
             }
             break;
         case CONSTR_DEFAULT:
-            result.append("default ").append(raw_expr);
+            result.append("default ");
+            if (raw_expr instanceof A_Expr && A_Expr_Kind.AEXPR_IN.equals(((A_Expr) raw_expr).kind)) {
+                switch (((A_Expr) raw_expr).kind) {
+                case AEXPR_IN:
+                case AEXPR_BETWEEN:
+                case AEXPR_NOT_BETWEEN:
+                case AEXPR_BETWEEN_SYM:
+                case AEXPR_NOT_BETWEEN_SYM:
+                case AEXPR_OP_ANY:
+                case AEXPR_OP_ALL:
+                case AEXPR_LIKE:
+                case AEXPR_ILIKE:
+                    result.append('(').append(raw_expr).append(')');
+                    break;
+                default:
+                    result.append(raw_expr);
+                    break;
+                }
+            } else {
+                result.append(raw_expr);
+            }
             break;
         case CONSTR_EXCLUSION:
             result.append("exclude");
@@ -532,7 +553,9 @@ public class Constraint extends Node {
             return result.toString();
         }
 
-        if (options != null) {
+        if (options != null)
+
+        {
             result.append(" with (");
             String separator = "";
             for (DefElem option : options) {

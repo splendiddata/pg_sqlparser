@@ -148,13 +148,13 @@ SELECT * FROM attmp;
 
 CREATE INDEX attmp_idx ON attmp (a, (d + e), b);
 
-ALTER INDEX attmp_idx ALTER COLUMN 0 SET STATISTICS 1000;
+-- Deactivated for SplendidDataTest: ALTER INDEX attmp_idx ALTER COLUMN 0 SET STATISTICS 1000;
 
 ALTER INDEX attmp_idx ALTER COLUMN 1 SET STATISTICS 1000;
 
 ALTER INDEX attmp_idx ALTER COLUMN 2 SET STATISTICS 1000;
 
-\d+ attmp_idx
+-- Deactivated for SplendidDataTest: \d+ attmp_idx
 
 ALTER INDEX attmp_idx ALTER COLUMN 3 SET STATISTICS 1000;
 
@@ -304,23 +304,23 @@ ALTER TABLE onek DROP CONSTRAINT onek_unique1_constraint_foo;
 
 -- renaming constraints vs. inheritance
 CREATE TABLE constraint_rename_test (a int CONSTRAINT con1 CHECK (a > 0), b int, c int);
-\d constraint_rename_test
+-- Deactivated for SplendidDataTest: \d constraint_rename_test
 CREATE TABLE constraint_rename_test2 (a int CONSTRAINT con1 CHECK (a > 0), d int) INHERITS (constraint_rename_test);
-\d constraint_rename_test2
+-- Deactivated for SplendidDataTest: \d constraint_rename_test2
 ALTER TABLE constraint_rename_test2 RENAME CONSTRAINT con1 TO con1foo; -- fail
 ALTER TABLE ONLY constraint_rename_test RENAME CONSTRAINT con1 TO con1foo; -- fail
 ALTER TABLE constraint_rename_test RENAME CONSTRAINT con1 TO con1foo; -- ok
-\d constraint_rename_test
-\d constraint_rename_test2
+-- Deactivated for SplendidDataTest: \d constraint_rename_test
+-- Deactivated for SplendidDataTest: \d constraint_rename_test2
 -- Deactivated for SplendidDataTest: ALTER TABLE constraint_rename_test ADD CONSTRAINT con2 CHECK (b > 0) NO INHERIT;
 ALTER TABLE ONLY constraint_rename_test RENAME CONSTRAINT con2 TO con2foo; -- ok
 ALTER TABLE constraint_rename_test RENAME CONSTRAINT con2foo TO con2bar; -- ok
-\d constraint_rename_test
-\d constraint_rename_test2
+-- Deactivated for SplendidDataTest: \d constraint_rename_test
+-- Deactivated for SplendidDataTest: \d constraint_rename_test2
 ALTER TABLE constraint_rename_test ADD CONSTRAINT con3 PRIMARY KEY (a);
 ALTER TABLE constraint_rename_test RENAME CONSTRAINT con3 TO con3foo; -- ok
-\d constraint_rename_test
-\d constraint_rename_test2
+-- Deactivated for SplendidDataTest: \d constraint_rename_test
+-- Deactivated for SplendidDataTest: \d constraint_rename_test2
 DROP TABLE constraint_rename_test2;
 DROP TABLE constraint_rename_test;
 ALTER TABLE IF EXISTS constraint_not_exist RENAME CONSTRAINT con3 TO con3foo; -- ok
@@ -336,7 +336,7 @@ ALTER TABLE constraint_rename_cache
   RENAME CONSTRAINT constraint_rename_cache_pkey TO constraint_rename_pkey_new;
 CREATE TABLE like_constraint_rename_cache
   (LIKE constraint_rename_cache INCLUDING ALL);
-\d like_constraint_rename_cache
+-- Deactivated for SplendidDataTest: \d like_constraint_rename_cache
 DROP TABLE constraint_rename_cache;
 DROP TABLE like_constraint_rename_cache;
 
@@ -453,7 +453,7 @@ DROP TABLE attmp2;
 set constraint_exclusion TO 'partition';
 create table nv_parent (d date, check (false) no inherit not valid);
 -- not valid constraint added at creation time should automatically become valid
-\d nv_parent
+-- Deactivated for SplendidDataTest: \d nv_parent
 
 create table nv_child_2010 () inherits (nv_parent);
 create table nv_child_2011 () inherits (nv_parent);
@@ -469,7 +469,7 @@ explain (costs off) select * from nv_parent where d between '2009-08-01'::date a
 
 -- add an inherited NOT VALID constraint
 alter table nv_parent add check (d between '2001-01-01'::date and '2099-12-31'::date) not valid;
-\d nv_child_2009
+-- Deactivated for SplendidDataTest: \d nv_child_2009
 -- we leave nv_parent and children around to help test pg_dump logic
 
 -- Foreign key adding test with mixed types
@@ -1390,14 +1390,14 @@ alter table anothertab
 create index on anothertab(f2,f3);
 create unique index on anothertab(f4);
 
-\d anothertab
+-- Deactivated for SplendidDataTest: \d anothertab
 alter table anothertab alter column f1 type bigint;
 alter table anothertab
   alter column f2 type bigint,
   alter column f3 type bigint,
   alter column f4 type bigint;
 alter table anothertab alter column f5 type bigint;
-\d anothertab
+-- Deactivated for SplendidDataTest: \d anothertab
 
 drop table anothertab;
 
@@ -1450,13 +1450,13 @@ create table at_part_2 (b text, a int);
 insert into at_part_2 values ('1.234', 1024);
 create index on at_partitioned (b);
 create index on at_partitioned (a);
-\d at_part_1
-\d at_part_2
+-- Deactivated for SplendidDataTest: \d at_part_1
+-- Deactivated for SplendidDataTest: \d at_part_2
 alter table at_partitioned attach partition at_part_2 for values from (1000) to (2000);
-\d at_part_2
+-- Deactivated for SplendidDataTest: \d at_part_2
 alter table at_partitioned alter column b type numeric using b::numeric;
-\d at_part_1
-\d at_part_2
+-- Deactivated for SplendidDataTest: \d at_part_1
+-- Deactivated for SplendidDataTest: \d at_part_2
 drop table at_partitioned;
 
 -- Alter column type when no table rewrite is required
@@ -1533,7 +1533,7 @@ alter table recur1 add column f2 int;
 alter table recur1 alter column f2 type recur2; -- fails
 
 -- SET STORAGE may need to add a TOAST table
-create table test_storage (a text);
+-- Deactivated for SplendidDataTest: create table test_storage (a text, c text storage plain);
 alter table test_storage alter a set storage plain;
 alter table test_storage add b int default 0; -- rewrite table to remove its TOAST table
 alter table test_storage alter a set storage extended; -- re-add TOAST table
@@ -1542,24 +1542,27 @@ select reltoastrelid <> 0 as has_toast_table
 from pg_class
 where oid = 'test_storage'::regclass;
 
+-- check STORAGE correctness
+-- Deactivated for SplendidDataTest: create table test_storage_failed (a text, b int storage extended);
+
 -- test that SET STORAGE propagates to index correctly
 create index test_storage_idx on test_storage (b, a);
 alter table test_storage alter column a set storage external;
-\d+ test_storage
-\d+ test_storage_idx
+-- Deactivated for SplendidDataTest: \d+ test_storage
+-- Deactivated for SplendidDataTest: \d+ test_storage_idx
 
 -- ALTER COLUMN TYPE with a check constraint and a child table (bug #13779)
 CREATE TABLE test_inh_check (a float check (a > 10.2), b float);
 CREATE TABLE test_inh_check_child() INHERITS(test_inh_check);
-\d test_inh_check
-\d test_inh_check_child
+-- Deactivated for SplendidDataTest: \d test_inh_check
+-- Deactivated for SplendidDataTest: \d test_inh_check_child
 select relname, conname, coninhcount, conislocal, connoinherit
   from pg_constraint c, pg_class r
   where relname like 'test_inh_check%' and c.conrelid = r.oid
   order by 1, 2;
 ALTER TABLE test_inh_check ALTER COLUMN a TYPE numeric;
-\d test_inh_check
-\d test_inh_check_child
+-- Deactivated for SplendidDataTest: \d test_inh_check
+-- Deactivated for SplendidDataTest: \d test_inh_check_child
 select relname, conname, coninhcount, conislocal, connoinherit
   from pg_constraint c, pg_class r
   where relname like 'test_inh_check%' and c.conrelid = r.oid
@@ -1569,15 +1572,15 @@ ALTER TABLE test_inh_check ADD CONSTRAINT bnoinherit CHECK (b > 100) NO INHERIT;
 ALTER TABLE test_inh_check_child ADD CONSTRAINT blocal CHECK (b < 1000);
 ALTER TABLE test_inh_check_child ADD CONSTRAINT bmerged CHECK (b > 1);
 ALTER TABLE test_inh_check ADD CONSTRAINT bmerged CHECK (b > 1);
-\d test_inh_check
-\d test_inh_check_child
+-- Deactivated for SplendidDataTest: \d test_inh_check
+-- Deactivated for SplendidDataTest: \d test_inh_check_child
 select relname, conname, coninhcount, conislocal, connoinherit
   from pg_constraint c, pg_class r
   where relname like 'test_inh_check%' and c.conrelid = r.oid
   order by 1, 2;
 ALTER TABLE test_inh_check ALTER COLUMN b TYPE numeric;
-\d test_inh_check
-\d test_inh_check_child
+-- Deactivated for SplendidDataTest: \d test_inh_check
+-- Deactivated for SplendidDataTest: \d test_inh_check_child
 select relname, conname, coninhcount, conislocal, connoinherit
   from pg_constraint c, pg_class r
   where relname like 'test_inh_check%' and c.conrelid = r.oid
@@ -1612,7 +1615,7 @@ BEGIN;
 ALTER TABLE check_fk_presence_2 DROP CONSTRAINT check_fk_presence_2_id_fkey;
 ANALYZE check_fk_presence_2;
 ROLLBACK;
-\d check_fk_presence_2
+-- Deactivated for SplendidDataTest: \d check_fk_presence_2
 DROP TABLE check_fk_presence_1, check_fk_presence_2;
 
 -- check column addition within a view (bug #14876)
@@ -1620,14 +1623,14 @@ create table at_base_table(id int, stuff text);
 insert into at_base_table values (23, 'skidoo');
 create view at_view_1 as select * from at_base_table bt;
 create view at_view_2 as select *, to_json(v1) as j from at_view_1 v1;
-\d+ at_view_1
-\d+ at_view_2
+-- Deactivated for SplendidDataTest: \d+ at_view_1
+-- Deactivated for SplendidDataTest: \d+ at_view_2
 explain (verbose, costs off) select * from at_view_2;
 select * from at_view_2;
 
 create or replace view at_view_1 as select *, 2+2 as more from at_base_table bt;
-\d+ at_view_1
-\d+ at_view_2
+-- Deactivated for SplendidDataTest: \d+ at_view_1
+-- Deactivated for SplendidDataTest: \d+ at_view_2
 explain (verbose, costs off) select * from at_view_2;
 select * from at_view_2;
 
@@ -1930,34 +1933,34 @@ drop schema alter2 cascade;
 --
 
 CREATE TYPE test_type AS (a int);
-\d test_type
+-- Deactivated for SplendidDataTest: \d test_type
 
 ALTER TYPE nosuchtype ADD ATTRIBUTE b text; -- fails
 
 ALTER TYPE test_type ADD ATTRIBUTE b text;
-\d test_type
+-- Deactivated for SplendidDataTest: \d test_type
 
 ALTER TYPE test_type ADD ATTRIBUTE b text; -- fails
 
 ALTER TYPE test_type ALTER ATTRIBUTE b SET DATA TYPE varchar;
-\d test_type
+-- Deactivated for SplendidDataTest: \d test_type
 
 ALTER TYPE test_type ALTER ATTRIBUTE b SET DATA TYPE integer;
-\d test_type
+-- Deactivated for SplendidDataTest: \d test_type
 
 ALTER TYPE test_type DROP ATTRIBUTE b;
-\d test_type
+-- Deactivated for SplendidDataTest: \d test_type
 
 ALTER TYPE test_type DROP ATTRIBUTE c; -- fails
 
 ALTER TYPE test_type DROP ATTRIBUTE IF EXISTS c;
 
 ALTER TYPE test_type DROP ATTRIBUTE a, ADD ATTRIBUTE d boolean;
-\d test_type
+-- Deactivated for SplendidDataTest: \d test_type
 
 ALTER TYPE test_type RENAME ATTRIBUTE a TO aa;
 ALTER TYPE test_type RENAME ATTRIBUTE d TO dd;
-\d test_type
+-- Deactivated for SplendidDataTest: \d test_type
 
 DROP TYPE test_type;
 
@@ -1968,29 +1971,29 @@ ALTER TYPE test_type1 ALTER ATTRIBUTE b TYPE varchar; -- fails
 CREATE TYPE test_type2 AS (a int, b text);
 CREATE TABLE test_tbl2 OF test_type2;
 CREATE TABLE test_tbl2_subclass () INHERITS (test_tbl2);
-\d test_type2
-\d test_tbl2
+-- Deactivated for SplendidDataTest: \d test_type2
+-- Deactivated for SplendidDataTest: \d test_tbl2
 
 ALTER TYPE test_type2 ADD ATTRIBUTE c text; -- fails
 ALTER TYPE test_type2 ADD ATTRIBUTE c text CASCADE;
-\d test_type2
-\d test_tbl2
+-- Deactivated for SplendidDataTest: \d test_type2
+-- Deactivated for SplendidDataTest: \d test_tbl2
 
 ALTER TYPE test_type2 ALTER ATTRIBUTE b TYPE varchar; -- fails
 ALTER TYPE test_type2 ALTER ATTRIBUTE b TYPE varchar CASCADE;
-\d test_type2
-\d test_tbl2
+-- Deactivated for SplendidDataTest: \d test_type2
+-- Deactivated for SplendidDataTest: \d test_tbl2
 
 ALTER TYPE test_type2 DROP ATTRIBUTE b; -- fails
 ALTER TYPE test_type2 DROP ATTRIBUTE b CASCADE;
-\d test_type2
-\d test_tbl2
+-- Deactivated for SplendidDataTest: \d test_type2
+-- Deactivated for SplendidDataTest: \d test_tbl2
 
 ALTER TYPE test_type2 RENAME ATTRIBUTE a TO aa; -- fails
 ALTER TYPE test_type2 RENAME ATTRIBUTE a TO aa CASCADE;
-\d test_type2
-\d test_tbl2
-\d test_tbl2_subclass
+-- Deactivated for SplendidDataTest: \d test_type2
+-- Deactivated for SplendidDataTest: \d test_tbl2
+-- Deactivated for SplendidDataTest: \d test_tbl2_subclass
 
 DROP TABLE test_tbl2_subclass;
 
@@ -1998,7 +2001,7 @@ CREATE TYPE test_typex AS (a int, b text);
 CREATE TABLE test_tblx (x int, y test_typex check ((y).a > 0));
 ALTER TYPE test_typex DROP ATTRIBUTE a; -- fails
 ALTER TYPE test_typex DROP ATTRIBUTE a CASCADE;
-\d test_tblx
+-- Deactivated for SplendidDataTest: \d test_tblx
 DROP TABLE test_tblx;
 DROP TYPE test_typex;
 
@@ -2040,7 +2043,7 @@ ALTER TABLE tt7 OF tt_t0;
 CREATE TYPE tt_t1 AS (x int, y numeric(8,2));
 ALTER TABLE tt7 OF tt_t1;			-- reassign an already-typed table
 ALTER TABLE tt7 NOT OF;
-\d tt7
+-- Deactivated for SplendidDataTest: \d tt7
 
 -- make sure we can drop a constraint on the parent but it remains on the child
 CREATE TABLE test_drop_constr_parent (c text CHECK (c IS NOT NULL));
@@ -2070,7 +2073,7 @@ ALTER TABLE IF EXISTS tt8 ALTER COLUMN f SET DEFAULT 0;
 ALTER TABLE IF EXISTS tt8 RENAME COLUMN f TO f1;
 ALTER TABLE IF EXISTS tt8 SET SCHEMA alter2;
 
-\d alter2.tt8
+-- Deactivated for SplendidDataTest: \d alter2.tt8
 
 DROP TABLE alter2.tt8;
 DROP SCHEMA alter2;
@@ -2090,7 +2093,7 @@ ALTER TABLE tt9 ADD CONSTRAINT foo UNIQUE(c);  -- fail, dup name
 ALTER TABLE tt9 ADD CONSTRAINT tt9_c_key CHECK(c > 5);  -- fail, dup name
 ALTER TABLE tt9 ADD CONSTRAINT tt9_c_key2 CHECK(c > 6);
 ALTER TABLE tt9 ADD UNIQUE(c);  -- picks nonconflicting name
-\d tt9
+-- Deactivated for SplendidDataTest: \d tt9
 DROP TABLE tt9;
 
 
@@ -2240,48 +2243,48 @@ DROP TABLE logged1;
 
 -- test ADD COLUMN IF NOT EXISTS
 CREATE TABLE test_add_column(c1 integer);
-\d test_add_column
+-- Deactivated for SplendidDataTest: \d test_add_column
 ALTER TABLE test_add_column
 	ADD COLUMN c2 integer;
-\d test_add_column
+-- Deactivated for SplendidDataTest: \d test_add_column
 ALTER TABLE test_add_column
 	ADD COLUMN c2 integer; -- fail because c2 already exists
 ALTER TABLE ONLY test_add_column
 	ADD COLUMN c2 integer; -- fail because c2 already exists
-\d test_add_column
+-- Deactivated for SplendidDataTest: \d test_add_column
 ALTER TABLE test_add_column
 	ADD COLUMN IF NOT EXISTS c2 integer; -- skipping because c2 already exists
 ALTER TABLE ONLY test_add_column
 	ADD COLUMN IF NOT EXISTS c2 integer; -- skipping because c2 already exists
-\d test_add_column
+-- Deactivated for SplendidDataTest: \d test_add_column
 ALTER TABLE test_add_column
 	ADD COLUMN c2 integer, -- fail because c2 already exists
 	ADD COLUMN c3 integer primary key;
-\d test_add_column
+-- Deactivated for SplendidDataTest: \d test_add_column
 ALTER TABLE test_add_column
 	ADD COLUMN IF NOT EXISTS c2 integer, -- skipping because c2 already exists
 	ADD COLUMN c3 integer primary key;
-\d test_add_column
+-- Deactivated for SplendidDataTest: \d test_add_column
 ALTER TABLE test_add_column
 	ADD COLUMN IF NOT EXISTS c2 integer, -- skipping because c2 already exists
 	ADD COLUMN IF NOT EXISTS c3 integer primary key; -- skipping because c3 already exists
-\d test_add_column
+-- Deactivated for SplendidDataTest: \d test_add_column
 ALTER TABLE test_add_column
 	ADD COLUMN IF NOT EXISTS c2 integer, -- skipping because c2 already exists
 	ADD COLUMN IF NOT EXISTS c3 integer, -- skipping because c3 already exists
 	ADD COLUMN c4 integer REFERENCES test_add_column;
-\d test_add_column
+-- Deactivated for SplendidDataTest: \d test_add_column
 ALTER TABLE test_add_column
 	ADD COLUMN IF NOT EXISTS c4 integer REFERENCES test_add_column;
-\d test_add_column
+-- Deactivated for SplendidDataTest: \d test_add_column
 ALTER TABLE test_add_column
 	ADD COLUMN IF NOT EXISTS c5 SERIAL CHECK (c5 > 8);
-\d test_add_column
+-- Deactivated for SplendidDataTest: \d test_add_column
 ALTER TABLE test_add_column
 	ADD COLUMN IF NOT EXISTS c5 SERIAL CHECK (c5 > 10);
-\d test_add_column*
+-- Deactivated for SplendidDataTest: \d test_add_column*
 DROP TABLE test_add_column;
-\d test_add_column*
+-- Deactivated for SplendidDataTest: \d test_add_column*
 
 -- assorted cases with multiple ALTER TABLE steps
 CREATE TABLE ataddindex(f1 INT);
@@ -2290,7 +2293,7 @@ CREATE UNIQUE INDEX ataddindexi0 ON ataddindex(f1);
 ALTER TABLE ataddindex
   ADD PRIMARY KEY USING INDEX ataddindexi0,
   ALTER f1 TYPE BIGINT;
-\d ataddindex
+-- Deactivated for SplendidDataTest: \d ataddindex
 DROP TABLE ataddindex;
 
 CREATE TABLE ataddindex(f1 VARCHAR(10));
@@ -2298,21 +2301,21 @@ INSERT INTO ataddindex(f1) VALUES ('foo'), ('a');
 ALTER TABLE ataddindex
   ALTER f1 SET DATA TYPE TEXT,
   ADD EXCLUDE ((f1 LIKE 'a') WITH =);
-\d ataddindex
+-- Deactivated for SplendidDataTest: \d ataddindex
 DROP TABLE ataddindex;
 
 CREATE TABLE ataddindex(id int, ref_id int);
 ALTER TABLE ataddindex
   ADD PRIMARY KEY (id),
   ADD FOREIGN KEY (ref_id) REFERENCES ataddindex;
-\d ataddindex
+-- Deactivated for SplendidDataTest: \d ataddindex
 DROP TABLE ataddindex;
 
 CREATE TABLE ataddindex(id int, ref_id int);
 ALTER TABLE ataddindex
   ADD UNIQUE (id),
   ADD FOREIGN KEY (ref_id) REFERENCES ataddindex (id);
-\d ataddindex
+-- Deactivated for SplendidDataTest: \d ataddindex
 DROP TABLE ataddindex;
 
 -- unsupported constraint types for partitioned tables
@@ -2744,13 +2747,13 @@ ALTER TABLE range_parted2 DETACH PARTITION part_rpd CONCURRENTLY;
 DROP TABLE part_rpd;
 -- works fine
 ALTER TABLE range_parted2 DETACH PARTITION part_rp CONCURRENTLY;
-\d+ range_parted2
+-- Deactivated for SplendidDataTest: \d+ range_parted2
 -- constraint should be created
-\d part_rp
+-- Deactivated for SplendidDataTest: \d part_rp
 CREATE TABLE part_rp100 PARTITION OF range_parted2 (CHECK (a>=123 AND a<133 AND a IS NOT NULL)) FOR VALUES FROM (100) to (200);
 ALTER TABLE range_parted2 DETACH PARTITION part_rp100 CONCURRENTLY;
 -- redundant constraint should not be created
-\d part_rp100
+-- Deactivated for SplendidDataTest: \d part_rp100
 DROP TABLE range_parted2;
 
 -- Check ALTER TABLE commands for partitioned tables and partitions
@@ -3032,9 +3035,10 @@ create schema alter1;
 create schema alter2;
 create table alter1.t1 (a int);
 set client_min_messages = 'ERROR';
-create publication pub1 for table alter1.t1, all tables in schema alter2;
+create publication pub1 for table alter1.t1, tables in schema alter2;
 reset client_min_messages;
-alter table alter1.t1 set schema alter2; -- should fail
+alter table alter1.t1 set schema alter2;
+-- Deactivated for SplendidDataTest: \d+ alter2.t1
 drop publication pub1;
 drop schema alter1 cascade;
 drop schema alter2 cascade;

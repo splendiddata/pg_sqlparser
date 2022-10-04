@@ -24,6 +24,9 @@ SET enable_indexonlyscan TO off;
 -- not enabled by default, but we want to test it...
 SET track_functions TO 'all';
 
+-- record dboid for later use
+-- Deactivated for SplendidDataTest:SELECT oid AS dboid from pg_database where datname = current_database() \gset
+
 -- save counters
 BEGIN;
 SET LOCAL stats_fetch_consistency = snapshot;
@@ -302,15 +305,16 @@ DROP TABLE prevstats;
 -- Test that sessions is incremented when a new session is started in pg_stat_database
 -- Deactivated for SplendidDataTest: SELECT sessions AS db_stat_sessions FROM pg_stat_database WHERE datname = (SELECT current_database()) \gset
 -- Deactivated for SplendidDataTest: \c
+SELECT pg_stat_force_next_flush();
 -- Deactivated for SplendidDataTest: SELECT sessions > :db_stat_sessions FROM pg_stat_database WHERE datname = (SELECT current_database());
 
 -- Test pg_stat_bgwriter checkpointer-related stats, together with pg_stat_wal
 -- Deactivated for SplendidDataTest: SELECT checkpoints_req AS rqst_ckpts_before FROM pg_stat_bgwriter \gset
 
--- Test pg_stat_wal
+-- Test pg_stat_wal (and make a temp table so our temp schema exists)
 -- Deactivated for SplendidDataTest: SELECT wal_bytes AS wal_bytes_before FROM pg_stat_wal \gset
 
-CREATE TABLE test_stats_temp AS SELECT 17;
+CREATE TEMP TABLE test_stats_temp AS SELECT 17;
 DROP TABLE test_stats_temp;
 
 -- Checkpoint twice: The checkpointer reports stats after reporting completion
@@ -322,6 +326,12 @@ CHECKPOINT;
 -- Deactivated for SplendidDataTest: SELECT checkpoints_req > :rqst_ckpts_before FROM pg_stat_bgwriter;
 -- Deactivated for SplendidDataTest: SELECT wal_bytes > :wal_bytes_before FROM pg_stat_wal;
 
+-- Test pg_stat_get_backend_idset() and some allied functions.
+-- In particular, verify that their notion of backend ID matches
+-- our temp schema index.
+SELECT (current_schemas(true))[1] = ('pg_temp_' || beid::text) AS match
+FROM pg_stat_get_backend_idset() beid
+WHERE pg_stat_get_backend_pid(beid) = pg_backend_pid();
 
 -----
 -- Test that resetting stats works for reset timestamp
@@ -331,37 +341,37 @@ CHECKPOINT;
 -- Deactivated for SplendidDataTest: SELECT stats_reset AS slru_commit_ts_reset_ts FROM pg_stat_slru WHERE name = 'CommitTs' \gset
 -- Deactivated for SplendidDataTest: SELECT stats_reset AS slru_notify_reset_ts FROM pg_stat_slru WHERE name = 'Notify' \gset
 SELECT pg_stat_reset_slru('CommitTs');
-SELECT stats_reset > :'slru_commit_ts_reset_ts'::timestamptz FROM pg_stat_slru WHERE name = 'CommitTs';
+-- Deactivated for SplendidDataTest: SELECT stats_reset > :'slru_commit_ts_reset_ts'::timestamptz FROM pg_stat_slru WHERE name = 'CommitTs';
 -- Deactivated for SplendidDataTest: SELECT stats_reset AS slru_commit_ts_reset_ts FROM pg_stat_slru WHERE name = 'CommitTs' \gset
 
 -- Test that multiple SLRUs are reset when no specific SLRU provided to reset function
 SELECT pg_stat_reset_slru(NULL);
-SELECT stats_reset > :'slru_commit_ts_reset_ts'::timestamptz FROM pg_stat_slru WHERE name = 'CommitTs';
-SELECT stats_reset > :'slru_notify_reset_ts'::timestamptz FROM pg_stat_slru WHERE name = 'Notify';
+-- Deactivated for SplendidDataTest: SELECT stats_reset > :'slru_commit_ts_reset_ts'::timestamptz FROM pg_stat_slru WHERE name = 'CommitTs';
+-- Deactivated for SplendidDataTest: SELECT stats_reset > :'slru_notify_reset_ts'::timestamptz FROM pg_stat_slru WHERE name = 'Notify';
 
 -- Test that reset_shared with archiver specified as the stats type works
 -- Deactivated for SplendidDataTest: SELECT stats_reset AS archiver_reset_ts FROM pg_stat_archiver \gset
 SELECT pg_stat_reset_shared('archiver');
-SELECT stats_reset > :'archiver_reset_ts'::timestamptz FROM pg_stat_archiver;
+-- Deactivated for SplendidDataTest: SELECT stats_reset > :'archiver_reset_ts'::timestamptz FROM pg_stat_archiver;
 -- Deactivated for SplendidDataTest: SELECT stats_reset AS archiver_reset_ts FROM pg_stat_archiver \gset
 
 -- Test that reset_shared with bgwriter specified as the stats type works
 -- Deactivated for SplendidDataTest: SELECT stats_reset AS bgwriter_reset_ts FROM pg_stat_bgwriter \gset
 SELECT pg_stat_reset_shared('bgwriter');
-SELECT stats_reset > :'bgwriter_reset_ts'::timestamptz FROM pg_stat_bgwriter;
+-- Deactivated for SplendidDataTest: SELECT stats_reset > :'bgwriter_reset_ts'::timestamptz FROM pg_stat_bgwriter;
 -- Deactivated for SplendidDataTest: SELECT stats_reset AS bgwriter_reset_ts FROM pg_stat_bgwriter \gset
 
 -- Test that reset_shared with wal specified as the stats type works
 -- Deactivated for SplendidDataTest: SELECT stats_reset AS wal_reset_ts FROM pg_stat_wal \gset
 SELECT pg_stat_reset_shared('wal');
-SELECT stats_reset > :'wal_reset_ts'::timestamptz FROM pg_stat_wal;
+-- Deactivated for SplendidDataTest: SELECT stats_reset > :'wal_reset_ts'::timestamptz FROM pg_stat_wal;
 -- Deactivated for SplendidDataTest: SELECT stats_reset AS wal_reset_ts FROM pg_stat_wal \gset
 
 -- Test that reset_shared with no specified stats type doesn't reset anything
 SELECT pg_stat_reset_shared(NULL);
-SELECT stats_reset = :'archiver_reset_ts'::timestamptz FROM pg_stat_archiver;
-SELECT stats_reset = :'bgwriter_reset_ts'::timestamptz FROM pg_stat_bgwriter;
-SELECT stats_reset = :'wal_reset_ts'::timestamptz FROM pg_stat_wal;
+-- Deactivated for SplendidDataTest: SELECT stats_reset = :'archiver_reset_ts'::timestamptz FROM pg_stat_archiver;
+-- Deactivated for SplendidDataTest: SELECT stats_reset = :'bgwriter_reset_ts'::timestamptz FROM pg_stat_bgwriter;
+-- Deactivated for SplendidDataTest: SELECT stats_reset = :'wal_reset_ts'::timestamptz FROM pg_stat_wal;
 
 -- Test that reset works for pg_stat_database
 
@@ -369,7 +379,7 @@ SELECT stats_reset = :'wal_reset_ts'::timestamptz FROM pg_stat_wal;
 SELECT pg_stat_reset();
 -- Deactivated for SplendidDataTest: SELECT stats_reset AS db_reset_ts FROM pg_stat_database WHERE datname = (SELECT current_database()) \gset
 SELECT pg_stat_reset();
-SELECT stats_reset > :'db_reset_ts'::timestamptz FROM pg_stat_database WHERE datname = (SELECT current_database());
+-- Deactivated for SplendidDataTest: SELECT stats_reset > :'db_reset_ts'::timestamptz FROM pg_stat_database WHERE datname = (SELECT current_database());
 
 
 ----
@@ -395,9 +405,52 @@ SELECT pg_stat_have_stats('bgwriter', 0, 0);
 -- unknown stats kinds error out
 SELECT pg_stat_have_stats('zaphod', 0, 0);
 -- db stats have objoid 0
-SELECT pg_stat_have_stats('database', (SELECT oid FROM pg_database WHERE datname = current_database()), 1);
-SELECT pg_stat_have_stats('database', (SELECT oid FROM pg_database WHERE datname = current_database()), 0);
+-- Deactivated for SplendidDataTest: SELECT pg_stat_have_stats('database', :dboid, 1);
+-- Deactivated for SplendidDataTest: SELECT pg_stat_have_stats('database', :dboid, 0);
 
+-- pg_stat_have_stats returns true for committed index creation
+CREATE table stats_test_tab1 as select generate_series(1,10) a;
+CREATE index stats_test_idx1 on stats_test_tab1(a);
+-- Deactivated for SplendidDataTest: SELECT 'stats_test_idx1'::regclass::oid AS stats_test_idx1_oid \gset
+SET enable_seqscan TO off;
+select a from stats_test_tab1 where a = 3;
+-- Deactivated for SplendidDataTest: SELECT pg_stat_have_stats('relation', :dboid, :stats_test_idx1_oid);
+
+-- pg_stat_have_stats returns false for dropped index with stats
+-- Deactivated for SplendidDataTest: SELECT pg_stat_have_stats('relation', :dboid, :stats_test_idx1_oid);
+DROP index stats_test_idx1;
+-- Deactivated for SplendidDataTest: SELECT pg_stat_have_stats('relation', :dboid, :stats_test_idx1_oid);
+
+-- pg_stat_have_stats returns false for rolled back index creation
+BEGIN;
+CREATE index stats_test_idx1 on stats_test_tab1(a);
+-- Deactivated for SplendidDataTest: SELECT 'stats_test_idx1'::regclass::oid AS stats_test_idx1_oid \gset
+select a from stats_test_tab1 where a = 3;
+-- Deactivated for SplendidDataTest: SELECT pg_stat_have_stats('relation', :dboid, :stats_test_idx1_oid);
+ROLLBACK;
+-- Deactivated for SplendidDataTest: SELECT pg_stat_have_stats('relation', :dboid, :stats_test_idx1_oid);
+
+-- pg_stat_have_stats returns true for reindex CONCURRENTLY
+CREATE index stats_test_idx1 on stats_test_tab1(a);
+-- Deactivated for SplendidDataTest: SELECT 'stats_test_idx1'::regclass::oid AS stats_test_idx1_oid \gset
+select a from stats_test_tab1 where a = 3;
+-- Deactivated for SplendidDataTest: SELECT pg_stat_have_stats('relation', :dboid, :stats_test_idx1_oid);
+REINDEX index CONCURRENTLY stats_test_idx1;
+-- false for previous oid
+-- Deactivated for SplendidDataTest: SELECT pg_stat_have_stats('relation', :dboid, :stats_test_idx1_oid);
+-- true for new oid
+-- Deactivated for SplendidDataTest: SELECT 'stats_test_idx1'::regclass::oid AS stats_test_idx1_oid \gset
+-- Deactivated for SplendidDataTest: SELECT pg_stat_have_stats('relation', :dboid, :stats_test_idx1_oid);
+
+-- pg_stat_have_stats returns true for a rolled back drop index with stats
+BEGIN;
+-- Deactivated for SplendidDataTest: SELECT pg_stat_have_stats('relation', :dboid, :stats_test_idx1_oid);
+DROP index stats_test_idx1;
+ROLLBACK;
+-- Deactivated for SplendidDataTest: SELECT pg_stat_have_stats('relation', :dboid, :stats_test_idx1_oid);
+
+-- put enable_seqscan back to on
+SET enable_seqscan TO on;
 
 -- ensure that stats accessors handle NULL input correctly
 SELECT pg_stat_get_replication_slot(NULL);

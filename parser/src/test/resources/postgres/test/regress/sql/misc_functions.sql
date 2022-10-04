@@ -5,6 +5,12 @@
  */
  
  
+-- directory paths and dlsuffix are passed to us in environment variables
+-- Deactivated for SplendidDataTest: \getenv libdir PG_LIBDIR
+-- Deactivated for SplendidDataTest: \getenv dlsuffix PG_DLSUFFIX
+
+-- Deactivated for SplendidDataTest: \set regresslib :libdir '/regress' :dlsuffix
+
 --
 -- num_nulls()
 --
@@ -124,6 +130,30 @@ select count(*) > 0 as ok from (select * from pg_ls_waldir() limit 1) ss;
 
 select count(*) >= 0 as ok from pg_ls_archive_statusdir();
 
+-- pg_read_file()
+select length(pg_read_file('postmaster.pid')) > 20;
+select length(pg_read_file('postmaster.pid', 1, 20));
+-- Test missing_ok
+select pg_read_file('does not exist'); -- error
+select pg_read_file('does not exist', true) IS NULL; -- ok
+-- Test invalid argument
+select pg_read_file('does not exist', 0, -1); -- error
+select pg_read_file('does not exist', 0, -1, true); -- error
+
+-- pg_read_binary_file()
+select length(pg_read_binary_file('postmaster.pid')) > 20;
+select length(pg_read_binary_file('postmaster.pid', 1, 20));
+-- Test missing_ok
+select pg_read_binary_file('does not exist'); -- error
+select pg_read_binary_file('does not exist', true) IS NULL; -- ok
+-- Test invalid argument
+select pg_read_binary_file('does not exist', 0, -1); -- error
+select pg_read_binary_file('does not exist', 0, -1, true); -- error
+
+-- pg_stat_file()
+select size > 20, isdir from pg_stat_file('postmaster.pid');
+
+-- pg_ls_dir()
 select * from (select pg_ls_dir('.') a) a where a = 'base' limit 1;
 -- Test missing_ok (second argument)
 select pg_ls_dir('does not exist', false, false); -- error
@@ -134,8 +164,10 @@ select count(*) = 1 as dot_found
 select count(*) = 1 as dot_found
   from pg_ls_dir('.', false, false) as ls where ls = '.';
 
+-- pg_timezone_names()
 select * from (select (pg_timezone_names()).name) ptn where name='UTC' limit 1;
 
+-- pg_tablespace_databases()
 select count(*) > 0 from
   (select pg_tablespace_databases(oid) as pts from pg_tablespace
    where spcname = 'pg_default') pts

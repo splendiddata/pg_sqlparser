@@ -80,7 +80,7 @@ CREATE TABLE fast_emp4000 (
 );
 
 -- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/rect.data'
-COPY slow_emp4000 FROM :'filename';
+-- Deactivated for SplendidDataTest: COPY slow_emp4000 FROM :'filename';
 
 INSERT INTO fast_emp4000 SELECT * FROM slow_emp4000;
 
@@ -278,7 +278,7 @@ CREATE TABLE array_index_op_test (
 );
 
 -- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/array.data'
-COPY array_index_op_test FROM :'filename';
+-- Deactivated for SplendidDataTest: COPY array_index_op_test FROM :'filename';
 ANALYZE array_index_op_test;
 
 SELECT * FROM array_index_op_test WHERE i = '{NULL}' ORDER BY seqno;
@@ -1081,8 +1081,12 @@ REINDEX INDEX CONCURRENTLY pg_class_oid_index; -- no catalog index
 REINDEX TABLE CONCURRENTLY pg_toast.pg_toast_1260; -- no catalog toast table
 REINDEX INDEX CONCURRENTLY pg_toast.pg_toast_1260_index; -- no catalog toast index
 REINDEX SYSTEM CONCURRENTLY postgres; -- not allowed for SYSTEM
+REINDEX (CONCURRENTLY) SYSTEM postgres; -- ditto
+-- Deactivated for SplendidDataTest: REINDEX (CONCURRENTLY) SYSTEM;  -- ditto
 -- Warns about catalog relations
 REINDEX SCHEMA CONCURRENTLY pg_catalog;
+-- Not the current database
+REINDEX DATABASE not_current_database;
 
 -- Check the relation status, there should not be invalid indexes
 -- Deactivated for SplendidDataTest: \d concur_reindex_tab

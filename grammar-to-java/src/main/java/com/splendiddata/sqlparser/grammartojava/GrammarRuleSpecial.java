@@ -23,6 +23,12 @@ package com.splendiddata.sqlparser.grammartojava;
  */
 public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
     DEFAULT(),
+    
+    parse_toplevel(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line.replace("(void) yynerrs;", "yynerrs = 0;");
+        }
+    }),
 
     /**
      * Replaces "if ($n)" constructs with "if ($n != null)".
