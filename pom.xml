@@ -40,9 +40,9 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<sonar.exclusions>file:**/generated-sources/**</sonar.exclusions>
-		<log4j.version>2.18.0</log4j.version>
+		<log4j.version>2.19.0</log4j.version>
 		<javafx.version>11.0.2</javafx.version>
-		<jupiter.version>5.9.0</jupiter.version>
+		<jupiter.version>5.9.1</jupiter.version>
 		<p6spy.version>3.9.1</p6spy.version>
 		<jvx.version>2.8</jvx.version>
 	</properties>
@@ -98,24 +98,24 @@
 			<dependency>
 				<groupId>org.apache.maven.plugin-tools</groupId>
 				<artifactId>maven-plugin-annotations</artifactId>
-				<version>3.6.4</version>
+				<version>3.7.0</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven.plugin-tools</groupId>
 				<artifactId>maven-plugin-tools-api</artifactId>
-				<version>3.6.4</version>
+				<version>3.7.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-core</artifactId>
-				<version>3.8.6</version>
+				<version>3.8.7</version>
 			</dependency>
 
 			<dependency>
 				<groupId>com.github.javaparser</groupId>
 				<artifactId>javaparser-core</artifactId>
-				<version>3.24.4</version>
+				<version>3.24.10</version>
 			</dependency>
 
 	        <dependency>
@@ -126,7 +126,7 @@
 	        <dependency>
 	            <groupId>org.glassfish.jaxb</groupId>
 	            <artifactId>jaxb-runtime</artifactId>
-	            <version>4.0.0</version>
+	            <version>4.0.1</version>
 	        </dependency>
 
 			<dependency>
@@ -186,12 +186,12 @@
 				<groupId>org.junit.platform</groupId>
 				<artifactId>junit-platform-runner</artifactId>
 				<scope>test</scope>
-				<version>1.9.0</version>
+				<version>1.9.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.checkerframework</groupId>
 				<artifactId>checker-qual</artifactId>
-				<version>3.24.0</version>
+				<version>3.29.0</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -207,7 +207,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.8.1</version>
+					<version>3.10.1</version>
 					<configuration>
 						<release>${java.version}</release>
 						<compilerArgs>
@@ -218,17 +218,17 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-antrun-plugin</artifactId>
-					<version>3.0.0</version>
+					<version>3.1.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>exec-maven-plugin</artifactId>
-					<version>1.6.0</version>
+					<version>3.1.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>build-helper-maven-plugin</artifactId>
-					<version>3.2.0</version>
+					<version>3.3.0</version>
 				</plugin>
 				<plugin>
 					<groupId>de.jflex</groupId>
@@ -238,12 +238,12 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
-					<version>3.1.2</version>
+					<version>3.4.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>3.2.0</version>
+					<version>3.3.0</version>
 					<configuration>
 						<encoding>UTF-8</encoding>
 					</configuration>
@@ -251,7 +251,7 @@
 				<plugin>
 					<groupId>org.openjfx</groupId>
 					<artifactId>javafx-maven-plugin</artifactId>
-					<version>0.0.5</version>
+					<version>0.0.8</version>
 				</plugin>
 				<plugin>
 					<groupId>org.jacoco</groupId>
@@ -261,32 +261,32 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-plugin-plugin</artifactId>
-					<version>3.6.0</version>
+					<version>3.7.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-site-plugin</artifactId>
-					<version>3.9.0</version>
+					<version>3.12.1</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.2.0</version>
+					<version>3.4.1</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>3.0.0-M4</version>
+					<version>3.0.0-M7</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-clean-plugin</artifactId>
-					<version>3.1.0</version>
+					<version>3.2.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-deploy-plugin</artifactId>
-					<version>3.0.0-M1</version>
+					<version>3.0.0</version>
 					<configuration>
 						<deployAtEnd>true</deployAtEnd>
 					</configuration>
@@ -294,17 +294,17 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-install-plugin</artifactId>
-					<version>3.0.0-M1</version>
+					<version>3.1.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
-					<version>3.2.0</version>
+					<version>3.3.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.0.0-M3</version>
+					<version>3.1.0</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -366,7 +366,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.4.1</version>
 				<reportSets>
 					<reportSet>
 						<reports><!-- select reports -->
@@ -401,7 +401,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-report-plugin</artifactId>
-				<version>3.0.0-M4</version>
+				<version>3.0.0-M7</version>
 				<configuration>
 					<!-- place your configuration here -->
 				</configuration>
@@ -416,7 +416,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jxr-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.3.0</version>
 			</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
