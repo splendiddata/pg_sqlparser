@@ -285,7 +285,8 @@ public class LexConverter extends AbstractMojo implements FileVisitor<Path> {
                             /*
                              * @since 8.0 - Postgres version 13
                              */
-                            .replace("YYSTATE", "yystate()");
+                            .replace("YYSTATE", "yystate()")
+                            .replaceAll("yytext(?!\\()", "yytext()");
                 } else {
                     specialRule = LexRuleSpecial.identifySpecialRule(line);
                 }

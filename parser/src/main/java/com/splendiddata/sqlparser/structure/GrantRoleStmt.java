@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -46,6 +46,15 @@ public class GrantRoleStmt extends Node {
     @XmlAttribute
     public boolean is_grant;
 
+    /**
+     * options e.g. WITH GRANT OPTION
+     * 
+     * @since Postgres 16
+     */
+    @XmlElementWrapper(name = "opt")
+    @XmlElement(name = "option")
+    public List<DefElem> opt;
+
     /** with admin option */
     @XmlAttribute
     public boolean admin_opt;
@@ -80,6 +89,9 @@ public class GrantRoleStmt extends Node {
             this.grantee_roles = original.grantee_roles.clone();
         }
         this.is_grant = original.is_grant;
+        if (original.opt != null) {
+            this.opt = original.opt.clone();
+        }
         this.admin_opt = original.admin_opt;
         if (original.grantor != null) {
             this.grantor = original.grantor.clone();
@@ -96,6 +108,9 @@ public class GrantRoleStmt extends Node {
         }
         if (grantee_roles != null) {
             clone.grantee_roles = grantee_roles.clone();
+        }
+        if (opt != null) {
+            clone.opt = opt.clone();
         }
         if (grantor != null) {
             clone.grantor = grantor;
@@ -141,6 +156,9 @@ public class GrantRoleStmt extends Node {
             result.append(behavior);
         }
 
+        if (opt != null) {
+            result.append("????? " + getClass().getName() + ".toString(): What to do with opt ??????");
+        }
         return result.toString();
     }
 }

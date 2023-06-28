@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -22,6 +19,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 import com.splendiddata.sqlparser.ParserUtil;
+import com.splendiddata.sqlparser.enums.NodeTag;
 import com.splendiddata.sqlparser.enums.XmlOptionType;
 
 /**
@@ -43,6 +41,36 @@ public class XmlSerialize extends Node {
 
     @XmlElement
     public TypeName typeName;
+
+    /**
+     * [NO] INDENT
+     * 
+     * @since Postgres 16
+     */
+    @XmlAttribute
+    public boolean indent;
+
+    /**
+     * Constructor
+     */
+    public XmlSerialize() {
+        super(NodeTag.T_XmlSerialize);
+    }
+
+    /**
+     * Copy constructor
+     *
+     * @param original to copy
+     */
+    public XmlSerialize(XmlSerialize original) {
+        super(original);
+        this.xmloption = original.xmloption;
+        if (original.expr != null) {
+            this.expr = original.expr.clone();
+        }
+        this.typeName = original.typeName;
+        this.indent = original.indent;
+    }
 
     @Override
     public XmlSerialize clone() {
@@ -78,6 +106,8 @@ public class XmlSerialize extends Node {
             result.append(" as ").append(typeName);
         }
 
+        result.append("????? What to do witn indent ?????");
+        
         result.append(')');
 
         return result.toString();

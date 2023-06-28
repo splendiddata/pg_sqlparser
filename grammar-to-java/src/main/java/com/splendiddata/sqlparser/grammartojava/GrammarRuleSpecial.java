@@ -461,7 +461,7 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
                     /*
                      * The SplitColQualList method needs replacement
                      */
-                    .replace("SplitColQualList($5, &n->constraints, &n->collClause,", "splitColQualList($5, n,");
+                    .replace("SplitColQualList($6, &n->constraints, &n->collClause,", "n.collClause = splitColQualList($5, n.constraints,");
         }
     }),
 

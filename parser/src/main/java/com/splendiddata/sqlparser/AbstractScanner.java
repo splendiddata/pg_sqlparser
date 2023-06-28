@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -30,8 +30,8 @@ import com.splendiddata.sqlparser.structure.ErrCode;
 import com.splendiddata.sqlparser.structure.ErrDetail;
 import com.splendiddata.sqlparser.structure.Location;
 import com.splendiddata.sqlparser.structure.Position;
-import com.splendiddata.sqlparser.structure.core_yyscan_t;
 import com.splendiddata.sqlparser.structure.core_yy_extra_type;
+import com.splendiddata.sqlparser.structure.core_yyscan_t;
 
 /**
  * Base class for the generated {@link com.splendiddata.sqlparser.SqlScanner} class.
@@ -490,25 +490,26 @@ public abstract class AbstractScanner extends AbstractCProgram implements com.sp
     }
 
     /**
-     * Checks if a numeric string is small enough to put it into a 32-bit integer or not. If it is smll enough,
-     * {@link com.splendiddata.sqlparser.ScanKeyword#ICONST} will be returned. Otherwise
-     * {@link com.splendiddata.sqlparser.ScanKeyword#FCONST}
+ * Process {decinteger}, {hexinteger}, etc.  Note this will also do the right
+ * thing with {numeric}, ie digits and a decimal point.
      * <p>
      * copied from /postgresql-9.3.4/src/backend/parser/scan.c
      * </p>
      *
-     * @param text
+     * @param token 
      *            Numeric text
+     * @param lval
+     * @param base The numbering system. Can be <ul><li>2<li>8<li>10<li>16</ul> 
      * @return int ScanKeyword.ICONST.value or ScanKeyword.FCONST.value depending on the actual numeric value of text
      */
-    int process_integer_literal(String text) {
-        yylval = text;
+    int process_integer_literal(String token, Object lval, int base) {
+        yylval = token;
 
-        BigInteger val = new BigInteger(text);
-        if (val.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) > 0) {
+        if (!token.matches("^\\d*$") || new BigInteger(token).compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) > 0) {
+            /* integer too large (or contains decimal pt), treat it as a float */
             return ScanKeyword.FCONST.value;
         }
-        yylval = Integer.valueOf(val.intValue());
+        yylval = Integer.valueOf(token);
         return ScanKeyword.ICONST.value;
     }
 

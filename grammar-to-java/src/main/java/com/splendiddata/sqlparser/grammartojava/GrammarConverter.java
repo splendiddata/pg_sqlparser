@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -349,8 +349,8 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                             .replaceAll("%type\\s<Integer>\\s+json_encoding", "%type <JsonEncoding> json_encoding")
                             .replaceAll("^\\s+json_table_default_plan_choices",
                                     "%type <Integer> json_table_default_plan_choices")
-                            .replaceAll("^\\s+json_predicate_type_constraint_opt",
-                                    "%type <JsonValueType> json_predicate_type_constraint_opt")
+                            .replaceAll("^\\s+json_predicate_type_constraint",
+                                    "%type <JsonValueType> json_predicate_type_constraint")
                             .replace("%type <jsbehavior>", "%type <JsonBehavior>")
                             .replace("%type <js_quotes>", "%type <JsonQuotes>")
                             .replaceAll("^\\s+json_wrapper_clause_opt", "%type <JsonWrapper> json_wrapper_clause_opt")
@@ -1280,6 +1280,12 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
         out.println("   * @since 8.0 - Postgres 13");
         out.println("   */");
         out.println("  private static final int InvalidSubTransactionId  = 0;");
+        out.println();
+        out.println("  /**");
+        out.println("   * obtained from postgresql-16beta1/src/include/common/relpath.h");
+        out.println("   * @since Postgres 16");
+        out.println("   */");
+        out.println("  private static final RelFileNumber InvalidRelFileNumber  = new RelFileNumber();");
         out.println("}");
     }
 

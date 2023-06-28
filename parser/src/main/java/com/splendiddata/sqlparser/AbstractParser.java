@@ -27,6 +27,8 @@ import com.splendiddata.sqlparser.enums.CoercionForm;
 import com.splendiddata.sqlparser.enums.DefElemAction;
 import com.splendiddata.sqlparser.enums.GroupingSetKind;
 import com.splendiddata.sqlparser.enums.JsonEncoding;
+import com.splendiddata.sqlparser.enums.JsonFormatType;
+import com.splendiddata.sqlparser.enums.JsonValueType;
 import com.splendiddata.sqlparser.enums.NodeTag;
 import com.splendiddata.sqlparser.enums.RoleSpecType;
 import com.splendiddata.sqlparser.enums.Severity;
@@ -45,8 +47,13 @@ import com.splendiddata.sqlparser.structure.CreateDomainStmt;
 import com.splendiddata.sqlparser.structure.CreateTrigStmt;
 import com.splendiddata.sqlparser.structure.DefElem;
 import com.splendiddata.sqlparser.structure.ErrCode;
+import com.splendiddata.sqlparser.structure.Expr;
 import com.splendiddata.sqlparser.structure.FuncCall;
 import com.splendiddata.sqlparser.structure.GroupingSet;
+import com.splendiddata.sqlparser.structure.JsonFormat;
+import com.splendiddata.sqlparser.structure.JsonIsPredicate;
+import com.splendiddata.sqlparser.structure.JsonKeyValue;
+import com.splendiddata.sqlparser.structure.JsonValueExpr;
 import com.splendiddata.sqlparser.structure.List;
 import com.splendiddata.sqlparser.structure.ListCell;
 import com.splendiddata.sqlparser.structure.Location;
@@ -1410,5 +1417,184 @@ public class AbstractParser extends AbstractCProgram {
             }
         }
         log.info(msg);
+    }
+
+    /**
+     * Case-independent comparison of two null-terminated strings.
+     * <p>
+     * see {@link java.lang.String#compareToIgnoreCase(String)}
+     * <p>
+     * Copied from postgresql-16beta1/src/port/pgstrcasecmp.c
+     *
+     * @param s1
+     *            The string to compare with
+     * @param s2
+     *            The string to compare to
+     * @return int
+     *         <ul>
+     *         <li>negative if s1 < s2
+     *         <li>0 if equal
+     *         <li>positive if s1 > s2
+     *         </ul>
+     * @since Postgres 16
+     */
+    protected static int pg_strcasecmp(String s1, String s2) {
+        return s1.compareToIgnoreCase(s2);
+    }
+
+    /**
+     * Separate Constraint nodes from COLLATE clauses in a ColQualList
+     * <p>
+     * Inspired upon postgresql-16beta1/src/backend/parser/gram.c
+     *
+     * @param qualList
+     *            A list that may contain Constraints and a CollateClause
+     * @param constraintList
+     *            The Constraints from the qualList
+     * @param yyscanner2
+     * @return CollateClause The CollateClause from the qualList or null if there isn't any
+     * @since Postgres 16
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    protected CollateClause splitColQualList(List qualList, List<Constraint> constraintList,
+            core_yyscan_t yyscanner) {
+        CollateClause collClause = null;
+        for (Node n : (List<Node>)qualList) {
+            if (n instanceof Constraint) {
+                constraintList.add((Constraint) n);
+            } else if (n instanceof CollateClause) {
+                if (collClause == null) {
+                    collClause = (CollateClause) n;
+                } else {
+
+                    ereport(Severity.ERROR, ErrCode.ERRCODE_SYNTAX_ERROR,
+                            errmsg("multiple COLLATE clauses not allowed"), parser_errposition(n.location));
+                }
+            } else {
+                ereport(Severity.ERROR, ErrCode.ERRCODE_SYNTAX_ERROR, Severity.ERROR,
+                        errmsg("unexpected node type " + n.type), parser_errposition(n.location));
+            }
+        }
+        return collClause;
+    }
+
+    /**
+     * makeJsonValueExpr - creates a JsonValueExpr node
+     * <p>
+     * Copied from postgresql-16beta1/src/backend/nodes/makefuncs.c
+     *
+     * @param expr
+     *            for the returned JsonValueExpr
+     * @param format
+     *            for the returned JsonValueExpr
+     * @return JsonValueExpr with the specified expr and format
+     * @since postgres 16
+     */
+    protected static JsonValueExpr makeJsonValueExpr(Expr expr, JsonFormat format) {
+        JsonValueExpr jve = new JsonValueExpr();
+        jve.raw_expr = expr;
+        jve.formatted_expr = null;
+        jve.format = format;
+        return jve;
+    }
+
+    /**
+     * makeJsonIsPredicate - creates a JsonIsPredicate node
+     * <p>
+     * Copied from postgresql-16beta1/src/backend/nodes/makefuncs.c
+     *
+     * @param expr
+     *            for the returned JsonIsPredicate
+     * @param format
+     *            for the returned JsonIsPredicate
+     * @param item_type
+     *            for the returned JsonIsPredicate
+     * @param unique_keys
+     *            for the returned JsonIsPredicate
+     * @param location
+     *            from the parser
+     * @return JsonIsPredicate with the specified properties
+     * @since postgres 16
+     */
+    protected JsonIsPredicate makeJsonIsPredicate(Node expr, JsonFormat format, JsonValueType item_type,
+            boolean unique_keys, Location location) {
+        JsonIsPredicate n = new JsonIsPredicate();
+
+        n.expr = expr;
+        n.format = format;
+        n.item_type = item_type;
+        n.unique_keys = unique_keys;
+        n.location = location;
+
+        return n;
+    }
+
+    /**
+     * makeJsonFormat - creates a JsonFormat node
+     * <p>
+     * Copied from postgresql-16beta1/src/backend/nodes/makefuncs.c
+     *
+     * @param type
+     *            for the JsonFormat to create
+     * @param encoding
+     *            for the JsonFormat to create
+     * @param i
+     *            null location
+     * @return JsonFormat with the specified
+     * @since postgres 16
+     */
+    protected JsonFormat makeJsonFormat(JsonFormatType type, JsonEncoding encoding, int i) {
+        JsonFormat jf = new JsonFormat();
+
+        jf.format_type = type;
+        jf.encoding = encoding;
+        jf.location = null;
+
+        return jf;
+    }
+
+    /**
+     * makeJsonFormat - creates a JsonFormat node
+     * <p>
+     * Copied from postgresql-16beta1/src/backend/nodes/makefuncs.c
+     *
+     * @param type
+     *            for the JsonFormat to create
+     * @param encoding
+     *            for the JsonFormat to create
+     * @param location
+     *            for the JsonFormat to create
+     * @return JsonFormat with the specified
+     * @since postgres 16
+     */
+    protected JsonFormat makeJsonFormat(JsonFormatType type, JsonEncoding encoding, Location location) {
+        JsonFormat jf = new JsonFormat();
+
+        jf.format_type = type;
+        jf.encoding = encoding;
+        jf.location = location;
+
+        return jf;
+    }
+
+    /**
+     * makeJsonKeyValue - creates a JsonKeyValue node
+     * <p>
+     * Copied from postgresql-16beta1/src/backend/nodes/makefuncs.c
+     *
+     * @param key
+     *            property for the JsonKeyValue to construct
+     * @param node
+     *            property for the JsonKeyValue to construct
+     * @return JsonKeyValue with the specified properties
+     * @since postgres 16
+     */
+    protected JsonKeyValue makeJsonKeyValue(Node key, Node node) {
+        JsonKeyValue n = new JsonKeyValue();
+
+        n.key = (Expr)key;
+        n.value = (JsonValueExpr) node;
+
+        return n;
     }
 }

@@ -44,7 +44,7 @@ public class PartitionSpec extends Node {
      * {@link PartitionStrategy#PARTITION_STRATEGY_RANGE}
      */
     @XmlAttribute
-    public String strategy;
+    public PartitionStrategy strategy;
 
     /**
      * List of PartitionElems

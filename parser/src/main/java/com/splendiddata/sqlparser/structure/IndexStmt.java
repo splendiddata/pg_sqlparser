@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 = 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 = 2023
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -18,6 +18,7 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.NodeTag;
@@ -31,7 +32,7 @@ import com.splendiddata.sqlparser.enums.NodeTag;
  * describing the index properties are empty.
  * </p>
  * <p>
- * Copied from /postgresql-12beta2/src/include/nodes/parsenodes.h
+ * Initially opied from /postgresql-12beta2/src/include/nodes/parsenodes.h
  * </p>
  * 
  * @author Splendid Data Product Development B.V.
@@ -51,7 +52,7 @@ public class IndexStmt extends Node {
     /**
      * OID of relation to build index on
      * 
-     * @since 6.0 - Postgres version 11
+     * @since Postgres 11
      */
     public Oid relationId;
 
@@ -71,7 +72,7 @@ public class IndexStmt extends Node {
     /**
      * additional columns to index: a list of IndexElem
      * 
-     * @since 6.0 - Postgres version 11
+     * @since Postgres 11
      */
     @XmlElementWrapper(name = "indexIncludingParams")
     @XmlElement(name = "indexIncludingParam")
@@ -99,21 +100,43 @@ public class IndexStmt extends Node {
     @XmlElement
     public Oid indexOid;
 
-    /** relfilenode of existing storage, if any */
-    @XmlElement
+    /**
+     * relfilenode of existing storage, if any
+     * 
+     * @deprecated since Postgres 16. Please use oldNumber instead
+     */
+    @XmlTransient
+    @Deprecated(since = "Postgres 16", forRemoval = true)
     public Oid oldNode;
+
+    /**
+     * relfilenode of existing storage, if any
+     * 
+     * @since Postgres 16
+     */
+    @XmlElement
+    public RelFileNumber oldNumber;
 
     /**
      * rd_createSubid of oldNode
      * 
-     * @since 8.0 - Postgres version 13
+     * @since Postgres 13
      */
+    @XmlAttribute
     public int oldCreateSubid;
+
+    /**
+     * rd_firstRelfilelocatorSubid of oldNumber
+     * 
+     * @since Postgres 16
+     */
+    @XmlAttribute
+    public int oldFirstRelfilelocatorSubid;
 
     /**
      * rd_firstRelfilenodeSubid of oldNode
      * 
-     * @since 8.0 - Postgres version 13
+     * @since Postgres 13
      */
     public int oldFirstRelfilenodeSubid;
 
@@ -160,7 +183,7 @@ public class IndexStmt extends Node {
     /*
      * reset default_tablespace prior to executing
      * 
-     * @since 7.0 - Postgres 12
+     * @since Postgres 12
      */
     @XmlAttribute
     public boolean reset_default_tblspc;
@@ -209,10 +232,11 @@ public class IndexStmt extends Node {
         if (toCopy.indexOid != null) {
             this.indexOid = toCopy.indexOid.clone();
         }
-        if (toCopy.oldNode != null) {
-            this.oldNode = toCopy.oldNode.clone();
+        if (toCopy.oldNumber != null) {
+            this.oldNumber = toCopy.oldNumber.clone();
         }
         this.oldCreateSubid = toCopy.oldCreateSubid;
+        this.oldFirstRelfilelocatorSubid = toCopy.oldFirstRelfilelocatorSubid;
         this.oldFirstRelfilenodeSubid = toCopy.oldFirstRelfilenodeSubid;
         this.unique = toCopy.unique;
         this.nulls_not_distinct = toCopy.nulls_not_distinct;
@@ -250,8 +274,8 @@ public class IndexStmt extends Node {
         if (indexOid != null) {
             clone.indexOid = indexOid.clone();
         }
-        if (oldNode != null) {
-            clone.oldNode = oldNode.clone();
+        if (oldNumber != null) {
+            clone.oldNumber = oldNumber.clone();
         }
         return clone;
     }

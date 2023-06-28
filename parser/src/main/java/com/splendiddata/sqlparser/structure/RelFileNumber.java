@@ -17,23 +17,16 @@
 
 package com.splendiddata.sqlparser.structure;
 
-import jakarta.xml.bind.annotation.XmlRootElement;
-
 /**
- * Represents a Postgres object identifier
+ * Oid that represents a file
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
+ * @since Postgres 16
  */
-@XmlRootElement(namespace = "parser")
-public class Oid implements Cloneable {
+public class RelFileNumber extends Oid {
     
     @Override
-    public Oid clone() {
-        try {
-            return (Oid) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError("com.splendiddata.sqlparser.structure.Oid.clone()->failed", e);
-        }
+    public RelFileNumber clone() {
+        return (RelFileNumber) super.clone();
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -75,6 +75,13 @@ public class ColumnDef extends Node {
     @XmlAttribute
     public char storage;
 
+    /**
+     * attstorage setting name or NULL for default
+     * 
+     * @since Postgres 16
+     */
+    public String storage_name;
+
     /** default value (untransformed parse tree) */
     @XmlElement
     public Node raw_default;
@@ -128,6 +135,7 @@ public class ColumnDef extends Node {
         this.is_from_type = original.is_from_type;
         this.is_from_parent = original.is_from_parent;
         this.storage = original.storage;
+        this.storage_name = original.storage_name;
         if (original.collClause != null) {
             this.collClause = original.collClause.clone();
         }
@@ -173,7 +181,7 @@ public class ColumnDef extends Node {
             result.append(space).append("compression ").append(compression);
             space = " ";
         }
-        
+
         if (raw_default != null) {
             result.append(space).append("using ").append(raw_default);
             space = " ";
@@ -201,6 +209,11 @@ public class ColumnDef extends Node {
 
         if (storage != 0) {
             result.append(space).append("??????? storage=").append(storage).append(" ???????");
+            space = " ";
+        }
+
+        if (storage_name != null) {
+            result.append(space).append("??????? storage_name=").append(storage_name).append(" ???????");
             space = " ";
         }
 
