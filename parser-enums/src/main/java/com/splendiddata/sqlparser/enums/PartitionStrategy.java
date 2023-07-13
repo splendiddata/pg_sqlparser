@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -54,6 +54,19 @@ public enum PartitionStrategy {
      */
     private PartitionStrategy(char value) {
         this.VALUE = value;
+    }
+    
+    public String toString() {
+        switch (this) {
+        case PARTITION_STRATEGY_HASH:
+            return "hash";
+        case PARTITION_STRATEGY_LIST:
+            return "list";
+        case PARTITION_STRATEGY_RANGE:
+            return "range";
+        default:
+            return "????? Please implement " + this.getClass().getName() + ".toString() value " + this.name() + " ??????";
+        }
     }
 
     static {

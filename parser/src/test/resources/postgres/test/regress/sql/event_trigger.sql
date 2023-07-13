@@ -1,10 +1,9 @@
 /*
  * This file has been altered by SplendidData.
  * It is only used for syntax checking, not for the testing of a commandline paser.
- * So input for the copy statements is removed.
+ * So some statements that are expected to fail are removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
-
 
 
 -- should fail, return type mismatch

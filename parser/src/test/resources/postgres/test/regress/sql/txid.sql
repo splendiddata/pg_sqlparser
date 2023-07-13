@@ -1,11 +1,3 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
-
-
-
 -- txid_snapshot data type and related functions
 -- Note: these are backward-compatibility functions and types, and have been
 -- replaced by new xid8-based variants.  See xid.sql.  The txid variants will
@@ -67,25 +59,25 @@ SELECT txid_snapshot '1:9223372036854775808:3';
 -- test txid_current_if_assigned
 BEGIN;
 SELECT txid_current_if_assigned() IS NULL;
--- Deactivated for SplendidDataTest: SELECT txid_current() \gset
+SELECT txid_current() \gset
 SELECT txid_current_if_assigned() IS NOT DISTINCT FROM BIGINT :'txid_current';
 COMMIT;
 
 -- test xid status functions
 BEGIN;
--- Deactivated for SplendidDataTest: SELECT txid_current() AS committed \gset
+SELECT txid_current() AS committed \gset
 COMMIT;
 
 BEGIN;
--- Deactivated for SplendidDataTest: SELECT txid_current() AS rolledback \gset
+SELECT txid_current() AS rolledback \gset
 ROLLBACK;
 
 BEGIN;
--- Deactivated for SplendidDataTest: SELECT txid_current() AS inprogress \gset
+SELECT txid_current() AS inprogress \gset
 
--- Deactivated for SplendidDataTest: SELECT txid_status(:committed) AS committed;
--- Deactivated for SplendidDataTest: SELECT txid_status(:rolledback) AS rolledback;
--- Deactivated for SplendidDataTest: SELECT txid_status(:inprogress) AS inprogress;
+SELECT txid_status(:committed) AS committed;
+SELECT txid_status(:rolledback) AS rolledback;
+SELECT txid_status(:inprogress) AS inprogress;
 SELECT txid_status(1); -- BootstrapTransactionId is always committed
 SELECT txid_status(2); -- FrozenTransactionId is always committed
 SELECT txid_status(3); -- in regress testing FirstNormalTransactionId will always be behind oldestXmin
@@ -106,5 +98,5 @@ EXCEPTION
     RAISE NOTICE 'Got expected error for xid in the future';
 END;
 $$;
--- Deactivated for SplendidDataTest: SELECT test_future_xid_status(:inprogress + 10000);
+SELECT test_future_xid_status(:inprogress + 10000);
 ROLLBACK;

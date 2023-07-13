@@ -79,6 +79,23 @@ public class JsonArrayConstructor extends Node {
 
     @Override
     public String toString() {
-        return ("Please implement " + getClass().getName() + ".toString()");
+        StringBuilder result = new StringBuilder("json_array");
+        String separator = "(";
+        if (exprs != null) {
+            for (JsonValueExpr expr : exprs) {
+                result.append(separator).append(expr);
+                separator = ", ";
+            }
+            separator = " ";
+        }
+        if (!absent_on_null) {
+            result.append(separator).append("null on null");
+            separator = " ";
+        }
+        if (output != null) {
+            result.append(separator).append(output);
+        }
+        result.append(")");
+        return result.toString();
     }
 }

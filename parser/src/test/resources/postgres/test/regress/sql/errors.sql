@@ -1,9 +1,9 @@
 /*
  * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So some statements that are expected to fail are removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
-
 
 
 --
@@ -25,7 +25,7 @@ select 1;
 -- SELECT
 
 -- this used to be a syntax error, but now we allow an empty target list
--- Deactivated for SplendidDataTest: select;
+select;
 
 -- no such relation
 select * from nonesuch;
@@ -296,17 +296,17 @@ select 1/0::float4;
 -- Deactivated for SplendidDataTest: INSERT INTO foo VALUES(123) foo;
 
 -- Deactivated for SplendidDataTest: INSERT INTO 123
--- Deactivated for SplendidDataTest: VALUES(123);
+VALUES(123);
 
 -- Deactivated for SplendidDataTest: INSERT INTO foo
 -- Deactivated for SplendidDataTest: VALUES(123) 123
 -- Deactivated for SplendidDataTest: ;
 
 -- with a tab
--- Deactivated for SplendidDataTest: CREATE TABLE foo
--- Deactivated for SplendidDataTest:   (id INT4 UNIQUE NOT NULL, id2 TEXT NOT NULL PRIMARY KEY,
--- Deactivated for SplendidDataTest:     id3 INTEGER NOT NUL,
--- Deactivated for SplendidDataTest:    id4 INT4 UNIQUE NOT NULL, id5 TEXT UNIQUE NOT NULL);
+CREATE TABLE foo
+  (id INT4 UNIQUE NOT NULL, id2 TEXT NOT NULL PRIMARY KEY,
+-- Deactivated for SplendidDataTest: 	id3 INTEGER NOT NUL,
+   id4 INT4 UNIQUE NOT NULL, id5 TEXT UNIQUE NOT NULL);
 
 -- long line to be truncated on the left
 -- Deactivated for SplendidDataTest: CREATE TABLE foo(id INT4 UNIQUE NOT NULL, id2 TEXT NOT NULL PRIMARY KEY, id3 INTEGER NOT NUL,

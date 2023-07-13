@@ -1,12 +1,3 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for syntax checking, not for the testing of a commandline paser.
- * So input for the copy statements is removed.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
-
-
-
 --
 -- UPDATE syntax tests
 --
@@ -213,10 +204,10 @@ ALTER TABLE part_b_10_b_20 ATTACH PARTITION part_c_100_200 FOR VALUES FROM (100)
 CREATE TABLE part_c_1_100 (e varchar, d int, c numeric, b bigint, a text);
 ALTER TABLE part_b_10_b_20 ATTACH PARTITION part_c_1_100 FOR VALUES FROM (1) TO (100);
 
--- Deactivated for SplendidDataTest: \set init_range_parted 'truncate range_parted; insert into range_parted VALUES (''a'', 1, 1, 1), (''a'', 10, 200, 1), (''b'', 12, 96, 1), (''b'', 13, 97, 2), (''b'', 15, 105, 16), (''b'', 17, 105, 19)'
--- Deactivated for SplendidDataTest: \set show_data 'select tableoid::regclass::text COLLATE "C" partname, * from range_parted ORDER BY 1, 2, 3, 4, 5, 6'
--- Deactivated for SplendidDataTest: :init_range_parted;
--- Deactivated for SplendidDataTest: :show_data;
+\set init_range_parted 'truncate range_parted; insert into range_parted VALUES (''a'', 1, 1, 1), (''a'', 10, 200, 1), (''b'', 12, 96, 1), (''b'', 13, 97, 2), (''b'', 15, 105, 16), (''b'', 17, 105, 19)'
+\set show_data 'select tableoid::regclass::text COLLATE "C" partname, * from range_parted ORDER BY 1, 2, 3, 4, 5, 6'
+:init_range_parted;
+:show_data;
 
 -- The order of subplans should be in bound order
 EXPLAIN (costs off) UPDATE range_parted set c = c - 50 WHERE c > 97;
@@ -234,14 +225,14 @@ UPDATE range_parted set e = d;
 UPDATE part_c_1_100 set c = c + 20 WHERE c = 98;
 -- ok, row movement
 UPDATE part_b_10_b_20 set c = c + 20 returning c, b, a;
--- Deactivated for SplendidDataTest: :show_data;
+:show_data;
 
 -- fail, row movement happens only within the partition subtree.
 UPDATE part_b_10_b_20 set b = b - 6 WHERE c > 116 returning *;
 -- ok, row movement, with subset of rows moved into different partition.
 UPDATE range_parted set b = b - 6 WHERE c > 116 returning a, b + c;
 
--- Deactivated for SplendidDataTest: :show_data;
+:show_data;
 
 -- Common table needed for multiple test scenarios.
 CREATE TABLE mintab(c1 int);
@@ -258,19 +249,19 @@ UPDATE upview set a = 'b', b = 15, c = 120 WHERE b = 4;
 -- ok, row movement, check option passes
 UPDATE upview set a = 'b', b = 15 WHERE b = 4;
 
--- Deactivated for SplendidDataTest: :show_data;
+:show_data;
 
 -- cleanup
 DROP VIEW upview;
 
 -- RETURNING having whole-row vars.
--- Deactivated for SplendidDataTest: :init_range_parted;
+:init_range_parted;
 UPDATE range_parted set c = 95 WHERE a = 'b' and b > 10 and c > 100 returning (range_parted), *;
--- Deactivated for SplendidDataTest: :show_data;
+:show_data;
 
 
 -- Transition tables with update row movement
--- Deactivated for SplendidDataTest: :init_range_parted;
+:init_range_parted;
 
 CREATE FUNCTION trans_updatetrigfunc() RETURNS trigger LANGUAGE plpgsql AS
 $$
@@ -288,8 +279,8 @@ CREATE TRIGGER trans_updatetrig
   FOR EACH STATEMENT EXECUTE PROCEDURE trans_updatetrigfunc();
 
 UPDATE range_parted set c = (case when c = 96 then 110 else c + 1 end ) WHERE a = 'b' and b > 10 and c >= 96;
--- Deactivated for SplendidDataTest: :show_data;
--- Deactivated for SplendidDataTest: :init_range_parted;
+:show_data;
+:init_range_parted;
 
 -- Enabling OLD TABLE capture for both DELETE as well as UPDATE stmt triggers
 -- should not cause DELETEd rows to be captured twice. Similar thing for
@@ -301,7 +292,7 @@ CREATE TRIGGER trans_inserttrig
   AFTER INSERT ON range_parted REFERENCING NEW TABLE AS new_table
   FOR EACH STATEMENT EXECUTE PROCEDURE trans_updatetrigfunc();
 UPDATE range_parted set c = c + 50 WHERE a = 'b' and b > 10 and c >= 96;
--- Deactivated for SplendidDataTest: :show_data;
+:show_data;
 DROP TRIGGER trans_deletetrig ON range_parted;
 DROP TRIGGER trans_inserttrig ON range_parted;
 -- Don't drop trans_updatetrig yet. It is required below.
@@ -324,19 +315,19 @@ CREATE TRIGGER trig_d1_15 BEFORE UPDATE OR INSERT ON part_d_1_15
    FOR EACH ROW EXECUTE PROCEDURE func_parted_mod_b();
 CREATE TRIGGER trig_d15_20 BEFORE UPDATE OR INSERT ON part_d_15_20
    FOR EACH ROW EXECUTE PROCEDURE func_parted_mod_b();
--- Deactivated for SplendidDataTest: :init_range_parted;
+:init_range_parted;
 UPDATE range_parted set c = (case when c = 96 then 110 else c + 1 end) WHERE a = 'b' and b > 10 and c >= 96;
--- Deactivated for SplendidDataTest: :show_data;
--- Deactivated for SplendidDataTest: :init_range_parted;
+:show_data;
+:init_range_parted;
 UPDATE range_parted set c = c + 50 WHERE a = 'b' and b > 10 and c >= 96;
--- Deactivated for SplendidDataTest: :show_data;
+:show_data;
 
 -- Case where per-partition tuple conversion map array is allocated, but the
 -- map is not required for the particular tuple that is routed, thanks to
 -- matching table attributes of the partition and the target table.
--- Deactivated for SplendidDataTest: :init_range_parted;
+:init_range_parted;
 UPDATE range_parted set b = 15 WHERE b = 1;
--- Deactivated for SplendidDataTest: :show_data;
+:show_data;
 
 DROP TRIGGER trans_updatetrig ON range_parted;
 DROP TRIGGER trig_c1_100 ON part_c_1_100;
@@ -353,7 +344,7 @@ GRANT ALL ON range_parted, mintab TO regress_range_parted_user;
 CREATE POLICY seeall ON range_parted AS PERMISSIVE FOR SELECT USING (true);
 CREATE POLICY policy_range_parted ON range_parted for UPDATE USING (true) WITH CHECK (c % 2 = 0);
 
--- Deactivated for SplendidDataTest: :init_range_parted;
+:init_range_parted;
 SET SESSION AUTHORIZATION regress_range_parted_user;
 -- This should fail with RLS violation error while moving row from
 -- part_a_10_a_20 to part_d_1_15, because we are setting 'c' to an odd number.
@@ -369,7 +360,7 @@ END $$ LANGUAGE plpgsql;
 CREATE TRIGGER trig_d_1_15 BEFORE INSERT ON part_d_1_15
    FOR EACH ROW EXECUTE PROCEDURE func_d_1_15();
 
--- Deactivated for SplendidDataTest: :init_range_parted;
+:init_range_parted;
 SET SESSION AUTHORIZATION regress_range_parted_user;
 
 -- Here, RLS checks should succeed while moving row from part_a_10_a_20 to
@@ -378,7 +369,7 @@ SET SESSION AUTHORIZATION regress_range_parted_user;
 UPDATE range_parted set a = 'b', c = 151 WHERE a = 'a' and c = 200;
 
 RESET SESSION AUTHORIZATION;
--- Deactivated for SplendidDataTest: :init_range_parted;
+:init_range_parted;
 SET SESSION AUTHORIZATION regress_range_parted_user;
 -- This should fail with RLS violation error. Even though the UPDATE is setting
 -- 'c' to an even number, the trigger at the destination partition again makes
@@ -392,7 +383,7 @@ DROP FUNCTION func_d_1_15();
 
 -- Policy expression contains SubPlan
 RESET SESSION AUTHORIZATION;
--- Deactivated for SplendidDataTest: :init_range_parted;
+:init_range_parted;
 CREATE POLICY policy_range_parted_subplan on range_parted
     AS RESTRICTIVE for UPDATE USING (true)
     WITH CHECK ((SELECT range_parted.c <= c1 FROM mintab));
@@ -405,14 +396,14 @@ UPDATE range_parted set a = 'b', c = 120 WHERE a = 'a' and c = 200;
 -- RLS policy expression contains whole row.
 
 RESET SESSION AUTHORIZATION;
--- Deactivated for SplendidDataTest: :init_range_parted;
+:init_range_parted;
 CREATE POLICY policy_range_parted_wholerow on range_parted AS RESTRICTIVE for UPDATE USING (true)
    WITH CHECK (range_parted = row('b', 10, 112, 1, NULL)::range_parted);
 SET SESSION AUTHORIZATION regress_range_parted_user;
 -- ok, should pass the RLS check
 UPDATE range_parted set a = 'b', c = 112 WHERE a = 'a' and c = 200;
 RESET SESSION AUTHORIZATION;
--- Deactivated for SplendidDataTest: :init_range_parted;
+:init_range_parted;
 SET SESSION AUTHORIZATION regress_range_parted_user;
 -- fail, the whole row RLS check should fail
 UPDATE range_parted set a = 'b', c = 116 WHERE a = 'a' and c = 200;
@@ -430,7 +421,7 @@ DROP TABLE mintab;
 -- statement triggers with update row movement
 ---------------------------------------------------
 
--- Deactivated for SplendidDataTest: :init_range_parted;
+:init_range_parted;
 
 CREATE FUNCTION trigfunc() returns trigger language plpgsql as
 $$
@@ -474,7 +465,7 @@ CREATE TRIGGER d15_insert_trig
 -- Move all rows from part_c_100_200 to part_c_1_100. None of the delete or
 -- insert statement triggers should be fired.
 UPDATE range_parted set c = c - 50 WHERE c > 97;
--- Deactivated for SplendidDataTest: :show_data;
+:show_data;
 
 DROP TRIGGER parent_delete_trig ON range_parted;
 DROP TRIGGER parent_update_trig ON range_parted;
@@ -491,16 +482,16 @@ DROP TRIGGER d15_insert_trig ON part_d_15_20;
 
 
 -- Creating default partition for range
--- Deactivated for SplendidDataTest: :init_range_parted;
+:init_range_parted;
 create table part_def partition of range_parted default;
--- Deactivated for SplendidDataTest: \d+ part_def
+\d+ part_def
 insert into range_parted values ('c', 9);
 -- ok
 update part_def set a = 'd' where a = 'c';
 -- fail
 update part_def set a = 'a' where a = 'd';
 
--- Deactivated for SplendidDataTest: :show_data;
+:show_data;
 
 -- Update row movement from non-default to default partition.
 -- fail, default partition is not under part_a_10_a_20;
@@ -508,12 +499,12 @@ UPDATE part_a_10_a_20 set a = 'ad' WHERE a = 'a';
 -- ok
 UPDATE range_parted set a = 'ad' WHERE a = 'a';
 UPDATE range_parted set a = 'bd' WHERE a = 'b';
--- Deactivated for SplendidDataTest: :show_data;
+:show_data;
 -- Update row movement from default to non-default partitions.
 -- ok
 UPDATE range_parted set a = 'a' WHERE a = 'ad';
 UPDATE range_parted set a = 'b' WHERE a = 'bd';
--- Deactivated for SplendidDataTest: :show_data;
+:show_data;
 
 -- Cleanup: range_parted no longer needed.
 DROP TABLE range_parted;

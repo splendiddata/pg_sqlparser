@@ -8,6 +8,7 @@
 
 package com.splendiddata.sqlparser.structure;
 
+import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.NodeTag;
 
 import jakarta.xml.bind.annotation.XmlElement;
@@ -95,6 +96,21 @@ public class JsonAggConstructor extends Node {
 
     @Override
     public String toString() {
-        return ("Please implement " + getClass().getName() + ".toString()");
+        StringBuilder result = new StringBuilder();
+        String separator = "";
+        if (output != null) {
+            result.append(" ????? ").append(getClass().getName()).append(".toString(): What to do with output: ").append(ParserUtil.stmtToXml(output)).append(" ????? ");
+        }
+        if (agg_filter != null) {
+            result.append(" ????? ").append(getClass().getName()).append(".toString(): What to do with agg_filter: ").append(ParserUtil.stmtToXml(agg_filter)).append(" ????? ");
+        }
+        if (agg_order != null) {
+            result.append(" ????? ").append(getClass().getName()).append(".toString(): What to do with agg_order: ").append(ParserUtil.stmtToXml(agg_order)).append(" ????? ");
+        }
+        if (over != null) {
+            result.append(separator).append("over").append(over);
+        }
+        
+        return result.toString();
     }
 }

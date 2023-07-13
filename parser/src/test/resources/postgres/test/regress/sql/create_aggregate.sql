@@ -1,10 +1,3 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
-
-
 --
 -- CREATE_AGGREGATE
 --
@@ -142,7 +135,7 @@ alter aggregate my_percentile_disc(float8 ORDER BY anyelement)
 alter aggregate my_rank(VARIADIC "any" ORDER BY VARIADIC "any")
   rename to test_rank;
 
--- Deactivated for SplendidDataTest: \da test_*
+\da test_*
 
 -- moving-aggregate options
 
@@ -155,7 +148,7 @@ CREATE AGGREGATE sumdouble (float8)
     minvfunc = float8mi
 );
 
--- aggregate combine and serialization functions
+-- aggregate combine and serializcreate aggregate case_agg (sfunc1 = int4pl, basetype = 'int4', stype1 = int4, initcond1 = '0', parallel = safe)ation functions
 
 -- can't specify just one of serialfunc and deserialfunc
 CREATE AGGREGATE myavg (numeric)
@@ -326,12 +319,12 @@ CREATE AGGREGATE wrongreturntype (float8)
 -- Deactivated for SplendidDataTest: 	"Parallel" = safe
 -- Deactivated for SplendidDataTest: );
 
--- Deactivated for SplendidDataTest: CREATE AGGREGATE case_agg(float8)
--- Deactivated for SplendidDataTest: (
--- Deactivated for SplendidDataTest: 	"Stype" = internal,
--- Deactivated for SplendidDataTest: 	"Sfunc" = ordered_set_transition,
--- Deactivated for SplendidDataTest: 	"Finalfunc" = percentile_disc_final,
--- Deactivated for SplendidDataTest: 	"Finalfunc_extra" = true,
--- Deactivated for SplendidDataTest: 	"Finalfunc_modify" = read_write,
--- Deactivated for SplendidDataTest: 	"Parallel" = safe
--- Deactivated for SplendidDataTest: );
+CREATE AGGREGATE case_agg(float8)
+(
+	"Stype" = internal,
+	"Sfunc" = ordered_set_transition,
+	"Finalfunc" = percentile_disc_final,
+	"Finalfunc_extra" = true,
+	"Finalfunc_modify" = read_write,
+	"Parallel" = safe
+);

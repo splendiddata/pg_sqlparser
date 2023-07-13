@@ -1,17 +1,9 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for syntax checking, not for the testing of a commandline paser.
- * So input for the copy statements is removed.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
- 
- 
 --
 -- HASH_INDEX
 --
 
 -- directory paths are passed to us in environment variables
--- Deactivated for SplendidDataTest: \getenv abs_srcdir PG_ABS_SRCDIR
+\getenv abs_srcdir PG_ABS_SRCDIR
 
 CREATE TABLE hash_i4_heap (
 	seqno 		int4,
@@ -33,7 +25,7 @@ CREATE TABLE hash_f8_heap (
 	random 		float8
 );
 
--- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/hash.data'
+\set filename :abs_srcdir '/data/hash.data'
 COPY hash_i4_heap FROM :'filename';
 COPY hash_name_heap FROM :'filename';
 COPY hash_txt_heap FROM :'filename';

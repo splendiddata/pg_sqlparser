@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -17,6 +17,7 @@ package com.splendiddata.sqlparser.structure;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.NodeTag;
 
 /**
@@ -55,6 +56,15 @@ public class VariableShowStmt extends Node {
 
     @Override
     public String toString() {
-        return "show " + name;
+        if (!name.contains(".")) {
+            return "show " + ParserUtil.identifierToSql(name);
+        }
+        StringBuilder result = new StringBuilder("show");
+        char delimiter = ' ';
+        for (String part : name.split("\\.")) {
+            result.append(delimiter).append(ParserUtil.identifierToSql(part));
+            delimiter = '.';
+        }
+        return result.toString();
     }
 }

@@ -84,6 +84,24 @@ public class JsonObjectAgg extends Node {
 
     @Override
     public String toString() {
-        return ("Please implement " + getClass().getName() + ".toString()");
+        StringBuilder result = new StringBuilder("json_objectagg(");
+        String separator = "";
+        if (arg != null) {
+            result.append(arg);
+            separator = " ";
+        }
+        if (absent_on_null) {
+            result.append(separator).append("absent on null");
+            separator = " ";
+        }
+        if (unique) {
+            result.append(separator).append("with unique keys");
+            separator = " ";
+        }
+        result.append(')');
+        if (constructor != null) {
+            result.append(separator).append(constructor);
+        }
+        return result.toString();
     }
 }

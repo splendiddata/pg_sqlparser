@@ -1,20 +1,12 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for syntax checking, not for the testing of a commandline paser.
- * So input for the copy statements is removed.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
- 
- 
 --
 -- Test for ALTER some_object {RENAME TO, OWNER TO, SET SCHEMA}
 --
 
 -- directory paths and dlsuffix are passed to us in environment variables
--- Deactivated for SplendidDataTest: \getenv libdir PG_LIBDIR
--- Deactivated for SplendidDataTest: \getenv dlsuffix PG_DLSUFFIX
+\getenv libdir PG_LIBDIR
+\getenv dlsuffix PG_DLSUFFIX
 
--- Deactivated for SplendidDataTest: \set regresslib :libdir '/regress' :dlsuffix
+\set regresslib :libdir '/regress' :dlsuffix
 
 CREATE FUNCTION test_opclass_options_func(internal)
     RETURNS void

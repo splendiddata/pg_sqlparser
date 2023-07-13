@@ -106,7 +106,9 @@ public class XmlSerialize extends Node {
             result.append(" as ").append(typeName);
         }
 
-        result.append("????? What to do witn indent ?????");
+        if (indent) {
+            result.append(" indent");
+        }
         
         result.append(')');
 

@@ -28,8 +28,8 @@ CREATE VIEW test_tablesample_v1 AS
   SELECT id FROM test_tablesample TABLESAMPLE SYSTEM (10*2) REPEATABLE (2);
 CREATE VIEW test_tablesample_v2 AS
   SELECT id FROM test_tablesample TABLESAMPLE SYSTEM (99);
--- Deactivated for SplendidDataTest: \d+ test_tablesample_v1
--- Deactivated for SplendidDataTest: \d+ test_tablesample_v2
+\d+ test_tablesample_v1
+\d+ test_tablesample_v2
 
 -- check a sampled query doesn't affect cursor in progress
 BEGIN;

@@ -1,11 +1,3 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for syntax checking, not for the testing of a commandline paser.
- * So input for the copy statements is removed.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
- 
- 
 --
 -- FOREIGN KEY
 --
@@ -498,12 +490,13 @@ SELECT * FROM FKTABLE ORDER BY id;
 DROP TABLE FKTABLE;
 DROP TABLE PKTABLE;
 
-CREATE TABLE PKTABLE (ptest1 int PRIMARY KEY);
+-- Test some invalid FK definitions
+CREATE TABLE PKTABLE (ptest1 int PRIMARY KEY, someoid oid);
 CREATE TABLE FKTABLE_FAIL1 ( ftest1 int, CONSTRAINT fkfail1 FOREIGN KEY (ftest2) REFERENCES PKTABLE);
 CREATE TABLE FKTABLE_FAIL2 ( ftest1 int, CONSTRAINT fkfail1 FOREIGN KEY (ftest1) REFERENCES PKTABLE(ptest2));
+CREATE TABLE FKTABLE_FAIL3 ( ftest1 int, CONSTRAINT fkfail1 FOREIGN KEY (tableoid) REFERENCES PKTABLE(someoid));
+CREATE TABLE FKTABLE_FAIL4 ( ftest1 oid, CONSTRAINT fkfail1 FOREIGN KEY (ftest1) REFERENCES PKTABLE(tableoid));
 
-DROP TABLE FKTABLE_FAIL1;
-DROP TABLE FKTABLE_FAIL2;
 DROP TABLE PKTABLE;
 
 -- Test for referencing column number smaller than referenced constraint
@@ -978,7 +971,7 @@ COMMIT;
 -- try additional syntax
 ALTER TABLE fktable ALTER CONSTRAINT fktable_fk_fkey NOT DEFERRABLE;
 -- illegal option
--- Deactivated for SplendidDataTest: ALTER TABLE fktable ALTER CONSTRAINT fktable_fk_fkey NOT DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE fktable ALTER CONSTRAINT fktable_fk_fkey NOT DEFERRABLE INITIALLY DEFERRED;
 
 -- test order of firing of FK triggers when several RI-induced changes need to
 -- be made to the same row.  This was broken by subtransaction-related
@@ -1242,7 +1235,7 @@ UPDATE fk_notpartitioned_pk SET b = 502 WHERE a = 500;
 UPDATE fk_notpartitioned_pk SET b = 1502 WHERE a = 1500;
 UPDATE fk_notpartitioned_pk SET b = 2504 WHERE a = 2500;
 -- check psql behavior
--- Deactivated for SplendidDataTest: \d fk_notpartitioned_pk
+\d fk_notpartitioned_pk
 ALTER TABLE fk_partitioned_fk DROP CONSTRAINT fk_partitioned_fk_a_b_fkey;
 -- done.
 DROP TABLE fk_notpartitioned_pk, fk_partitioned_fk;
@@ -1367,7 +1360,7 @@ ALTER TABLE fk_partitioned_fk DETACH PARTITION fk_partitioned_fk_2;
 BEGIN;
 DROP TABLE fk_partitioned_fk;
 -- constraint should still be there
--- Deactivated for SplendidDataTest: \d fk_partitioned_fk_2;
+\d fk_partitioned_fk_2;
 ROLLBACK;
 ALTER TABLE fk_partitioned_fk ATTACH PARTITION fk_partitioned_fk_2 FOR VALUES IN (1500,1502);
 DROP TABLE fk_partitioned_fk_2;
@@ -1376,7 +1369,7 @@ CREATE TABLE fk_partitioned_fk_2 (b int, c text, a int,
 ALTER TABLE fk_partitioned_fk_2 DROP COLUMN c;
 ALTER TABLE fk_partitioned_fk ATTACH PARTITION fk_partitioned_fk_2 FOR VALUES IN (1500,1502);
 -- should have only one constraint
--- Deactivated for SplendidDataTest: \d fk_partitioned_fk_2
+\d fk_partitioned_fk_2
 DROP TABLE fk_partitioned_fk_2;
 
 CREATE TABLE fk_partitioned_fk_4 (a int, b int, FOREIGN KEY (a, b) REFERENCES fk_notpartitioned_pk(a, b) ON UPDATE CASCADE ON DELETE CASCADE) PARTITION BY RANGE (b, a);
@@ -1387,10 +1380,10 @@ ALTER TABLE fk_partitioned_fk ATTACH PARTITION fk_partitioned_fk_4 FOR VALUES IN
 ALTER TABLE fk_partitioned_fk DETACH PARTITION fk_partitioned_fk_4;
 ALTER TABLE fk_partitioned_fk ATTACH PARTITION fk_partitioned_fk_4 FOR VALUES IN (3500,3502);
 -- should only have one constraint
--- Deactivated for SplendidDataTest: \d fk_partitioned_fk_4
--- Deactivated for SplendidDataTest: \d fk_partitioned_fk_4_1
+\d fk_partitioned_fk_4
+\d fk_partitioned_fk_4_1
 -- this one has an FK with mismatched properties
--- Deactivated for SplendidDataTest: \d fk_partitioned_fk_4_2
+\d fk_partitioned_fk_4_2
 
 CREATE TABLE fk_partitioned_fk_5 (a int, b int,
 	FOREIGN KEY (a, b) REFERENCES fk_notpartitioned_pk(a, b) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE,
@@ -1403,12 +1396,12 @@ ALTER TABLE fk_partitioned_fk DETACH PARTITION fk_partitioned_fk_5;
 ALTER TABLE fk_partitioned_fk ATTACH PARTITION fk_partitioned_fk_5 FOR VALUES IN (4500);
 -- this one has two constraints, similar but not quite the one in the parent,
 -- so it gets a new one
--- Deactivated for SplendidDataTest: \d fk_partitioned_fk_5
+\d fk_partitioned_fk_5
 -- verify that it works to reattaching a child with multiple candidate
 -- constraints
 ALTER TABLE fk_partitioned_fk_5 DETACH PARTITION fk_partitioned_fk_5_1;
 ALTER TABLE fk_partitioned_fk_5 ATTACH PARTITION fk_partitioned_fk_5_1 FOR VALUES FROM (0) TO (10);
--- Deactivated for SplendidDataTest: \d fk_partitioned_fk_5_1
+\d fk_partitioned_fk_5_1
 
 -- verify that attaching a table checks that the existing data satisfies the
 -- constraint
@@ -1449,6 +1442,61 @@ reset role;
 revoke all on fk_notpartitioned_pk from regress_other_partitioned_fk_owner;
 drop role regress_other_partitioned_fk_owner;
 
+--
+-- Test self-referencing foreign key with partition.
+-- This should create only one fk constraint per partition
+--
+CREATE TABLE parted_self_fk (
+    id bigint NOT NULL PRIMARY KEY,
+    id_abc bigint,
+    FOREIGN KEY (id_abc) REFERENCES parted_self_fk(id)
+)
+PARTITION BY RANGE (id);
+CREATE TABLE part1_self_fk (
+    id bigint NOT NULL PRIMARY KEY,
+    id_abc bigint
+);
+ALTER TABLE parted_self_fk ATTACH PARTITION part1_self_fk FOR VALUES FROM (0) TO (10);
+CREATE TABLE part2_self_fk PARTITION OF parted_self_fk FOR VALUES FROM (10) TO (20);
+CREATE TABLE part3_self_fk (	-- a partitioned partition
+	id bigint NOT NULL PRIMARY KEY,
+	id_abc bigint
+) PARTITION BY RANGE (id);
+CREATE TABLE part32_self_fk PARTITION OF part3_self_fk FOR VALUES FROM (20) TO (30);
+ALTER TABLE parted_self_fk ATTACH PARTITION part3_self_fk FOR VALUES FROM (20) TO (40);
+CREATE TABLE part33_self_fk (
+	id bigint NOT NULL PRIMARY KEY,
+	id_abc bigint
+);
+ALTER TABLE part3_self_fk ATTACH PARTITION part33_self_fk FOR VALUES FROM (30) TO (40);
+
+SELECT cr.relname, co.conname, co.contype, co.convalidated,
+       p.conname AS conparent, p.convalidated, cf.relname AS foreignrel
+FROM pg_constraint co
+JOIN pg_class cr ON cr.oid = co.conrelid
+LEFT JOIN pg_class cf ON cf.oid = co.confrelid
+LEFT JOIN pg_constraint p ON p.oid = co.conparentid
+WHERE cr.oid IN (SELECT relid FROM pg_partition_tree('parted_self_fk'))
+ORDER BY co.contype, cr.relname, co.conname, p.conname;
+
+-- detach and re-attach multiple times just to ensure everything is kosher
+ALTER TABLE parted_self_fk DETACH PARTITION part2_self_fk;
+ALTER TABLE parted_self_fk ATTACH PARTITION part2_self_fk FOR VALUES FROM (10) TO (20);
+ALTER TABLE parted_self_fk DETACH PARTITION part2_self_fk;
+ALTER TABLE parted_self_fk ATTACH PARTITION part2_self_fk FOR VALUES FROM (10) TO (20);
+
+SELECT cr.relname, co.conname, co.contype, co.convalidated,
+       p.conname AS conparent, p.convalidated, cf.relname AS foreignrel
+FROM pg_constraint co
+JOIN pg_class cr ON cr.oid = co.conrelid
+LEFT JOIN pg_class cf ON cf.oid = co.confrelid
+LEFT JOIN pg_constraint p ON p.oid = co.conparentid
+WHERE cr.oid IN (SELECT relid FROM pg_partition_tree('parted_self_fk'))
+ORDER BY co.contype, cr.relname, co.conname, p.conname;
+
+-- Leave this table around, for pg_upgrade/pg_dump tests
+
+
 -- Test creating a constraint at the parent that already exists in partitions.
 -- There should be no duplicated constraints, and attempts to drop the
 -- constraint in partitions should raise appropriate errors.
@@ -1463,23 +1511,23 @@ create schema fkpart0
   create table fk_part_23_2 partition of fk_part_23 for values in (2);
 
 alter table fkpart0.fk_part add foreign key (a) references fkpart0.pkey;
--- Deactivated for SplendidDataTest: \d fkpart0.fk_part_1	\\ -- should have only one FK
+\d fkpart0.fk_part_1	\\ -- should have only one FK
 alter table fkpart0.fk_part_1 drop constraint fk_part_1_a_fkey;
 
--- Deactivated for SplendidDataTest: \d fkpart0.fk_part_23	\\ -- should have only one FK
--- Deactivated for SplendidDataTest: \d fkpart0.fk_part_23_2	\\ -- should have only one FK
+\d fkpart0.fk_part_23	\\ -- should have only one FK
+\d fkpart0.fk_part_23_2	\\ -- should have only one FK
 alter table fkpart0.fk_part_23 drop constraint fk_part_23_a_fkey;
 alter table fkpart0.fk_part_23_2 drop constraint fk_part_23_a_fkey;
 
 create table fkpart0.fk_part_4 partition of fkpart0.fk_part for values in (4);
--- Deactivated for SplendidDataTest: \d fkpart0.fk_part_4
+\d fkpart0.fk_part_4
 alter table fkpart0.fk_part_4 drop constraint fk_part_a_fkey;
 
 create table fkpart0.fk_part_56 partition of fkpart0.fk_part
     for values in (5,6) partition by list (a);
 create table fkpart0.fk_part_56_5 partition of fkpart0.fk_part_56
     for values in (5);
--- Deactivated for SplendidDataTest: \d fkpart0.fk_part_56
+\d fkpart0.fk_part_56
 alter table fkpart0.fk_part_56 drop constraint fk_part_a_fkey;
 alter table fkpart0.fk_part_56_5 drop constraint fk_part_a_fkey;
 

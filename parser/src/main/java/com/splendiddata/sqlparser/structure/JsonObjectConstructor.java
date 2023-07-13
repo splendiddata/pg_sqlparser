@@ -82,6 +82,27 @@ public class JsonObjectConstructor extends Node {
 
     @Override
     public String toString() {
-        return ("Please implement " + getClass().getName() + ".toString()");
+        StringBuilder result = new StringBuilder("json_object(");
+        String separator = "";
+        if (exprs!=null) {
+            for (JsonKeyValue expr : exprs) {
+                result.append(separator).append(expr);
+                separator = ", ";
+            }
+            separator = " ";
+        }
+        if (!absent_on_null) {
+            result.append(separator).append("null on null");
+            separator = " ";
+        }
+        if (unique) {
+            result.append(separator).append("with unique keys");
+            separator = " ";
+        }
+        if (output != null) {
+            result.append(output);
+        }
+        result.append(")");
+        return result.toString();
     }
 }

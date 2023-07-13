@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -642,7 +642,7 @@ public class AbstractParser extends AbstractCProgram {
      */
     static void parser_yyerror(String string) {
         log.error("parser_yyerror(string=" + string + ")");
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(string);
 
     }
 
@@ -1458,6 +1458,9 @@ public class AbstractParser extends AbstractCProgram {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected CollateClause splitColQualList(List qualList, List<Constraint> constraintList,
             core_yyscan_t yyscanner) {
+        if (qualList == null) {
+            return null;
+        }
         CollateClause collClause = null;
         for (Node n : (List<Node>)qualList) {
             if (n instanceof Constraint) {

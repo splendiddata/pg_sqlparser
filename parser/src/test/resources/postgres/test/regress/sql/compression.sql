@@ -1,12 +1,4 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
-
-
-
--- Deactivated for SplendidDataTest: \set HIDE_TOAST_COMPRESSION false
+\set HIDE_TOAST_COMPRESSION false
 
 -- ensure we get stable results regardless of installation's default
 SET default_toast_compression = 'pglz';
@@ -15,10 +7,10 @@ SET default_toast_compression = 'pglz';
 CREATE TABLE cmdata(f1 text COMPRESSION pglz);
 CREATE INDEX idx ON cmdata(f1);
 INSERT INTO cmdata VALUES(repeat('1234567890', 1000));
--- Deactivated for SplendidDataTest: \d+ cmdata
+\d+ cmdata
 CREATE TABLE cmdata1(f1 TEXT COMPRESSION lz4);
 INSERT INTO cmdata1 VALUES(repeat('1234567890', 1004));
--- Deactivated for SplendidDataTest: \d+ cmdata1
+\d+ cmdata1
 
 -- verify stored compression method in the data
 SELECT pg_column_compression(f1) FROM cmdata;
@@ -30,7 +22,7 @@ SELECT SUBSTR(f1, 2000, 50) FROM cmdata1;
 
 -- copy with table creation
 SELECT * INTO cmmove1 FROM cmdata;
--- Deactivated for SplendidDataTest: \d+ cmmove1
+\d+ cmmove1
 SELECT pg_column_compression(f1) FROM cmmove1;
 
 -- copy to existing table
@@ -41,7 +33,7 @@ SELECT pg_column_compression(f1) FROM cmmove3;
 
 -- test LIKE INCLUDING COMPRESSION
 CREATE TABLE cmdata2 (LIKE cmdata1 INCLUDING COMPRESSION);
--- Deactivated for SplendidDataTest: \d+ cmdata2
+\d+ cmdata2
 DROP TABLE cmdata2;
 
 -- try setting compression for incompressible data type
@@ -56,7 +48,7 @@ SELECT pg_column_compression(f1) FROM cmmove2;
 
 -- test externally stored compressed data
 CREATE OR REPLACE FUNCTION large_val() RETURNS TEXT LANGUAGE SQL AS
-'select array_agg(md5(g::text))::text from generate_series(1, 256) g';
+'select array_agg(fipshash(g::text))::text from generate_series(1, 256) g';
 CREATE TABLE cmdata2 (f1 text COMPRESSION pglz);
 INSERT INTO cmdata2 SELECT large_val() || repeat('a', 4000);
 SELECT pg_column_compression(f1) FROM cmdata2;
@@ -68,25 +60,25 @@ DROP TABLE cmdata2;
 
 --test column type update varlena/non-varlena
 CREATE TABLE cmdata2 (f1 int);
--- Deactivated for SplendidDataTest: \d+ cmdata2
+\d+ cmdata2
 ALTER TABLE cmdata2 ALTER COLUMN f1 TYPE varchar;
--- Deactivated for SplendidDataTest: \d+ cmdata2
+\d+ cmdata2
 ALTER TABLE cmdata2 ALTER COLUMN f1 TYPE int USING f1::integer;
--- Deactivated for SplendidDataTest: \d+ cmdata2
+\d+ cmdata2
 
 --changing column storage should not impact the compression method
 --but the data should not be compressed
 ALTER TABLE cmdata2 ALTER COLUMN f1 TYPE varchar;
 ALTER TABLE cmdata2 ALTER COLUMN f1 SET COMPRESSION pglz;
--- Deactivated for SplendidDataTest: \d+ cmdata2
+\d+ cmdata2
 ALTER TABLE cmdata2 ALTER COLUMN f1 SET STORAGE plain;
--- Deactivated for SplendidDataTest: \d+ cmdata2
+\d+ cmdata2
 INSERT INTO cmdata2 VALUES (repeat('123456789', 800));
 SELECT pg_column_compression(f1) FROM cmdata2;
 
 -- test compression with materialized view
 CREATE MATERIALIZED VIEW compressmv(x) AS SELECT * FROM cmdata1;
--- Deactivated for SplendidDataTest: \d+ compressmv
+\d+ compressmv
 SELECT pg_column_compression(f1) FROM cmdata1;
 SELECT pg_column_compression(x) FROM compressmv;
 
@@ -114,15 +106,15 @@ SET default_toast_compression = 'pglz';
 -- test alter compression method
 ALTER TABLE cmdata ALTER COLUMN f1 SET COMPRESSION lz4;
 INSERT INTO cmdata VALUES (repeat('123456789', 4004));
--- Deactivated for SplendidDataTest: \d+ cmdata
+\d+ cmdata
 SELECT pg_column_compression(f1) FROM cmdata;
 
 ALTER TABLE cmdata2 ALTER COLUMN f1 SET COMPRESSION default;
--- Deactivated for SplendidDataTest: \d+ cmdata2
+\d+ cmdata2
 
 -- test alter compression method for materialized views
 ALTER MATERIALIZED VIEW compressmv ALTER COLUMN x SET COMPRESSION lz4;
--- Deactivated for SplendidDataTest: \d+ compressmv
+\d+ compressmv
 
 -- test alter compression method for partitioned tables
 ALTER TABLE cmpart1 ALTER COLUMN f1 SET COMPRESSION pglz;
@@ -143,7 +135,7 @@ SELECT pg_column_compression(f1) FROM cmdata;
 DROP TABLE cmdata2;
 CREATE TABLE cmdata2 (f1 TEXT COMPRESSION pglz, f2 TEXT COMPRESSION lz4);
 CREATE UNIQUE INDEX idx1 ON cmdata2 ((f1 || f2));
-INSERT INTO cmdata2 VALUES((SELECT array_agg(md5(g::TEXT))::TEXT FROM
+INSERT INTO cmdata2 VALUES((SELECT array_agg(fipshash(g::TEXT))::TEXT FROM
 generate_series(1, 50) g), VERSION());
 
 -- check data is ok
@@ -158,4 +150,4 @@ CREATE TABLE badcompresstbl (a text);
 ALTER TABLE badcompresstbl ALTER a SET COMPRESSION I_Do_Not_Exist_Compression; -- fails
 DROP TABLE badcompresstbl;
 
--- Deactivated for SplendidDataTest: \set HIDE_TOAST_COMPRESSION true
+\set HIDE_TOAST_COMPRESSION true

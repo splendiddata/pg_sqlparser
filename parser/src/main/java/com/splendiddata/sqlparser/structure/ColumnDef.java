@@ -71,8 +71,12 @@ public class ColumnDef extends Node {
     @XmlAttribute
     public boolean is_from_parent;
 
-    /** attstorage setting, or 0 for default */
-    @XmlAttribute
+    /**
+     * attstorage setting, or 0 for default
+     * 
+     * @deprecated since Postgres 16. Please use storage_name instead
+     */
+    @Deprecated(since = "Postgres 15", forRemoval = true)
     public char storage;
 
     /**
@@ -80,6 +84,7 @@ public class ColumnDef extends Node {
      * 
      * @since Postgres 16
      */
+    @XmlAttribute
     public String storage_name;
 
     /** default value (untransformed parse tree) */
@@ -134,7 +139,6 @@ public class ColumnDef extends Node {
         this.is_not_null = original.is_not_null;
         this.is_from_type = original.is_from_type;
         this.is_from_parent = original.is_from_parent;
-        this.storage = original.storage;
         this.storage_name = original.storage_name;
         if (original.collClause != null) {
             this.collClause = original.collClause.clone();
@@ -213,7 +217,7 @@ public class ColumnDef extends Node {
         }
 
         if (storage_name != null) {
-            result.append(space).append("??????? storage_name=").append(storage_name).append(" ???????");
+            result.append(space).append("storage").append(' ').append(storage_name);
             space = " ";
         }
 

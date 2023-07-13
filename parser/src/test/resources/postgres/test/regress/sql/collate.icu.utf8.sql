@@ -1,9 +1,9 @@
 /*
  * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So input for the copy statements is removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
-
 
 
 /*
@@ -11,12 +11,12 @@
  */
 
 /* skip test if not UTF8 server encoding or no ICU collations installed */
--- Deactivated for SplendidDataTest: SELECT getdatabaseencoding() <> 'UTF8' OR
--- Deactivated for SplendidDataTest:        (SELECT count(*) FROM pg_collation WHERE collprovider = 'i') = 0
--- Deactivated for SplendidDataTest:        AS skip_test \gset
--- Deactivated for SplendidDataTest: \if :skip_test
--- Deactivated for SplendidDataTest: \quit
--- Deactivated for SplendidDataTest: \endif
+SELECT getdatabaseencoding() <> 'UTF8' OR
+       (SELECT count(*) FROM pg_collation WHERE collprovider = 'i' AND collname <> 'unicode') = 0
+       AS skip_test \gset
+\if :skip_test
+\quit
+\endif
 
 SET client_encoding TO UTF8;
 
@@ -29,7 +29,7 @@ CREATE TABLE collate_test1 (
     b text COLLATE "en-x-icu" NOT NULL
 );
 
--- Deactivated for SplendidDataTest: \d collate_test1
+\d collate_test1
 
 CREATE TABLE collate_test_fail (
     a int,
@@ -50,7 +50,7 @@ CREATE TABLE collate_test_like (
     LIKE collate_test1
 );
 
--- Deactivated for SplendidDataTest: \d collate_test_like
+\d collate_test_like
 
 CREATE TABLE collate_test2 (
     a int,
@@ -365,21 +365,33 @@ CREATE ROLE regress_test_role;
 CREATE SCHEMA test_schema;
 
 -- We need to do this this way to cope with varying names for encodings:
+SET client_min_messages TO WARNING;
+SET icu_validation_level = disabled;
+
 do $$
 BEGIN
   EXECUTE 'CREATE COLLATION test0 (provider = icu, locale = ' ||
-          quote_literal(current_setting('lc_collate')) || ');';
+          quote_literal((SELECT CASE WHEN datlocprovider='i' THEN daticulocale ELSE datcollate END FROM pg_database WHERE datname = current_database())) || ');';
 END
 $$;
 CREATE COLLATION test0 FROM "C"; -- fail, duplicate name
 do $$
 BEGIN
   EXECUTE 'CREATE COLLATION test1 (provider = icu, locale = ' ||
-          quote_literal(current_setting('lc_collate')) || ');';
+          quote_literal((SELECT CASE WHEN datlocprovider='i' THEN daticulocale ELSE datcollate END FROM pg_database WHERE datname = current_database())) || ');';
 END
 $$;
--- Deactivated for SplendidDataTest: CREATE COLLATION test3 (provider = icu, lc_collate = 'en_US.utf8'); -- fail, need lc_ctype
-CREATE COLLATION testx (provider = icu, locale = 'nonsense'); /* never fails with ICU */  DROP COLLATION testx;
+
+RESET icu_validation_level;
+RESET client_min_messages;
+
+CREATE COLLATION test3 (provider = icu, lc_collate = 'en_US.utf8'); -- fail, needs "locale"
+SET icu_validation_level = ERROR;
+CREATE COLLATION testx (provider = icu, locale = 'nonsense-nowhere'); -- fails
+CREATE COLLATION testx (provider = icu, locale = '@colStrength=primary;nonsense=yes'); -- fails
+RESET icu_validation_level;
+CREATE COLLATION testx (provider = icu, locale = '@colStrength=primary;nonsense=yes'); DROP COLLATION testx;
+CREATE COLLATION testx (provider = icu, locale = 'nonsense-nowhere'); DROP COLLATION testx;
 
 CREATE COLLATION test4 FROM nonsense;
 CREATE COLLATION test5 FROM test0;
@@ -416,7 +428,7 @@ DROP ROLE regress_test_role;
 ALTER COLLATION "en-x-icu" REFRESH VERSION;
 
 -- also test for database while we are here
--- Deactivated for SplendidDataTest: SELECT current_database() AS datname \gset
+SELECT current_database() AS datname \gset
 -- Deactivated for SplendidDataTest: ALTER DATABASE :"datname" REFRESH COLLATION VERSION;
 
 
@@ -434,8 +446,8 @@ CREATE INDEX collate_dep_test4i ON collate_dep_test4t (b COLLATE test0);
 DROP COLLATION test0 RESTRICT; -- fail
 DROP COLLATION test0 CASCADE;
 
--- Deactivated for SplendidDataTest: \d collate_dep_test1
--- Deactivated for SplendidDataTest: \d collate_dep_test2
+\d collate_dep_test1
+\d collate_dep_test2
 
 DROP TABLE collate_dep_test1, collate_dep_test4t;
 DROP TYPE collate_dep_test2;
@@ -452,14 +464,24 @@ drop type textrange_c;
 drop type textrange_en_us;
 
 
+-- standard collations
+
+SELECT * FROM collate_test2 ORDER BY b COLLATE UCS_BASIC;
+SELECT * FROM collate_test2 ORDER BY b COLLATE UNICODE;
+
+
 -- test ICU collation customization
 
 -- test the attributes handled by icu_set_collation_attributes()
 
+SET client_min_messages=WARNING;
 CREATE COLLATION testcoll_ignore_accents (provider = icu, locale = '@colStrength=primary;colCaseLevel=yes');
+RESET client_min_messages;
 SELECT 'aaá' > 'AAA' COLLATE "und-x-icu", 'aaá' < 'AAA' COLLATE testcoll_ignore_accents;
 
+SET client_min_messages=WARNING;
 CREATE COLLATION testcoll_backwards (provider = icu, locale = '@colBackwards=yes');
+RESET client_min_messages;
 SELECT 'coté' < 'côte' COLLATE "und-x-icu", 'coté' > 'côte' COLLATE testcoll_backwards;
 
 CREATE COLLATION testcoll_lower_first (provider = icu, locale = '@colCaseFirst=lower');
@@ -469,7 +491,9 @@ SELECT 'aaa' < 'AAA' COLLATE testcoll_lower_first, 'aaa' > 'AAA' COLLATE testcol
 CREATE COLLATION testcoll_shifted (provider = icu, locale = '@colAlternate=shifted');
 SELECT 'de-luge' < 'deanza' COLLATE "und-x-icu", 'de-luge' > 'deanza' COLLATE testcoll_shifted;
 
+SET client_min_messages=WARNING;
 CREATE COLLATION testcoll_numeric (provider = icu, locale = '@colNumeric=yes');
+RESET client_min_messages;
 SELECT 'A-21' > 'A-123' COLLATE "und-x-icu", 'A-21' < 'A-123' COLLATE testcoll_numeric;
 
 CREATE COLLATION testcoll_error1 (provider = icu, locale = '@colNumeric=lower');
@@ -478,6 +502,19 @@ CREATE COLLATION testcoll_error1 (provider = icu, locale = '@colNumeric=lower');
 -- (handled by ucol_open() directly) also work
 CREATE COLLATION testcoll_de_phonebook (provider = icu, locale = 'de@collation=phonebook');
 SELECT 'Goldmann' < 'Götz' COLLATE "de-x-icu", 'Goldmann' > 'Götz' COLLATE testcoll_de_phonebook;
+
+
+-- rules
+
+CREATE COLLATION testcoll_rules1 (provider = icu, locale = '', rules = '&a < g');
+CREATE TABLE test7 (a text);
+-- example from https://unicode-org.github.io/icu/userguide/collation/customization/#syntax
+INSERT INTO test7 VALUES ('Abernathy'), ('apple'), ('bird'), ('Boston'), ('Graham'), ('green');
+SELECT * FROM test7 ORDER BY a COLLATE "en-x-icu";
+SELECT * FROM test7 ORDER BY a COLLATE testcoll_rules1;
+DROP TABLE test7;
+
+CREATE COLLATION testcoll_rulesx (provider = icu, locale = '', rules = '!!wrong!!');
 
 
 -- nondeterministic collations
@@ -506,6 +543,12 @@ CREATE COLLATION case_insensitive (provider = icu, locale = '@colStrength=second
 
 SELECT 'abc' <= 'ABC' COLLATE case_sensitive, 'abc' >= 'ABC' COLLATE case_sensitive;
 SELECT 'abc' <= 'ABC' COLLATE case_insensitive, 'abc' >= 'ABC' COLLATE case_insensitive;
+
+-- test language tags
+CREATE COLLATION lt_insensitive (provider = icu, locale = 'en-u-ks-level1', deterministic = false);
+SELECT 'aBcD' COLLATE lt_insensitive = 'AbCd' COLLATE lt_insensitive;
+CREATE COLLATION lt_upperfirst (provider = icu, locale = 'und-u-kf-upper');
+SELECT 'Z' COLLATE lt_upperfirst < 'z' COLLATE lt_upperfirst;
 
 CREATE TABLE test1cs (x text COLLATE case_sensitive);
 CREATE TABLE test2cs (x text COLLATE case_sensitive);
@@ -639,7 +682,9 @@ INSERT INTO inner_text VALUES ('a', NULL);
 SELECT * FROM outer_text WHERE (f1, f2) NOT IN (SELECT * FROM inner_text);
 
 -- accents
+SET client_min_messages=WARNING;
 CREATE COLLATION ignore_accents (provider = icu, locale = '@colStrength=primary;colCaseLevel=yes', deterministic = false);
+RESET client_min_messages;
 
 CREATE TABLE test4 (a int, b text);
 INSERT INTO test4 VALUES (1, 'cote'), (2, 'côte'), (3, 'coté'), (4, 'côté');

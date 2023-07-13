@@ -1,10 +1,9 @@
 /*
  * This file has been altered by SplendidData.
  * It is only used for syntax checking, not for the testing of a commandline paser.
- * So input for the copy statements is removed.
+ * So some statements that are expected to fail are removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
-
 
 
 CREATE TEMP TABLE x (
@@ -76,13 +75,23 @@ COPY x from stdin (force_null (a), force_null (b));
 COPY x from stdin (convert_selectively (a), convert_selectively (b));
 COPY x from stdin (encoding 'sql_ascii', encoding 'sql_ascii');
 
+-- incorrect options
+COPY x to stdin (format BINARY, delimiter ',');
+COPY x to stdin (format BINARY, null 'x');
+COPY x to stdin (format TEXT, force_quote(a));
+COPY x from stdin (format CSV, force_quote(a));
+COPY x to stdout (format TEXT, force_not_null(a));
+COPY x to stdin (format CSV, force_not_null(a));
+COPY x to stdout (format TEXT, force_null(a));
+COPY x to stdin (format CSV, force_null(a));
+
 -- too many columns in column list: should fail
 COPY x (a, b, c, d, e, d, c) from stdin;
 
 -- missing data: should fail
 COPY x from stdin;
 
--- Deactivated for SplendidDataTest: \.
+\.
 COPY x from stdin;
 -- Deactivated for SplendidDataTest: 2000	230	23	23
 -- Deactivated for SplendidDataTest: \.
@@ -118,7 +127,7 @@ COPY x from stdin WITH DELIMITER AS ':' NULL AS E'\\X' ENCODING 'sql_ascii';
 -- Deactivated for SplendidDataTest: 4008:8:Delimiter:\::\:
 -- Deactivated for SplendidDataTest: \.
 
--- Deactivated for SplendidDataTest: COPY x TO stdout WHERE a = 1;
+COPY x TO stdout WHERE a = 1;
 COPY x from stdin WHERE a = 50004;
 -- Deactivated for SplendidDataTest: 50003	24	34	44	54
 -- Deactivated for SplendidDataTest: 50004	25	35	45	55
@@ -173,10 +182,10 @@ COPY y TO stdout (FORMAT CSV, QUOTE '''', DELIMITER '|');
 COPY y TO stdout (FORMAT CSV, FORCE_QUOTE (col2), ESCAPE E'\\');
 COPY y TO stdout (FORMAT CSV, FORCE_QUOTE *);
 
--- Deactivated for SplendidDataTest: \copy y TO stdout (FORMAT CSV)
--- Deactivated for SplendidDataTest: \copy y TO stdout (FORMAT CSV, QUOTE '''', DELIMITER '|')
--- Deactivated for SplendidDataTest: \copy y TO stdout (FORMAT CSV, FORCE_QUOTE (col2), ESCAPE E'\\')
--- Deactivated for SplendidDataTest: \copy y TO stdout (FORMAT CSV, FORCE_QUOTE *)
+\copy y TO stdout (FORMAT CSV)
+\copy y TO stdout (FORMAT CSV, QUOTE '''', DELIMITER '|')
+\copy y TO stdout (FORMAT CSV, FORCE_QUOTE (col2), ESCAPE E'\\')
+\copy y TO stdout (FORMAT CSV, FORCE_QUOTE *)
 
 --test that we read consecutive LFs properly
 
@@ -314,7 +323,7 @@ CREATE TEMP TABLE forcetest (
     d TEXT,
     e TEXT
 );
--- Deactivated for SplendidDataTest: \pset null NULL
+\pset null NULL
 -- should succeed with no effect ("b" remains an empty string, "c" remains NULL)
 BEGIN;
 COPY forcetest (a, b, c) FROM STDIN WITH (FORMAT csv, FORCE_NOT_NULL(b), FORCE_NULL(c));
@@ -343,7 +352,7 @@ ROLLBACK;
 BEGIN;
 COPY forcetest (d, e) FROM STDIN WITH (FORMAT csv, FORCE_NULL(b));
 ROLLBACK;
--- Deactivated for SplendidDataTest: \pset null ''
+\pset null ''
 
 -- test case with whole-row Var in a check constraint
 create table check_con_tbl (f1 int);
@@ -353,7 +362,7 @@ begin
   return $1.f1 > 0;
 end $$ language plpgsql immutable;
 alter table check_con_tbl add check (check_con_function(check_con_tbl.*));
--- Deactivated for SplendidDataTest: \d+ check_con_tbl
+\d+ check_con_tbl
 copy check_con_tbl from stdin;
 -- Deactivated for SplendidDataTest: 1
 -- Deactivated for SplendidDataTest: \N
@@ -477,3 +486,104 @@ DROP TABLE instead_of_insert_tbl;
 DROP VIEW instead_of_insert_tbl_view;
 DROP VIEW instead_of_insert_tbl_view_2;
 DROP FUNCTION fun_instead_of_insert_tbl();
+
+--
+-- COPY FROM ... DEFAULT
+--
+
+create temp table copy_default (
+	id integer primary key,
+	text_value text not null default 'test',
+	ts_value timestamp without time zone not null default '2022-07-05'
+);
+
+-- if DEFAULT is not specified, then the marker will be regular data
+copy copy_default from stdin;
+-- Deactivated for SplendidDataTest: 1	value	'2022-07-04'
+-- Deactivated for SplendidDataTest: 2	\D	'2022-07-05'
+-- Deactivated for SplendidDataTest: \.
+
+select id, text_value, ts_value from copy_default;
+
+truncate copy_default;
+
+copy copy_default from stdin with (format csv);
+-- Deactivated for SplendidDataTest: 1,value,2022-07-04
+-- Deactivated for SplendidDataTest: 2,\D,2022-07-05
+-- Deactivated for SplendidDataTest: \.
+
+select id, text_value, ts_value from copy_default;
+
+truncate copy_default;
+
+-- DEFAULT cannot be used in binary mode
+copy copy_default from stdin with (format binary, default '\D');
+
+-- DEFAULT cannot be new line nor carriage return
+copy copy_default from stdin with (default E'\n');
+copy copy_default from stdin with (default E'\r');
+
+-- DELIMITER cannot appear in DEFAULT spec
+copy copy_default from stdin with (delimiter ';', default 'test;test');
+
+-- CSV quote cannot appear in DEFAULT spec
+copy copy_default from stdin with (format csv, quote '"', default 'test"test');
+
+-- NULL and DEFAULT spec must be different
+copy copy_default from stdin with (default '\N');
+
+-- cannot use DEFAULT marker in column that has no DEFAULT value
+copy copy_default from stdin with (default '\D');
+-- Deactivated for SplendidDataTest: \D	value	'2022-07-04'
+-- Deactivated for SplendidDataTest: 2	\D	'2022-07-05'
+-- Deactivated for SplendidDataTest: \.
+
+copy copy_default from stdin with (format csv, default '\D');
+-- Deactivated for SplendidDataTest: \D,value,2022-07-04
+-- Deactivated for SplendidDataTest: 2,\D,2022-07-05
+-- Deactivated for SplendidDataTest: \.
+
+-- The DEFAULT marker must be unquoted and unescaped or it's not recognized
+copy copy_default from stdin with (default '\D');
+-- Deactivated for SplendidDataTest: 1	\D	'2022-07-04'
+-- Deactivated for SplendidDataTest: 2	\\D	'2022-07-04'
+-- Deactivated for SplendidDataTest: 3	"\D"	'2022-07-04'
+-- Deactivated for SplendidDataTest: \.
+
+select id, text_value, ts_value from copy_default;
+
+truncate copy_default;
+
+copy copy_default from stdin with (format csv, default '\D');
+-- Deactivated for SplendidDataTest: 1,\D,2022-07-04
+-- Deactivated for SplendidDataTest: 2,\\D,2022-07-04
+-- Deactivated for SplendidDataTest: 3,"\D",2022-07-04
+-- Deactivated for SplendidDataTest: \.
+
+select id, text_value, ts_value from copy_default;
+
+truncate copy_default;
+
+-- successful usage of DEFAULT option in COPY
+copy copy_default from stdin with (default '\D');
+-- Deactivated for SplendidDataTest: 1	value	'2022-07-04'
+-- Deactivated for SplendidDataTest: 2	\D	'2022-07-03'
+-- Deactivated for SplendidDataTest: 3	\D	\D
+-- Deactivated for SplendidDataTest: \.
+
+select id, text_value, ts_value from copy_default;
+
+truncate copy_default;
+
+copy copy_default from stdin with (format csv, default '\D');
+-- Deactivated for SplendidDataTest: 1,value,2022-07-04
+-- Deactivated for SplendidDataTest: 2,\D,2022-07-03
+-- Deactivated for SplendidDataTest: 3,\D,\D
+-- Deactivated for SplendidDataTest: \.
+
+select id, text_value, ts_value from copy_default;
+
+truncate copy_default;
+
+-- DEFAULT cannot be used in COPY TO
+copy (select 1 as test) TO stdout with (default '\D');

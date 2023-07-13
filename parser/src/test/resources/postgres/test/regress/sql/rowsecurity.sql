@@ -1,10 +1,9 @@
 /*
  * This file has been altered by SplendidData.
  * It is only used for syntax checking, not for the testing of a commandline paser.
- * So input for the copy statements is removed.
+ * So some statements that are expected to fail are removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
-
 
 
 --
@@ -102,8 +101,8 @@ CREATE POLICY p1 ON document AS PERMISSIVE
     USING (dlevel <= (SELECT seclv FROM uaccount WHERE pguser = current_user));
 
 -- try to create a policy of bogus type
-CREATE POLICY p1 ON document AS UGLY
-    USING (dlevel <= (SELECT seclv FROM uaccount WHERE pguser = current_user));
+-- Deactivated for SplendidDataTest: CREATE POLICY p1 ON document AS UGLY
+-- Deactivated for SplendidDataTest:     USING (dlevel <= (SELECT seclv FROM uaccount WHERE pguser = current_user));
 
 -- but Dave isn't allowed to anything at cid 50 or above
 -- this is to make sure that we sort the policies by name first
@@ -543,10 +542,10 @@ SELECT * FROM rec1;    -- fail, mutual recursion via s.b. views
 --
 SET SESSION AUTHORIZATION regress_rls_alice;
 CREATE TABLE s1 (a int, b text);
-INSERT INTO s1 (SELECT x, md5(x::text) FROM generate_series(-10,10) x);
+INSERT INTO s1 (SELECT x, public.fipshash(x::text) FROM generate_series(-10,10) x);
 
 CREATE TABLE s2 (x int, y text);
-INSERT INTO s2 (SELECT x, md5(x::text) FROM generate_series(-6,6) x);
+INSERT INTO s2 (SELECT x, public.fipshash(x::text) FROM generate_series(-6,6) x);
 
 GRANT SELECT ON s1, s2 TO regress_rls_bob;
 
@@ -678,7 +677,7 @@ DELETE FROM t1 WHERE f_leak(b) RETURNING tableoid::regclass, *, t1;
 --
 SET SESSION AUTHORIZATION regress_rls_alice;
 CREATE TABLE b1 (a int, b text);
-INSERT INTO b1 (SELECT x, md5(x::text) FROM generate_series(-10,10) x);
+INSERT INTO b1 (SELECT x, public.fipshash(x::text) FROM generate_series(-10,10) x);
 
 CREATE POLICY p1 ON b1 USING (a % 2 = 0);
 ALTER TABLE b1 ENABLE ROW LEVEL SECURITY;
@@ -1278,7 +1277,7 @@ DROP VIEW rls_sbv;
 -- Expression structure
 --
 SET SESSION AUTHORIZATION regress_rls_alice;
-INSERT INTO y2 (SELECT x, md5(x::text) FROM generate_series(0,20) x);
+INSERT INTO y2 (SELECT x, public.fipshash(x::text) FROM generate_series(0,20) x);
 CREATE POLICY p2 ON y2 USING (a % 3 = 0);
 CREATE POLICY p3 ON y2 USING (a % 4 = 0);
 
@@ -1350,7 +1349,7 @@ ALTER TABLE t1 ENABLE ROW LEVEL SECURITY;
 
 GRANT ALL ON t1 TO regress_rls_bob;
 
-INSERT INTO t1 (SELECT x, md5(x::text) FROM generate_series(0,20) x);
+INSERT INTO t1 (SELECT x, public.fipshash(x::text) FROM generate_series(0,20) x);
 
 SET SESSION AUTHORIZATION regress_rls_bob;
 
@@ -1482,7 +1481,7 @@ ALTER TABLE copy_t ENABLE ROW LEVEL SECURITY;
 
 GRANT ALL ON copy_t TO regress_rls_bob, regress_rls_exempt_user;
 
-INSERT INTO copy_t (SELECT x, md5(x::text) FROM generate_series(0,10) x);
+INSERT INTO copy_t (SELECT x, public.fipshash(x::text) FROM generate_series(0,10) x);
 
 -- Check COPY TO as Superuser/owner.
 RESET SESSION AUTHORIZATION;
@@ -1522,7 +1521,41 @@ ALTER TABLE copy_rel_to ENABLE ROW LEVEL SECURITY;
 
 GRANT ALL ON copy_rel_to TO regress_rls_bob, regress_rls_exempt_user;
 
-INSERT INTO copy_rel_to VALUES (1, md5('1'));
+INSERT INTO copy_rel_to VALUES (1, public.fipshash('1'));
+
+-- Check COPY TO as Superuser/owner.
+RESET SESSION AUTHORIZATION;
+SET row_security TO OFF;
+COPY copy_rel_to TO STDOUT WITH DELIMITER ',';
+SET row_security TO ON;
+COPY copy_rel_to TO STDOUT WITH DELIMITER ',';
+
+-- Check COPY TO as user with permissions.
+SET SESSION AUTHORIZATION regress_rls_bob;
+SET row_security TO OFF;
+COPY copy_rel_to TO STDOUT WITH DELIMITER ','; --fail - would be affected by RLS
+SET row_security TO ON;
+COPY copy_rel_to TO STDOUT WITH DELIMITER ','; --ok
+
+-- Check COPY TO as user with permissions and BYPASSRLS
+SET SESSION AUTHORIZATION regress_rls_exempt_user;
+SET row_security TO OFF;
+COPY copy_rel_to TO STDOUT WITH DELIMITER ','; --ok
+SET row_security TO ON;
+COPY copy_rel_to TO STDOUT WITH DELIMITER ','; --ok
+
+-- Check COPY TO as user without permissions. SET row_security TO OFF;
+SET SESSION AUTHORIZATION regress_rls_carol;
+SET row_security TO OFF;
+COPY copy_rel_to TO STDOUT WITH DELIMITER ','; --fail - permission denied
+SET row_security TO ON;
+COPY copy_rel_to TO STDOUT WITH DELIMITER ','; --fail - permission denied
+
+-- Check behavior with a child table.
+RESET SESSION AUTHORIZATION;
+SET row_security TO ON;
+CREATE TABLE copy_rel_to_child () INHERITS (copy_rel_to);
+INSERT INTO copy_rel_to_child VALUES (1, 'one'), (2, 'two');
 
 -- Check COPY TO as Superuser/owner.
 RESET SESSION AUTHORIZATION;
@@ -1721,30 +1754,6 @@ DROP ROLE regress_rls_frank; -- succeeds
 ROLLBACK TO q;
 
 ROLLBACK; -- cleanup
-
---
--- Converting table to view
---
-BEGIN;
-CREATE TABLE t (c int);
-CREATE POLICY p ON t USING (c % 2 = 1);
-ALTER TABLE t ENABLE ROW LEVEL SECURITY;
-
-SAVEPOINT q;
-CREATE RULE "_RETURN" AS ON SELECT TO t DO INSTEAD
-  SELECT * FROM generate_series(1,5) t0(c); -- fails due to row-level security enabled
-ROLLBACK TO q;
-
-ALTER TABLE t DISABLE ROW LEVEL SECURITY;
-SAVEPOINT q;
-CREATE RULE "_RETURN" AS ON SELECT TO t DO INSTEAD
-  SELECT * FROM generate_series(1,5) t0(c); -- fails due to policy p on t
-ROLLBACK TO q;
-
-DROP POLICY p ON t;
-CREATE RULE "_RETURN" AS ON SELECT TO t DO INSTEAD
-  SELECT * FROM generate_series(1,5) t0(c); -- succeeds
-ROLLBACK;
 
 --
 -- Policy expression handling
@@ -2125,6 +2134,26 @@ SELECT * FROM rls_tbl;
 
 DROP TABLE rls_tbl;
 RESET SESSION AUTHORIZATION;
+
+-- CVE-2023-2455: inlining an SRF may introduce an RLS dependency
+create table rls_t (c text);
+insert into rls_t values ('invisible to bob');
+alter table rls_t enable row level security;
+grant select on rls_t to regress_rls_alice, regress_rls_bob;
+create policy p1 on rls_t for select to regress_rls_alice using (true);
+create policy p2 on rls_t for select to regress_rls_bob using (false);
+create function rls_f () returns setof rls_t
+  stable language sql
+  as $$ select * from rls_t $$;
+prepare q as select current_user, * from rls_f();
+set role regress_rls_alice;
+execute q;
+set role regress_rls_bob;
+execute q;
+
+RESET ROLE;
+DROP FUNCTION rls_f();
+DROP TABLE rls_t;
 
 --
 -- Clean up objects

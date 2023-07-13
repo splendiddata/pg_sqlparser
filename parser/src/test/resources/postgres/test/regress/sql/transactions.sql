@@ -1,11 +1,3 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
-
-
-
 --
 -- TRANSACTIONS
 --
@@ -386,10 +378,10 @@ drop function inverse(int);
 begin;
 
 savepoint x;
-create table abc (a int);
-insert into abc values (5);
-insert into abc values (10);
-declare foo cursor for select * from abc;
+create table trans_abc (a int);
+insert into trans_abc values (5);
+insert into trans_abc values (10);
+declare foo cursor for select * from trans_abc;
 fetch from foo;
 rollback to x;
 
@@ -399,11 +391,11 @@ commit;
 
 begin;
 
-create table abc (a int);
-insert into abc values (5);
-insert into abc values (10);
-insert into abc values (15);
-declare foo cursor for select * from abc;
+create table trans_abc (a int);
+insert into trans_abc values (5);
+insert into trans_abc values (10);
+insert into trans_abc values (15);
+declare foo cursor for select * from trans_abc;
 
 fetch from foo;
 
@@ -449,7 +441,7 @@ DROP FUNCTION invert(x float8);
 
 -- Tests for AND CHAIN
 
-CREATE TABLE abc (a int);
+CREATE TABLE trans_abc (a int);
 
 -- set nondefault value so we have something to override below
 SET default_transaction_read_only = on;
@@ -458,19 +450,19 @@ START TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ WRITE, DEFERRABLE;
 SHOW transaction_isolation;
 SHOW transaction_read_only;
 SHOW transaction_deferrable;
-INSERT INTO abc VALUES (1);
-INSERT INTO abc VALUES (2);
+INSERT INTO trans_abc VALUES (1);
+INSERT INTO trans_abc VALUES (2);
 COMMIT AND CHAIN;  -- TBLOCK_END
 SHOW transaction_isolation;
 SHOW transaction_read_only;
 SHOW transaction_deferrable;
-INSERT INTO abc VALUES ('error');
-INSERT INTO abc VALUES (3);  -- check it's really aborted
+INSERT INTO trans_abc VALUES ('error');
+INSERT INTO trans_abc VALUES (3);  -- check it's really aborted
 COMMIT AND CHAIN;  -- TBLOCK_ABORT_END
 SHOW transaction_isolation;
 SHOW transaction_read_only;
 SHOW transaction_deferrable;
-INSERT INTO abc VALUES (4);
+INSERT INTO trans_abc VALUES (4);
 COMMIT;
 
 START TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ WRITE, DEFERRABLE;
@@ -478,12 +470,12 @@ SHOW transaction_isolation;
 SHOW transaction_read_only;
 SHOW transaction_deferrable;
 SAVEPOINT x;
-INSERT INTO abc VALUES ('error');
+INSERT INTO trans_abc VALUES ('error');
 COMMIT AND CHAIN;  -- TBLOCK_ABORT_PENDING
 SHOW transaction_isolation;
 SHOW transaction_read_only;
 SHOW transaction_deferrable;
-INSERT INTO abc VALUES (5);
+INSERT INTO trans_abc VALUES (5);
 COMMIT;
 
 START TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ WRITE, DEFERRABLE;
@@ -502,12 +494,12 @@ START TRANSACTION ISOLATION LEVEL SERIALIZABLE, READ WRITE, NOT DEFERRABLE;
 SHOW transaction_isolation;
 SHOW transaction_read_only;
 SHOW transaction_deferrable;
-INSERT INTO abc VALUES (6);
+INSERT INTO trans_abc VALUES (6);
 ROLLBACK AND CHAIN;  -- TBLOCK_ABORT_PENDING
 SHOW transaction_isolation;
 SHOW transaction_read_only;
 SHOW transaction_deferrable;
-INSERT INTO abc VALUES ('error');
+INSERT INTO trans_abc VALUES ('error');
 ROLLBACK AND CHAIN;  -- TBLOCK_ABORT_END
 SHOW transaction_isolation;
 SHOW transaction_read_only;
@@ -518,11 +510,11 @@ ROLLBACK;
 COMMIT AND CHAIN;  -- error
 ROLLBACK AND CHAIN;  -- error
 
-SELECT * FROM abc ORDER BY 1;
+SELECT * FROM trans_abc ORDER BY 1;
 
 RESET default_transaction_read_only;
 
-DROP TABLE abc;
+DROP TABLE trans_abc;
 
 
 -- Test assorted behaviors around the implicit transaction block created
@@ -533,93 +525,93 @@ DROP TABLE abc;
 create temp table i_table (f1 int);
 
 -- psql will show all results of a multi-statement Query
--- Deactivated for SplendidDataTest: SELECT 1\; SELECT 2\; SELECT 3;
+SELECT 1\; SELECT 2\; SELECT 3;
 
 -- this implicitly commits:
--- Deactivated for SplendidDataTest: insert into i_table values(1)\; select * from i_table;
+insert into i_table values(1)\; select * from i_table;
 -- 1/0 error will cause rolling back the whole implicit transaction
--- Deactivated for SplendidDataTest: insert into i_table values(2)\; select * from i_table\; select 1/0;
+insert into i_table values(2)\; select * from i_table\; select 1/0;
 select * from i_table;
 
 rollback;  -- we are not in a transaction at this point
 
 -- can use regular begin/commit/rollback within a single Query
--- Deactivated for SplendidDataTest: begin\; insert into i_table values(3)\; commit;
+begin\; insert into i_table values(3)\; commit;
 rollback;  -- we are not in a transaction at this point
--- Deactivated for SplendidDataTest: begin\; insert into i_table values(4)\; rollback;
+begin\; insert into i_table values(4)\; rollback;
 rollback;  -- we are not in a transaction at this point
 
 -- begin converts implicit transaction into a regular one that
 -- can extend past the end of the Query
--- Deactivated for SplendidDataTest: select 1\; begin\; insert into i_table values(5);
+select 1\; begin\; insert into i_table values(5);
 commit;
--- Deactivated for SplendidDataTest: select 1\; begin\; insert into i_table values(6);
+select 1\; begin\; insert into i_table values(6);
 rollback;
 
 -- commit in implicit-transaction state commits but issues a warning.
--- Deactivated for SplendidDataTest: insert into i_table values(7)\; commit\; insert into i_table values(8)\; select 1/0;
+insert into i_table values(7)\; commit\; insert into i_table values(8)\; select 1/0;
 -- similarly, rollback aborts but issues a warning.
--- Deactivated for SplendidDataTest: insert into i_table values(9)\; rollback\; select 2;
+insert into i_table values(9)\; rollback\; select 2;
 
 select * from i_table;
 
 rollback;  -- we are not in a transaction at this point
 
 -- implicit transaction block is still a transaction block, for e.g. VACUUM
--- Deactivated for SplendidDataTest: SELECT 1\; VACUUM;
--- Deactivated for SplendidDataTest: SELECT 1\; COMMIT\; VACUUM;
+SELECT 1\; VACUUM;
+SELECT 1\; COMMIT\; VACUUM;
 
 -- we disallow savepoint-related commands in implicit-transaction state
--- Deactivated for SplendidDataTest: SELECT 1\; SAVEPOINT sp;
--- Deactivated for SplendidDataTest: SELECT 1\; COMMIT\; SAVEPOINT sp;
--- Deactivated for SplendidDataTest: ROLLBACK TO SAVEPOINT sp\; SELECT 2;
--- Deactivated for SplendidDataTest: SELECT 2\; RELEASE SAVEPOINT sp\; SELECT 3;
+SELECT 1\; SAVEPOINT sp;
+SELECT 1\; COMMIT\; SAVEPOINT sp;
+ROLLBACK TO SAVEPOINT sp\; SELECT 2;
+SELECT 2\; RELEASE SAVEPOINT sp\; SELECT 3;
 
 -- but this is OK, because the BEGIN converts it to a regular xact
--- Deactivated for SplendidDataTest: SELECT 1\; BEGIN\; SAVEPOINT sp\; ROLLBACK TO SAVEPOINT sp\; COMMIT;
+SELECT 1\; BEGIN\; SAVEPOINT sp\; ROLLBACK TO SAVEPOINT sp\; COMMIT;
 
 
 -- Tests for AND CHAIN in implicit transaction blocks
 
--- Deactivated for SplendidDataTest: SET TRANSACTION READ ONLY\; COMMIT AND CHAIN;  -- error
+SET TRANSACTION READ ONLY\; COMMIT AND CHAIN;  -- error
 SHOW transaction_read_only;
 
--- Deactivated for SplendidDataTest: SET TRANSACTION READ ONLY\; ROLLBACK AND CHAIN;  -- error
+SET TRANSACTION READ ONLY\; ROLLBACK AND CHAIN;  -- error
 SHOW transaction_read_only;
 
-CREATE TABLE abc (a int);
+CREATE TABLE trans_abc (a int);
 
 -- COMMIT/ROLLBACK + COMMIT/ROLLBACK AND CHAIN
--- Deactivated for SplendidDataTest: INSERT INTO abc VALUES (7)\; COMMIT\; INSERT INTO abc VALUES (8)\; COMMIT AND CHAIN;  -- 7 commit, 8 error
--- Deactivated for SplendidDataTest: INSERT INTO abc VALUES (9)\; ROLLBACK\; INSERT INTO abc VALUES (10)\; ROLLBACK AND CHAIN;  -- 9 rollback, 10 error
+INSERT INTO trans_abc VALUES (7)\; COMMIT\; INSERT INTO trans_abc VALUES (8)\; COMMIT AND CHAIN;  -- 7 commit, 8 error
+INSERT INTO trans_abc VALUES (9)\; ROLLBACK\; INSERT INTO trans_abc VALUES (10)\; ROLLBACK AND CHAIN;  -- 9 rollback, 10 error
 
 -- COMMIT/ROLLBACK AND CHAIN + COMMIT/ROLLBACK
--- Deactivated for SplendidDataTest: INSERT INTO abc VALUES (11)\; COMMIT AND CHAIN\; INSERT INTO abc VALUES (12)\; COMMIT;  -- 11 error, 12 not reached
--- Deactivated for SplendidDataTest: INSERT INTO abc VALUES (13)\; ROLLBACK AND CHAIN\; INSERT INTO abc VALUES (14)\; ROLLBACK;  -- 13 error, 14 not reached
+INSERT INTO trans_abc VALUES (11)\; COMMIT AND CHAIN\; INSERT INTO trans_abc VALUES (12)\; COMMIT;  -- 11 error, 12 not reached
+INSERT INTO trans_abc VALUES (13)\; ROLLBACK AND CHAIN\; INSERT INTO trans_abc VALUES (14)\; ROLLBACK;  -- 13 error, 14 not reached
 
 -- START TRANSACTION + COMMIT/ROLLBACK AND CHAIN
--- Deactivated for SplendidDataTest: START TRANSACTION ISOLATION LEVEL REPEATABLE READ\; INSERT INTO abc VALUES (15)\; COMMIT AND CHAIN;  -- 15 ok
+START TRANSACTION ISOLATION LEVEL REPEATABLE READ\; INSERT INTO trans_abc VALUES (15)\; COMMIT AND CHAIN;  -- 15 ok
 SHOW transaction_isolation;  -- transaction is active at this point
 COMMIT;
 
--- Deactivated for SplendidDataTest: START TRANSACTION ISOLATION LEVEL REPEATABLE READ\; INSERT INTO abc VALUES (16)\; ROLLBACK AND CHAIN;  -- 16 ok
+START TRANSACTION ISOLATION LEVEL REPEATABLE READ\; INSERT INTO trans_abc VALUES (16)\; ROLLBACK AND CHAIN;  -- 16 ok
 SHOW transaction_isolation;  -- transaction is active at this point
 ROLLBACK;
 
 SET default_transaction_isolation = 'read committed';
 
 -- START TRANSACTION + COMMIT/ROLLBACK + COMMIT/ROLLBACK AND CHAIN
--- Deactivated for SplendidDataTest: START TRANSACTION ISOLATION LEVEL REPEATABLE READ\; INSERT INTO abc VALUES (17)\; COMMIT\; INSERT INTO abc VALUES (18)\; COMMIT AND CHAIN;  -- 17 commit, 18 error
+START TRANSACTION ISOLATION LEVEL REPEATABLE READ\; INSERT INTO trans_abc VALUES (17)\; COMMIT\; INSERT INTO trans_abc VALUES (18)\; COMMIT AND CHAIN;  -- 17 commit, 18 error
 SHOW transaction_isolation;  -- out of transaction block
 
--- Deactivated for SplendidDataTest: START TRANSACTION ISOLATION LEVEL REPEATABLE READ\; INSERT INTO abc VALUES (19)\; ROLLBACK\; INSERT INTO abc VALUES (20)\; ROLLBACK AND CHAIN;  -- 19 rollback, 20 error
+START TRANSACTION ISOLATION LEVEL REPEATABLE READ\; INSERT INTO trans_abc VALUES (19)\; ROLLBACK\; INSERT INTO trans_abc VALUES (20)\; ROLLBACK AND CHAIN;  -- 19 rollback, 20 error
 SHOW transaction_isolation;  -- out of transaction block
 
 RESET default_transaction_isolation;
 
-SELECT * FROM abc ORDER BY 1;
+SELECT * FROM trans_abc ORDER BY 1;
 
-DROP TABLE abc;
+DROP TABLE trans_abc;
 
 
 -- Test for successful cleanup of an aborted transaction at session exit.

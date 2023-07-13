@@ -17,7 +17,7 @@ SELECT table_name, column_name, column_default, is_nullable, is_generated, gener
 
 SELECT table_name, column_name, dependent_column FROM information_schema.column_column_usage ORDER BY 1, 2, 3;
 
--- Deactivated for SplendidDataTest: \d gtest1
+\d gtest1
 
 -- duplicate generated
 CREATE TABLE gtest_err_1 (a int PRIMARY KEY, b int GENERATED ALWAYS AS (a * 2) STORED GENERATED ALWAYS AS (a * 3) STORED);
@@ -89,6 +89,21 @@ SELECT * FROM gtest1 ORDER BY a;
 DELETE FROM gtest1 WHERE b = 2;
 SELECT * FROM gtest1 ORDER BY a;
 
+-- test MERGE
+CREATE TABLE gtestm (
+  id int PRIMARY KEY,
+  f1 int,
+  f2 int,
+  f3 int GENERATED ALWAYS AS (f1 * 2) STORED,
+  f4 int GENERATED ALWAYS AS (f2 * 2) STORED
+);
+INSERT INTO gtestm VALUES (1, 5, 100);
+MERGE INTO gtestm t USING (VALUES (1, 10), (2, 20)) v(id, f1) ON t.id = v.id
+  WHEN MATCHED THEN UPDATE SET f1 = v.f1
+  WHEN NOT MATCHED THEN INSERT VALUES (v.id, v.f1, 200);
+SELECT * FROM gtestm ORDER BY id;
+DROP TABLE gtestm;
+
 -- views
 CREATE VIEW gtest1v AS SELECT * FROM gtest1;
 SELECT * FROM gtest1v;
@@ -113,49 +128,53 @@ WITH foo AS (SELECT * FROM gtest1) SELECT * FROM foo;
 -- inheritance
 CREATE TABLE gtest1_1 () INHERITS (gtest1);
 SELECT * FROM gtest1_1;
--- Deactivated for SplendidDataTest: \d gtest1_1
+\d gtest1_1
 INSERT INTO gtest1_1 VALUES (4);
 SELECT * FROM gtest1_1;
 SELECT * FROM gtest1;
 
+-- can't have generated column that is a child of normal column
 CREATE TABLE gtest_normal (a int, b int);
-CREATE TABLE gtest_normal_child (a int, b int GENERATED ALWAYS AS (a * 2) STORED) INHERITS (gtest_normal);
--- Deactivated for SplendidDataTest: \d gtest_normal_child
-INSERT INTO gtest_normal (a) VALUES (1);
-INSERT INTO gtest_normal_child (a) VALUES (2);
-SELECT * FROM gtest_normal;
-
-CREATE TABLE gtest_normal_child2 (a int, b int GENERATED ALWAYS AS (a * 3) STORED);
-ALTER TABLE gtest_normal_child2 INHERIT gtest_normal;
-INSERT INTO gtest_normal_child2 (a) VALUES (3);
-SELECT * FROM gtest_normal;
+CREATE TABLE gtest_normal_child (a int, b int GENERATED ALWAYS AS (a * 2) STORED) INHERITS (gtest_normal);  -- error
+CREATE TABLE gtest_normal_child (a int, b int GENERATED ALWAYS AS (a * 2) STORED);
+ALTER TABLE gtest_normal_child INHERIT gtest_normal;  -- error
+DROP TABLE gtest_normal, gtest_normal_child;
 
 -- test inheritance mismatches between parent and child
-CREATE TABLE gtestx (x int, b int GENERATED ALWAYS AS (a * 22) STORED) INHERITS (gtest1);  -- error
 CREATE TABLE gtestx (x int, b int DEFAULT 10) INHERITS (gtest1);  -- error
 CREATE TABLE gtestx (x int, b int GENERATED ALWAYS AS IDENTITY) INHERITS (gtest1);  -- error
+CREATE TABLE gtestx (x int, b int GENERATED ALWAYS AS (a * 22) STORED) INHERITS (gtest1);  -- ok, overrides parent
+\d+ gtestx
 
 CREATE TABLE gtestxx_1 (a int NOT NULL, b int);
 ALTER TABLE gtestxx_1 INHERIT gtest1;  -- error
-CREATE TABLE gtestxx_2 (a int NOT NULL, b int GENERATED ALWAYS AS (a * 22) STORED);
-ALTER TABLE gtestxx_2 INHERIT gtest1;  -- error
 CREATE TABLE gtestxx_3 (a int NOT NULL, b int GENERATED ALWAYS AS (a * 2) STORED);
 ALTER TABLE gtestxx_3 INHERIT gtest1;  -- ok
 CREATE TABLE gtestxx_4 (b int GENERATED ALWAYS AS (a * 2) STORED, a int NOT NULL);
 ALTER TABLE gtestxx_4 INHERIT gtest1;  -- ok
 
 -- test multiple inheritance mismatches
+CREATE TABLE gtesty (x int, b int DEFAULT 55);
+CREATE TABLE gtest1_y () INHERITS (gtest0, gtesty);  -- error
+DROP TABLE gtesty;
+
 CREATE TABLE gtesty (x int, b int);
-CREATE TABLE gtest1_2 () INHERITS (gtest1, gtesty);  -- error
+CREATE TABLE gtest1_y () INHERITS (gtest1, gtesty);  -- error
 DROP TABLE gtesty;
 
 CREATE TABLE gtesty (x int, b int GENERATED ALWAYS AS (x * 22) STORED);
-CREATE TABLE gtest1_2 () INHERITS (gtest1, gtesty);  -- error
-DROP TABLE gtesty;
+CREATE TABLE gtest1_y () INHERITS (gtest1, gtesty);  -- error
+CREATE TABLE gtest1_y (b int GENERATED ALWAYS AS (x + 1) STORED) INHERITS (gtest1, gtesty);  -- ok
+\d gtest1_y
 
-CREATE TABLE gtesty (x int, b int DEFAULT 55);
-CREATE TABLE gtest1_2 () INHERITS (gtest0, gtesty);  -- error
-DROP TABLE gtesty;
+-- test correct handling of GENERATED column that's only in child
+CREATE TABLE gtestp (f1 int);
+CREATE TABLE gtestc (f2 int GENERATED ALWAYS AS (f1+1) STORED) INHERITS(gtestp);
+INSERT INTO gtestc values(42);
+TABLE gtestc;
+UPDATE gtestp SET f1 = f1 * 10;
+TABLE gtestc;
+DROP TABLE gtestp CASCADE;
 
 -- test stored update
 CREATE TABLE gtest3 (a int, b int GENERATED ALWAYS AS (a * 3) STORED);
@@ -242,7 +261,7 @@ CREATE TABLE gtest10 (a int PRIMARY KEY, b int, c int GENERATED ALWAYS AS (b * 2
 ALTER TABLE gtest10 DROP COLUMN b;  -- fails
 ALTER TABLE gtest10 DROP COLUMN b CASCADE;  -- drops c too
 
--- Deactivated for SplendidDataTest: \d gtest10
+\d gtest10
 
 CREATE TABLE gtest10a (a int PRIMARY KEY, b int GENERATED ALWAYS AS (a * 2) STORED);
 ALTER TABLE gtest10a DROP COLUMN b;
@@ -316,7 +335,7 @@ CREATE TABLE gtest22c (a int, b int GENERATED ALWAYS AS (a * 2) STORED);
 CREATE INDEX gtest22c_b_idx ON gtest22c (b);
 CREATE INDEX gtest22c_expr_idx ON gtest22c ((b * 3));
 CREATE INDEX gtest22c_pred_idx ON gtest22c (a) WHERE b > 0;
--- Deactivated for SplendidDataTest: \d gtest22c
+\d gtest22c
 
 INSERT INTO gtest22c VALUES (1), (2), (3);
 SET enable_seqscan TO off;
@@ -338,7 +357,7 @@ CREATE TABLE gtest23x (a int PRIMARY KEY, b int GENERATED ALWAYS AS (a * 2) STOR
 CREATE TABLE gtest23x (a int PRIMARY KEY, b int GENERATED ALWAYS AS (a * 2) STORED REFERENCES gtest23a (x) ON DELETE SET NULL);  -- error
 
 CREATE TABLE gtest23b (a int PRIMARY KEY, b int GENERATED ALWAYS AS (a * 2) STORED REFERENCES gtest23a (x));
--- Deactivated for SplendidDataTest: \d gtest23b
+\d gtest23b
 
 INSERT INTO gtest23b VALUES (1);  -- ok
 INSERT INTO gtest23b VALUES (5);  -- error
@@ -364,24 +383,52 @@ CREATE TYPE gtest_type AS (f1 integer, f2 text, f3 bigint);
 CREATE TABLE gtest28 OF gtest_type (f1 WITH OPTIONS GENERATED ALWAYS AS (f2 *2) STORED);
 DROP TYPE gtest_type CASCADE;
 
--- table partitions (currently not supported)
-CREATE TABLE gtest_parent (f1 date NOT NULL, f2 text, f3 bigint) PARTITION BY RANGE (f1);
+-- partitioning cases
+CREATE TABLE gtest_parent (f1 date NOT NULL, f2 bigint, f3 bigint) PARTITION BY RANGE (f1);
 CREATE TABLE gtest_child PARTITION OF gtest_parent (
     f3 WITH OPTIONS GENERATED ALWAYS AS (f2 * 2) STORED
 ) FOR VALUES FROM ('2016-07-01') TO ('2016-08-01'); -- error
-DROP TABLE gtest_parent;
+CREATE TABLE gtest_child (f1 date NOT NULL, f2 bigint, f3 bigint GENERATED ALWAYS AS (f2 * 2) STORED);
+ALTER TABLE gtest_parent ATTACH PARTITION gtest_child FOR VALUES FROM ('2016-07-01') TO ('2016-08-01'); -- error
+DROP TABLE gtest_parent, gtest_child;
 
--- partitioned table
 CREATE TABLE gtest_parent (f1 date NOT NULL, f2 bigint, f3 bigint GENERATED ALWAYS AS (f2 * 2) STORED) PARTITION BY RANGE (f1);
-CREATE TABLE gtest_child PARTITION OF gtest_parent FOR VALUES FROM ('2016-07-01') TO ('2016-08-01');
+CREATE TABLE gtest_child PARTITION OF gtest_parent
+  FOR VALUES FROM ('2016-07-01') TO ('2016-08-01');  -- inherits gen expr
+CREATE TABLE gtest_child2 PARTITION OF gtest_parent (
+    f3 WITH OPTIONS GENERATED ALWAYS AS (f2 * 22) STORED  -- overrides gen expr
+) FOR VALUES FROM ('2016-08-01') TO ('2016-09-01');
+CREATE TABLE gtest_child3 PARTITION OF gtest_parent (
+    f3 DEFAULT 42  -- error
+) FOR VALUES FROM ('2016-09-01') TO ('2016-10-01');
+CREATE TABLE gtest_child3 PARTITION OF gtest_parent (
+    f3 WITH OPTIONS GENERATED ALWAYS AS IDENTITY  -- error
+) FOR VALUES FROM ('2016-09-01') TO ('2016-10-01');
+CREATE TABLE gtest_child3 (f1 date NOT NULL, f2 bigint, f3 bigint);
+ALTER TABLE gtest_parent ATTACH PARTITION gtest_child3 FOR VALUES FROM ('2016-09-01') TO ('2016-10-01'); -- error
+DROP TABLE gtest_child3;
+CREATE TABLE gtest_child3 (f1 date NOT NULL, f2 bigint, f3 bigint DEFAULT 42);
+ALTER TABLE gtest_parent ATTACH PARTITION gtest_child3 FOR VALUES FROM ('2016-09-01') TO ('2016-10-01'); -- error
+DROP TABLE gtest_child3;
+CREATE TABLE gtest_child3 (f1 date NOT NULL, f2 bigint, f3 bigint GENERATED ALWAYS AS IDENTITY);
+ALTER TABLE gtest_parent ATTACH PARTITION gtest_child3 FOR VALUES FROM ('2016-09-01') TO ('2016-10-01'); -- error
+DROP TABLE gtest_child3;
+CREATE TABLE gtest_child3 (f1 date NOT NULL, f2 bigint, f3 bigint GENERATED ALWAYS AS (f2 * 33) STORED);
+ALTER TABLE gtest_parent ATTACH PARTITION gtest_child3 FOR VALUES FROM ('2016-09-01') TO ('2016-10-01');
+\d gtest_child
+\d gtest_child2
+\d gtest_child3
 INSERT INTO gtest_parent (f1, f2) VALUES ('2016-07-15', 1);
 SELECT * FROM gtest_parent;
 SELECT * FROM gtest_child;
-DROP TABLE gtest_parent;
+UPDATE gtest_parent SET f1 = f1 + 60;
+SELECT * FROM gtest_parent;
+SELECT * FROM gtest_child3;
+-- we leave these tables around for purposes of testing dump/reload/upgrade
 
 -- generated columns in partition key (not allowed)
-CREATE TABLE gtest_parent (f1 date NOT NULL, f2 bigint, f3 bigint GENERATED ALWAYS AS (f2 * 2) STORED) PARTITION BY RANGE (f3);
-CREATE TABLE gtest_parent (f1 date NOT NULL, f2 bigint, f3 bigint GENERATED ALWAYS AS (f2 * 2) STORED) PARTITION BY RANGE ((f3 * 3));
+CREATE TABLE gtest_part_key (f1 date NOT NULL, f2 bigint, f3 bigint GENERATED ALWAYS AS (f2 * 2) STORED) PARTITION BY RANGE (f3);
+CREATE TABLE gtest_part_key (f1 date NOT NULL, f2 bigint, f3 bigint GENERATED ALWAYS AS (f2 * 2) STORED) PARTITION BY RANGE ((f3 * 3));
 
 -- ALTER TABLE ... ADD COLUMN
 CREATE TABLE gtest25 (a int PRIMARY KEY);
@@ -396,7 +443,7 @@ ALTER TABLE gtest25 ADD COLUMN d int DEFAULT 101;
 ALTER TABLE gtest25 ALTER COLUMN d SET DATA TYPE float8,
   ADD COLUMN y float8 GENERATED ALWAYS AS (d * 4) STORED;
 SELECT * FROM gtest25 ORDER BY a;
--- Deactivated for SplendidDataTest: \d gtest25
+\d gtest25
 
 -- ALTER TABLE ... ALTER COLUMN
 CREATE TABLE gtest27 (
@@ -407,7 +454,7 @@ CREATE TABLE gtest27 (
 INSERT INTO gtest27 (a, b) VALUES (3, 7), (4, 11);
 ALTER TABLE gtest27 ALTER COLUMN a TYPE text;  -- error
 ALTER TABLE gtest27 ALTER COLUMN x TYPE numeric;
--- Deactivated for SplendidDataTest: \d gtest27
+\d gtest27
 SELECT * FROM gtest27;
 ALTER TABLE gtest27 ALTER COLUMN x TYPE boolean USING x <> 0;  -- error
 ALTER TABLE gtest27 ALTER COLUMN x DROP DEFAULT;  -- error
@@ -417,12 +464,12 @@ ALTER TABLE gtest27
   ALTER COLUMN a TYPE bigint,
   ALTER COLUMN b TYPE bigint,
   ADD COLUMN x bigint GENERATED ALWAYS AS ((a + b) * 2) STORED;
--- Deactivated for SplendidDataTest: \d gtest27
+\d gtest27
 -- Ideally you could just do this, but not today (and should x change type?):
 ALTER TABLE gtest27
   ALTER COLUMN a TYPE float8,
   ALTER COLUMN b TYPE float8;  -- error
--- Deactivated for SplendidDataTest: \d gtest27
+\d gtest27
 SELECT * FROM gtest27;
 
 -- ALTER TABLE ... ALTER COLUMN ... DROP EXPRESSION
@@ -437,11 +484,11 @@ ALTER TABLE gtest29 ALTER COLUMN b DROP EXPRESSION;
 INSERT INTO gtest29 (a) VALUES (5);
 INSERT INTO gtest29 (a, b) VALUES (6, 66);
 SELECT * FROM gtest29;
--- Deactivated for SplendidDataTest: \d gtest29
+\d gtest29
 
 -- check that dependencies between columns have also been removed
 ALTER TABLE gtest29 DROP COLUMN a;  -- should not drop b
--- Deactivated for SplendidDataTest: \d gtest29
+\d gtest29
 
 -- with inheritance
 CREATE TABLE gtest30 (
@@ -450,8 +497,8 @@ CREATE TABLE gtest30 (
 );
 CREATE TABLE gtest30_1 () INHERITS (gtest30);
 ALTER TABLE gtest30 ALTER COLUMN b DROP EXPRESSION;
--- Deactivated for SplendidDataTest: \d gtest30
--- Deactivated for SplendidDataTest: \d gtest30_1
+\d gtest30
+\d gtest30_1
 DROP TABLE gtest30 CASCADE;
 CREATE TABLE gtest30 (
     a int,
@@ -459,8 +506,8 @@ CREATE TABLE gtest30 (
 );
 CREATE TABLE gtest30_1 () INHERITS (gtest30);
 ALTER TABLE ONLY gtest30 ALTER COLUMN b DROP EXPRESSION;  -- error
--- Deactivated for SplendidDataTest: \d gtest30
--- Deactivated for SplendidDataTest: \d gtest30_1
+\d gtest30
+\d gtest30_1
 ALTER TABLE gtest30_1 ALTER COLUMN b DROP EXPRESSION;  -- error
 
 -- triggers
@@ -588,4 +635,4 @@ ALTER TABLE gtest28a DROP COLUMN a;
 
 CREATE TABLE gtest28b (LIKE gtest28a INCLUDING GENERATED);
 
--- Deactivated for SplendidDataTest: \d gtest28*
+\d gtest28*

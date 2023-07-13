@@ -82,7 +82,16 @@ public class JsonValueExpr extends Node {
 
     @Override
     public String toString() {
-        return ("Please implement " + getClass().getName() + ".toString()");
+        StringBuilder result = new StringBuilder();
+        if (formatted_expr != null) {
+            result.append(formatted_expr);
+        } else if (raw_expr != null) {
+            result.append(raw_expr);
+        }
+        if (format != null) {
+            result.append(format);
+        }
+        return result.toString();
     }
 
 }

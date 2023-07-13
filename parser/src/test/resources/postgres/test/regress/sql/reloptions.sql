@@ -1,10 +1,3 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
-
-
 
 -- Simple create
 CREATE TABLE reloptions_test(i INT) WITH (FiLLFaCToR=30,
@@ -88,15 +81,15 @@ DROP TABLE reloptions_test;
 
 CREATE TABLE reloptions_test (s VARCHAR)
 	WITH (toast.autovacuum_vacuum_cost_delay = 23);
--- Deactivated for SplendidDataTest: SELECT reltoastrelid as toast_oid
--- Deactivated for SplendidDataTest: 	FROM pg_class WHERE oid = 'reloptions_test'::regclass \gset
--- Deactivated for SplendidDataTest: SELECT reloptions FROM pg_class WHERE oid = :toast_oid;
+SELECT reltoastrelid as toast_oid
+	FROM pg_class WHERE oid = 'reloptions_test'::regclass \gset
+SELECT reloptions FROM pg_class WHERE oid = :toast_oid;
 
 ALTER TABLE reloptions_test SET (toast.autovacuum_vacuum_cost_delay = 24);
--- Deactivated for SplendidDataTest: SELECT reloptions FROM pg_class WHERE oid = :toast_oid;
+SELECT reloptions FROM pg_class WHERE oid = :toast_oid;
 
 ALTER TABLE reloptions_test RESET (toast.autovacuum_vacuum_cost_delay);
--- Deactivated for SplendidDataTest: SELECT reloptions FROM pg_class WHERE oid = :toast_oid;
+SELECT reloptions FROM pg_class WHERE oid = :toast_oid;
 
 -- Fail on non-existent options in toast namespace
 CREATE TABLE reloptions_test2 (i int) WITH (toast.not_existing_option = 42);

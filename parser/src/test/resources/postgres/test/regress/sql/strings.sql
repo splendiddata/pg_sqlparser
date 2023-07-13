@@ -34,8 +34,8 @@ SELECT U&'a\\b' AS "a\b";
 SELECT U&' \' UESCAPE '!' AS "tricky";
 SELECT 'tricky' AS U&"\" UESCAPE '!';
 
--- Deactivated for SplendidDataTest: SELECT U&'wrong: \061';
--- Deactivated for SplendidDataTest: SELECT U&'wrong: \+0061';
+SELECT U&'wrong: \061';
+SELECT U&'wrong: \+0061';
 -- Deactivated for SplendidDataTest: SELECT U&'wrong: +0061' UESCAPE +;
 -- Deactivated for SplendidDataTest: SELECT U&'wrong: +0061' UESCAPE '+';
 
@@ -92,6 +92,12 @@ SELECT E'\\xDe00BeEf'::bytea;
 SELECT E'DeAdBeEf'::bytea;
 SELECT E'De\\000dBeEf'::bytea;
 SELECT E'De\\123dBeEf'::bytea;
+
+-- Test non-error-throwing API too
+SELECT pg_input_is_valid(E'\\xDeAdBeE', 'bytea');
+SELECT * FROM pg_input_error_info(E'\\xDeAdBeE', 'bytea');
+SELECT * FROM pg_input_error_info(E'\\xDeAdBeEx', 'bytea');
+SELECT * FROM pg_input_error_info(E'foo\\99bar', 'bytea');
 
 --
 -- test conversions between various string types
@@ -296,7 +302,7 @@ SELECT regexp_substr('abcabcabc', 'a.c', 1, 1, 'g');
 SELECT regexp_substr('abcabcabc', 'a.c', 1, 1, '', -1);
 
 -- set so we can tell NULL from empty string
--- Deactivated for SplendidDataTest: \pset null '\\N'
+\pset null '\\N'
 
 -- return all matches from regexp
 SELECT regexp_matches('foobarbequebaz', $re$(bar)(beque)$re$);
@@ -358,7 +364,7 @@ SELECT foo, length(foo) FROM regexp_split_to_table('thE QUick bROWn FOx jUMPs ov
 SELECT regexp_split_to_array('thE QUick bROWn FOx jUMPs ovEr The lazy dOG', 'e', 'g');
 
 -- change NULL-display back
--- Deactivated for SplendidDataTest: \pset null ''
+\pset null ''
 
 -- E021-11 position expression
 SELECT POSITION('4' IN '1234567890') = '4' AS "4";
@@ -694,38 +700,6 @@ select to_hex(256*256*256 - 1) AS "ffffff";
 select to_hex(256::bigint*256::bigint*256::bigint*256::bigint - 1) AS "ffffffff";
 
 --
--- MD5 test suite - from IETF RFC 1321
--- (see: ftp://ftp.rfc-editor.org/in-notes/rfc1321.txt)
---
-select md5('') = 'd41d8cd98f00b204e9800998ecf8427e' AS "TRUE";
-
-select md5('a') = '0cc175b9c0f1b6a831c399e269772661' AS "TRUE";
-
-select md5('abc') = '900150983cd24fb0d6963f7d28e17f72' AS "TRUE";
-
-select md5('message digest') = 'f96b697d7cb7938d525a2f31aaf161d0' AS "TRUE";
-
-select md5('abcdefghijklmnopqrstuvwxyz') = 'c3fcd3d76192e4007dfb496cca67e13b' AS "TRUE";
-
-select md5('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789') = 'd174ab98d277d9f5a5611c2c9f419d9f' AS "TRUE";
-
-select md5('12345678901234567890123456789012345678901234567890123456789012345678901234567890') = '57edf4a22be3c955ac49da2e2107b67a' AS "TRUE";
-
-select md5(''::bytea) = 'd41d8cd98f00b204e9800998ecf8427e' AS "TRUE";
-
-select md5('a'::bytea) = '0cc175b9c0f1b6a831c399e269772661' AS "TRUE";
-
-select md5('abc'::bytea) = '900150983cd24fb0d6963f7d28e17f72' AS "TRUE";
-
-select md5('message digest'::bytea) = 'f96b697d7cb7938d525a2f31aaf161d0' AS "TRUE";
-
-select md5('abcdefghijklmnopqrstuvwxyz'::bytea) = 'c3fcd3d76192e4007dfb496cca67e13b' AS "TRUE";
-
-select md5('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'::bytea) = 'd174ab98d277d9f5a5611c2c9f419d9f' AS "TRUE";
-
-select md5('12345678901234567890123456789012345678901234567890123456789012345678901234567890'::bytea) = '57edf4a22be3c955ac49da2e2107b67a' AS "TRUE";
-
---
 -- SHA-2
 --
 SET bytea_output TO hex;
@@ -821,6 +795,7 @@ SELECT ltrim('zzzytrim', 'xyz');
 
 SELECT translate('', '14', 'ax');
 SELECT translate('12345', '14', 'ax');
+SELECT translate('12345', '134', 'a');
 
 SELECT ascii('x');
 SELECT ascii('');

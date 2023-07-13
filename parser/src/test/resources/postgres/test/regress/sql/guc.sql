@@ -1,12 +1,3 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for syntax checking, not for the testing of a commandline paser.
- * So input for the copy statements is removed.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
-
-
-
 -- pg_regress should ensure that this default value applies; however
 -- we can't rely on any specific default value of vacuum_cost_delay
 SHOW datestyle;
@@ -167,10 +158,10 @@ RESET custom.my_guc;  -- this makes it go to empty, not become unknown again
 SHOW custom.my_guc;
 SET custom.my.qualified.guc = 'foo';
 SHOW custom.my.qualified.guc;
--- Deactivated for SplendidDataTest: SET custom."bad-guc" = 42;  -- disallowed because -c cannot set this name
--- Deactivated for SplendidDataTest: SHOW custom."bad-guc";
--- Deactivated for SplendidDataTest: SET special."weird name" = 'foo';  -- could be allowed, but we choose not to
--- Deactivated for SplendidDataTest: SHOW special."weird name";
+SET custom."bad-guc" = 42;  -- disallowed because -c cannot set this name
+SHOW custom."bad-guc";
+SET special."weird name" = 'foo';  -- could be allowed, but we choose not to
+SHOW special."weird name";
 
 -- Check what happens when you try to set a "custom" GUC within the
 -- namespace of an extension.
@@ -335,7 +326,6 @@ CREATE TABLE tab_settings_flags AS SELECT name, category,
     'EXPLAIN'          = ANY(flags) AS explain,
     'NO_RESET'         = ANY(flags) AS no_reset,
     'NO_RESET_ALL'     = ANY(flags) AS no_reset_all,
-    'NO_SHOW_ALL'      = ANY(flags) AS no_show_all,
     'NOT_IN_SAMPLE'    = ANY(flags) AS not_in_sample,
     'RUNTIME_COMPUTED' = ANY(flags) AS runtime_computed
   FROM pg_show_all_settings() AS psas,
@@ -357,18 +347,6 @@ SELECT name FROM tab_settings_flags
 -- Preset GUCs are flagged as NOT_IN_SAMPLE.
 SELECT name FROM tab_settings_flags
   WHERE category = 'Preset Options' AND NOT not_in_sample
-  ORDER BY 1;
--- NO_SHOW_ALL implies NO_RESET_ALL, and vice-versa.
-SELECT name FROM tab_settings_flags
-  WHERE no_show_all AND NOT no_reset_all
-  ORDER BY 1;
--- Exceptions are transaction_*.
-SELECT name FROM tab_settings_flags
-  WHERE NOT no_show_all AND no_reset_all
-  ORDER BY 1;
--- NO_SHOW_ALL implies NOT_IN_SAMPLE.
-SELECT name FROM tab_settings_flags
-  WHERE no_show_all AND NOT not_in_sample
   ORDER BY 1;
 -- NO_RESET implies NO_RESET_ALL.
 SELECT name FROM tab_settings_flags

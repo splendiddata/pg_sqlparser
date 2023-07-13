@@ -673,7 +673,6 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                         .replaceAll("(?<=\\W)(FKCONSTR_ACTION_\\w+)(?=\\W)", "Constraint.$1")
                         .replaceAll("(?<=\\W)(CLUOPT_\\w+)(?=\\W)", "ClusterStmt.$1")
                         .replaceAll("(?<=\\W)(AMTYPE_\\w+)(?=\\W)", "CreateAmStmt.$1");
-
                 /*
                  * And a few common replacements
                  */
@@ -1020,20 +1019,25 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                 }
                 return null;
             case "doNegateFloat":
-                /*
-                 * Make the donegateFloat a bit simpler
-                 */
                 if (input.contains("oldval = ")) {
-                    return "    v.val.str = Float.toString(-Float.parseFloat(v.val.str));";
+                    return null;
                 }
-                if ("{".equals(input)) {
-                    return input;
+                if (input.contains("if (*oldval == '+')")) {
+                    return "    if (v.val.str.startsWith(\"+\"))";
                 }
-                if ("}".equals(input)) {
-                    epilogFunctionName = "";
-                    return input;
+                if (input.contains("oldval++;")) {
+                    return "        v.val.str = '-' + v.val.str.substring(1);";
                 }
-                return null;
+                if (input.contains("if (*oldval == '-')")) {
+                    return "    else if (v.val.str.startsWith(\"-\"))";
+                }
+                if (input.contains("/* just strip the '-' */")) {
+                    return "        v.val.str = v.val.str.substring(1);";
+                }
+                if (input.contains("psprintf(\"-%s\", oldval);")) {
+                    return "        v.val.str = '-' + v.val.str;";
+                }
+                return input;
             case "insertSelectOptions":
                 convertedLine = input.replace("(limitClause &&", "(limitClause != null &&")
                         .replace("&& limitClause->limitOffset)", "&& limitClause.limitOffset != null)")

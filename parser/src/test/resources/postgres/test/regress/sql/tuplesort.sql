@@ -1,6 +1,7 @@
 /*
  * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So input for the copy statements is removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
 
@@ -283,23 +284,23 @@ SET LOCAL enable_hashjoin = off;
 SET LOCAL enable_material = off;
 
 -- set query into variable once, to avoid repetition of the fairly long query
--- Deactivated for SplendidDataTest: SELECT $$
--- Deactivated for SplendidDataTest:     SELECT col12, count(distinct a.col1), count(distinct a.col2), count(distinct b.col1), count(distinct b.col2), count(*)
--- Deactivated for SplendidDataTest:     FROM test_mark_restore a
--- Deactivated for SplendidDataTest:         JOIN test_mark_restore b USING(col12)
--- Deactivated for SplendidDataTest:     GROUP BY 1
--- Deactivated for SplendidDataTest:     HAVING count(*) > 1
--- Deactivated for SplendidDataTest:     ORDER BY 2 DESC, 1 DESC, 3 DESC, 4 DESC, 5 DESC, 6 DESC
--- Deactivated for SplendidDataTest:     LIMIT 10
--- Deactivated for SplendidDataTest: $$ AS qry \gset
+SELECT $$
+    SELECT col12, count(distinct a.col1), count(distinct a.col2), count(distinct b.col1), count(distinct b.col2), count(*)
+    FROM test_mark_restore a
+        JOIN test_mark_restore b USING(col12)
+    GROUP BY 1
+    HAVING count(*) > 1
+    ORDER BY 2 DESC, 1 DESC, 3 DESC, 4 DESC, 5 DESC, 6 DESC
+    LIMIT 10
+$$ AS qry \gset
 
 -- test mark/restore with in-memory sorts
 -- Deactivated for SplendidDataTest: EXPLAIN (COSTS OFF) :qry;
--- Deactivated for SplendidDataTest: :qry;
+:qry;
 
 -- test mark/restore with on-disk sorts
 SET LOCAL work_mem = '100kB';
 -- Deactivated for SplendidDataTest: EXPLAIN (COSTS OFF) :qry;
--- Deactivated for SplendidDataTest: :qry;
+:qry;
 
 COMMIT;

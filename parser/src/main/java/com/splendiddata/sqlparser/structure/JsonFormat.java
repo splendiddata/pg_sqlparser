@@ -68,6 +68,13 @@ public class JsonFormat extends Node {
      */
     @Override
     public String toString() {
-        return "Please implement " + getClass().getName() + ".toString()";
+        StringBuilder result = new StringBuilder("");
+        if (format_type != null) {
+            result.append(format_type);
+        }
+        if (encoding != null && !"".equals(encoding.toString())) {
+            result.append(" ").append(encoding);
+        }
+        return result.toString();
     }
 }

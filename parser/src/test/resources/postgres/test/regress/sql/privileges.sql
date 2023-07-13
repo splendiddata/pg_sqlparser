@@ -123,6 +123,15 @@ SET ROLE pg_read_all_settings;
 RESET ROLE;
 
 RESET SESSION AUTHORIZATION;
+REVOKE SET OPTION FOR pg_read_all_settings FROM regress_priv_user8;
+GRANT pg_read_all_stats TO regress_priv_user8 WITH SET FALSE;
+
+SET SESSION AUTHORIZATION regress_priv_user8;
+SET ROLE pg_read_all_settings;  -- fail, no SET option any more
+SET ROLE pg_read_all_stats;     -- fail, granted without SET option
+RESET ROLE;
+
+RESET SESSION AUTHORIZATION;
 REVOKE pg_read_all_settings FROM regress_priv_user8;
 
 DROP USER regress_priv_user10;
@@ -363,12 +372,12 @@ SAVEPOINT s1;
 DELETE FROM atest3; -- ok because grant-level option is unchanged
 ROLLBACK TO s1;
 RESET SESSION AUTHORIZATION;
--- Deactivated for SplendidDataTest: GRANT regress_priv_group2 TO regress_priv_user1 WITH INHERIT FALSE;
+GRANT regress_priv_group2 TO regress_priv_user1 WITH INHERIT FALSE;
 SET SESSION AUTHORIZATION regress_priv_user1;
 DELETE FROM atest3; -- fail
 ROLLBACK TO s1;
 RESET SESSION AUTHORIZATION;
--- Deactivated for SplendidDataTest: REVOKE INHERIT OPTION FOR regress_priv_group2 FROM regress_priv_user1;
+REVOKE INHERIT OPTION FOR regress_priv_group2 FROM regress_priv_user1;
 SET SESSION AUTHORIZATION regress_priv_user1;
 DELETE FROM atest3; -- also fail
 ROLLBACK;
@@ -790,7 +799,7 @@ END;
 -- privileges on functions, languages
 
 -- switch to superuser
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 REVOKE ALL PRIVILEGES ON LANGUAGE sql FROM PUBLIC;
 GRANT USAGE ON LANGUAGE sql TO regress_priv_user1; -- ok
@@ -843,7 +852,7 @@ DROP FUNCTION priv_testfunc1(int); -- fail
 DROP AGGREGATE priv_testagg1(int); -- fail
 DROP PROCEDURE priv_testproc1(int); -- fail
 
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 DROP FUNCTION priv_testfunc1(int); -- ok
 -- restore to sanity
@@ -861,7 +870,7 @@ ROLLBACK;
 -- privileges on types
 
 -- switch to superuser
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 CREATE TYPE priv_testtype1 AS (a int, b text);
 REVOKE USAGE ON TYPE priv_testtype1 FROM PUBLIC;
@@ -946,7 +955,7 @@ CREATE TABLE test11b AS (SELECT 1::priv_testdomain1 AS a);
 
 REVOKE ALL ON TYPE priv_testtype1 FROM PUBLIC;
 
--- Deactivated for SplendidDataTest: \c -
+\c -
 DROP AGGREGATE priv_testagg1b(priv_testdomain1);
 DROP DOMAIN priv_testdomain2b;
 DROP OPERATOR !! (NONE, priv_testdomain1);
@@ -983,7 +992,7 @@ select has_table_privilege(-999999,'pg_authid','update');
 select has_table_privilege(1,'select');
 
 -- superuser
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 select has_table_privilege(current_user,'pg_authid','select');
 select has_table_privilege(current_user,'pg_authid','insert');
@@ -1122,7 +1131,7 @@ SELECT has_table_privilege('regress_priv_user1', 'atest4', 'SELECT WITH GRANT OP
 
 
 -- security-restricted operations
--- Deactivated for SplendidDataTest: \c -
+\c -
 CREATE ROLE regress_sro_user;
 
 -- Check that index expressions and predicates are run as the table's owner
@@ -1180,7 +1189,7 @@ CREATE FUNCTION mv_action() RETURNS bool LANGUAGE sql AS
 -- REFRESH of this MV will queue a GRANT at end of transaction
 CREATE MATERIALIZED VIEW sro_mv AS SELECT mv_action() WITH NO DATA;
 REFRESH MATERIALIZED VIEW sro_mv;
--- Deactivated for SplendidDataTest: \c -
+\c -
 REFRESH MATERIALIZED VIEW sro_mv;
 
 SET SESSION AUTHORIZATION regress_sro_user;
@@ -1194,7 +1203,7 @@ CREATE CONSTRAINT TRIGGER t AFTER INSERT ON sro_trojan_table
 CREATE OR REPLACE FUNCTION mv_action() RETURNS bool LANGUAGE sql AS
 	'INSERT INTO sro_trojan_table DEFAULT VALUES; SELECT true';
 REFRESH MATERIALIZED VIEW sro_mv;
--- Deactivated for SplendidDataTest: \c -
+\c -
 REFRESH MATERIALIZED VIEW sro_mv;
 BEGIN; SET CONSTRAINTS ALL IMMEDIATE; REFRESH MATERIALIZED VIEW sro_mv; COMMIT;
 
@@ -1211,7 +1220,7 @@ EXCEPTION WHEN OTHERS THEN
 END$$;
 CREATE MATERIALIZED VIEW sro_index_mv AS SELECT 1 AS c;
 CREATE UNIQUE INDEX ON sro_index_mv (c) WHERE unwanted_grant_nofail(1) > 0;
--- Deactivated for SplendidDataTest: \c -
+\c -
 REFRESH MATERIALIZED VIEW CONCURRENTLY sro_index_mv;
 REFRESH MATERIALIZED VIEW sro_index_mv;
 
@@ -1243,7 +1252,7 @@ REVOKE regress_priv_group2 FROM regress_priv_user5;
 
 
 -- has_sequence_privilege tests
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 CREATE SEQUENCE x_seq;
 
@@ -1258,7 +1267,7 @@ SET SESSION AUTHORIZATION regress_priv_user2;
 SELECT has_sequence_privilege('x_seq', 'USAGE');
 
 -- largeobject privilege tests
--- Deactivated for SplendidDataTest: \c -
+\c -
 SET SESSION AUTHORIZATION regress_priv_user1;
 
 SELECT lo_create(1001);
@@ -1277,7 +1286,7 @@ GRANT SELECT, INSERT ON LARGE OBJECT 1001 TO PUBLIC;	-- to be failed
 GRANT SELECT, UPDATE ON LARGE OBJECT 1001 TO nosuchuser;	-- to be failed
 GRANT SELECT, UPDATE ON LARGE OBJECT  999 TO PUBLIC;	-- to be failed
 
--- Deactivated for SplendidDataTest: \c -
+\c -
 SET SESSION AUTHORIZATION regress_priv_user2;
 
 SELECT lo_create(2001);
@@ -1304,7 +1313,7 @@ GRANT ALL ON LARGE OBJECT 2001 TO regress_priv_user3;
 SELECT lo_unlink(1001);		-- to be denied
 SELECT lo_unlink(2002);
 
--- Deactivated for SplendidDataTest: \c -
+\c -
 -- confirm ACL setting
 SELECT oid, pg_get_userbyid(lomowner) ownername, lomacl FROM pg_largeobject_metadata WHERE oid >= 1000 AND oid < 3000 ORDER BY oid;
 
@@ -1318,7 +1327,7 @@ SELECT lo_truncate(lo_open(1005, x'20000'::int), 10);	-- to be denied
 SELECT lo_truncate(lo_open(2001, x'20000'::int), 10);
 
 -- compatibility mode in largeobject permission
--- Deactivated for SplendidDataTest: \c -
+\c -
 SET lo_compat_privileges = false;	-- default setting
 SET SESSION AUTHORIZATION regress_priv_user4;
 
@@ -1331,7 +1340,7 @@ SELECT lo_export(1001, '/dev/null');			-- to be denied
 SELECT lo_import('/dev/null');				-- to be denied
 SELECT lo_import('/dev/null', 2003);			-- to be denied
 
--- Deactivated for SplendidDataTest: \c -
+\c -
 SET lo_compat_privileges = true;	-- compatibility mode
 SET SESSION AUTHORIZATION regress_priv_user4;
 
@@ -1342,7 +1351,7 @@ SELECT lo_unlink(1002);
 SELECT lo_export(1001, '/dev/null');			-- to be denied
 
 -- don't allow unpriv users to access pg_largeobject contents
--- Deactivated for SplendidDataTest: \c -
+\c -
 SELECT * FROM pg_largeobject LIMIT 0;
 
 SET SESSION AUTHORIZATION regress_priv_user1;
@@ -1380,7 +1389,7 @@ INSERT INTO datdba_only DEFAULT VALUES;
 ROLLBACK;
 
 -- test default ACLs
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 CREATE SCHEMA testns;
 GRANT ALL ON SCHEMA testns TO regress_priv_user1;
@@ -1428,6 +1437,15 @@ SELECT makeaclitem('regress_priv_user1'::regrole, 'regress_priv_user2'::regrole,
 	'SELECT, INSERT,  UPDATE , DELETE  ', FALSE);  -- multiple privileges
 SELECT makeaclitem('regress_priv_user1'::regrole, 'regress_priv_user2'::regrole,
 	'SELECT, fake_privilege', FALSE);  -- error
+
+-- Test non-throwing aclitem I/O
+SELECT pg_input_is_valid('regress_priv_user1=r/regress_priv_user2', 'aclitem');
+SELECT pg_input_is_valid('regress_priv_user1=r/', 'aclitem');
+SELECT * FROM pg_input_error_info('regress_priv_user1=r/', 'aclitem');
+SELECT pg_input_is_valid('regress_priv_user1=r/regress_no_such_user', 'aclitem');
+SELECT * FROM pg_input_error_info('regress_priv_user1=r/regress_no_such_user', 'aclitem');
+SELECT pg_input_is_valid('regress_priv_user1=rY', 'aclitem');
+SELECT * FROM pg_input_error_info('regress_priv_user1=rY', 'aclitem');
 
 --
 -- Testing blanket default grants is very hazardous since it might change
@@ -1547,7 +1565,7 @@ SELECT d.*     -- check that entries went away
 
 
 -- Grant on all objects of given type in a schema
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 CREATE SCHEMA testns;
 CREATE TABLE testns.t1 (f1 int);
@@ -1593,7 +1611,7 @@ DROP SCHEMA testns CASCADE;
 
 
 -- Change owner of the schema & and rename of new schema owner
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 CREATE ROLE regress_schemauser1 superuser login;
 CREATE ROLE regress_schemauser2 superuser login;
@@ -1611,14 +1629,14 @@ set session role regress_schemauser_renamed;
 DROP SCHEMA testns CASCADE;
 
 -- clean up
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 DROP ROLE regress_schemauser1;
 DROP ROLE regress_schemauser_renamed;
 
 
 -- test that dependent privileges are revoked (or not) properly
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 set session role regress_priv_user1;
 create table dep_priv_test (a int);
@@ -1630,20 +1648,20 @@ set session role regress_priv_user3;
 grant select on dep_priv_test to regress_priv_user4 with grant option;
 set session role regress_priv_user4;
 grant select on dep_priv_test to regress_priv_user5;
--- Deactivated for SplendidDataTest: \dp dep_priv_test
+\dp dep_priv_test
 set session role regress_priv_user2;
 revoke select on dep_priv_test from regress_priv_user4 cascade;
--- Deactivated for SplendidDataTest: \dp dep_priv_test
+\dp dep_priv_test
 set session role regress_priv_user3;
 revoke select on dep_priv_test from regress_priv_user4 cascade;
--- Deactivated for SplendidDataTest: \dp dep_priv_test
+\dp dep_priv_test
 set session role regress_priv_user1;
 drop table dep_priv_test;
 
 
 -- clean up
 
--- Deactivated for SplendidDataTest: \c
+\c
 
 drop sequence x_seq;
 
@@ -1697,76 +1715,91 @@ CREATE TABLE lock_table (a int);
 GRANT SELECT ON lock_table TO regress_locktable_user;
 SET SESSION AUTHORIZATION regress_locktable_user;
 BEGIN;
-LOCK TABLE lock_table IN ROW EXCLUSIVE MODE; -- should fail
-ROLLBACK;
-BEGIN;
 LOCK TABLE lock_table IN ACCESS SHARE MODE; -- should pass
 COMMIT;
 BEGIN;
+LOCK TABLE lock_table IN ROW EXCLUSIVE MODE; -- should fail
+ROLLBACK;
+BEGIN;
 LOCK TABLE lock_table IN ACCESS EXCLUSIVE MODE; -- should fail
 ROLLBACK;
--- Deactivated for SplendidDataTest: \c
+\c
 REVOKE SELECT ON lock_table FROM regress_locktable_user;
 
 -- LOCK TABLE and INSERT permission
 GRANT INSERT ON lock_table TO regress_locktable_user;
 SET SESSION AUTHORIZATION regress_locktable_user;
 BEGIN;
+LOCK TABLE lock_table IN ACCESS SHARE MODE; -- should pass
+ROLLBACK;
+BEGIN;
 LOCK TABLE lock_table IN ROW EXCLUSIVE MODE; -- should pass
 COMMIT;
 BEGIN;
-LOCK TABLE lock_table IN ACCESS SHARE MODE; -- should fail
-ROLLBACK;
-BEGIN;
 LOCK TABLE lock_table IN ACCESS EXCLUSIVE MODE; -- should fail
 ROLLBACK;
--- Deactivated for SplendidDataTest: \c
+\c
 REVOKE INSERT ON lock_table FROM regress_locktable_user;
 
 -- LOCK TABLE and UPDATE permission
 GRANT UPDATE ON lock_table TO regress_locktable_user;
 SET SESSION AUTHORIZATION regress_locktable_user;
 BEGIN;
+LOCK TABLE lock_table IN ACCESS SHARE MODE; -- should pass
+ROLLBACK;
+BEGIN;
 LOCK TABLE lock_table IN ROW EXCLUSIVE MODE; -- should pass
 COMMIT;
 BEGIN;
-LOCK TABLE lock_table IN ACCESS SHARE MODE; -- should fail
-ROLLBACK;
-BEGIN;
 LOCK TABLE lock_table IN ACCESS EXCLUSIVE MODE; -- should pass
 COMMIT;
--- Deactivated for SplendidDataTest: \c
+\c
 REVOKE UPDATE ON lock_table FROM regress_locktable_user;
 
 -- LOCK TABLE and DELETE permission
 GRANT DELETE ON lock_table TO regress_locktable_user;
 SET SESSION AUTHORIZATION regress_locktable_user;
 BEGIN;
+LOCK TABLE lock_table IN ACCESS SHARE MODE; -- should pass
+ROLLBACK;
+BEGIN;
 LOCK TABLE lock_table IN ROW EXCLUSIVE MODE; -- should pass
 COMMIT;
 BEGIN;
-LOCK TABLE lock_table IN ACCESS SHARE MODE; -- should fail
-ROLLBACK;
-BEGIN;
 LOCK TABLE lock_table IN ACCESS EXCLUSIVE MODE; -- should pass
 COMMIT;
--- Deactivated for SplendidDataTest: \c
+\c
 REVOKE DELETE ON lock_table FROM regress_locktable_user;
 
 -- LOCK TABLE and TRUNCATE permission
 GRANT TRUNCATE ON lock_table TO regress_locktable_user;
 SET SESSION AUTHORIZATION regress_locktable_user;
 BEGIN;
+LOCK TABLE lock_table IN ACCESS SHARE MODE; -- should pass
+ROLLBACK;
+BEGIN;
 LOCK TABLE lock_table IN ROW EXCLUSIVE MODE; -- should pass
 COMMIT;
 BEGIN;
-LOCK TABLE lock_table IN ACCESS SHARE MODE; -- should fail
+LOCK TABLE lock_table IN ACCESS EXCLUSIVE MODE; -- should pass
+COMMIT;
+\c
+REVOKE TRUNCATE ON lock_table FROM regress_locktable_user;
+
+-- LOCK TABLE and MAINTAIN permission
+GRANT MAINTAIN ON lock_table TO regress_locktable_user;
+SET SESSION AUTHORIZATION regress_locktable_user;
+BEGIN;
+LOCK TABLE lock_table IN ACCESS SHARE MODE; -- should pass
 ROLLBACK;
+BEGIN;
+LOCK TABLE lock_table IN ROW EXCLUSIVE MODE; -- should pass
+COMMIT;
 BEGIN;
 LOCK TABLE lock_table IN ACCESS EXCLUSIVE MODE; -- should pass
 COMMIT;
--- Deactivated for SplendidDataTest: \c
-REVOKE TRUNCATE ON lock_table FROM regress_locktable_user;
+\c
+REVOKE MAINTAIN ON lock_table FROM regress_locktable_user;
 
 -- clean up
 DROP TABLE lock_table;
@@ -1776,7 +1809,7 @@ DROP USER regress_locktable_user;
 -- pg_backend_memory_contexts.
 
 -- switch to superuser
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 CREATE ROLE regress_readallstats;
 
@@ -1803,7 +1836,7 @@ CREATE ROLE regress_group_direct_manager;
 CREATE ROLE regress_group_indirect_manager;
 CREATE ROLE regress_group_member;
 
--- Deactivated for SplendidDataTest: GRANT regress_group TO regress_group_direct_manager WITH INHERIT FALSE, ADMIN TRUE;
+GRANT regress_group TO regress_group_direct_manager WITH INHERIT FALSE, ADMIN TRUE;
 GRANT regress_group_direct_manager TO regress_group_indirect_manager;
 
 SET SESSION AUTHORIZATION regress_group_direct_manager;
@@ -1821,3 +1854,86 @@ DROP ROLE regress_group;
 DROP ROLE regress_group_direct_manager;
 DROP ROLE regress_group_indirect_manager;
 DROP ROLE regress_group_member;
+
+-- test SET and INHERIT options with object ownership changes
+CREATE ROLE regress_roleoption_protagonist;
+CREATE ROLE regress_roleoption_donor;
+CREATE ROLE regress_roleoption_recipient;
+CREATE SCHEMA regress_roleoption;
+GRANT CREATE, USAGE ON SCHEMA regress_roleoption TO PUBLIC;
+GRANT regress_roleoption_donor TO regress_roleoption_protagonist WITH INHERIT TRUE, SET FALSE;
+GRANT regress_roleoption_recipient TO regress_roleoption_protagonist WITH INHERIT FALSE, SET TRUE;
+SET SESSION AUTHORIZATION regress_roleoption_protagonist;
+CREATE TABLE regress_roleoption.t1 (a int);
+CREATE TABLE regress_roleoption.t2 (a int);
+SET SESSION AUTHORIZATION regress_roleoption_donor;
+CREATE TABLE regress_roleoption.t3 (a int);
+SET SESSION AUTHORIZATION regress_roleoption_recipient;
+CREATE TABLE regress_roleoption.t4 (a int);
+SET SESSION AUTHORIZATION regress_roleoption_protagonist;
+ALTER TABLE regress_roleoption.t1 OWNER TO regress_roleoption_donor; -- fails, can't be come donor
+ALTER TABLE regress_roleoption.t2 OWNER TO regress_roleoption_recipient; -- works
+ALTER TABLE regress_roleoption.t3 OWNER TO regress_roleoption_protagonist; -- works
+ALTER TABLE regress_roleoption.t4 OWNER TO regress_roleoption_protagonist; -- fails, we don't inherit from recipient
+RESET SESSION AUTHORIZATION;
+DROP TABLE regress_roleoption.t1;
+DROP TABLE regress_roleoption.t2;
+DROP TABLE regress_roleoption.t3;
+DROP TABLE regress_roleoption.t4;
+DROP SCHEMA regress_roleoption;
+DROP ROLE regress_roleoption_protagonist;
+DROP ROLE regress_roleoption_donor;
+DROP ROLE regress_roleoption_recipient;
+
+-- MAINTAIN
+CREATE ROLE regress_no_maintain;
+CREATE ROLE regress_maintain;
+CREATE ROLE regress_maintain_all IN ROLE pg_maintain;
+
+CREATE TABLE maintain_test (a INT);
+CREATE INDEX ON maintain_test (a);
+GRANT MAINTAIN ON maintain_test TO regress_maintain;
+CREATE MATERIALIZED VIEW refresh_test AS SELECT 1;
+GRANT MAINTAIN ON refresh_test TO regress_maintain;
+CREATE SCHEMA reindex_test;
+
+-- negative tests; should fail
+SET ROLE regress_no_maintain;
+VACUUM maintain_test;
+ANALYZE maintain_test;
+VACUUM (ANALYZE) maintain_test;
+CLUSTER maintain_test USING maintain_test_a_idx;
+REFRESH MATERIALIZED VIEW refresh_test;
+REINDEX TABLE maintain_test;
+REINDEX INDEX maintain_test_a_idx;
+REINDEX SCHEMA reindex_test;
+RESET ROLE;
+
+SET ROLE regress_maintain;
+VACUUM maintain_test;
+ANALYZE maintain_test;
+VACUUM (ANALYZE) maintain_test;
+CLUSTER maintain_test USING maintain_test_a_idx;
+REFRESH MATERIALIZED VIEW refresh_test;
+REINDEX TABLE maintain_test;
+REINDEX INDEX maintain_test_a_idx;
+REINDEX SCHEMA reindex_test;
+RESET ROLE;
+
+SET ROLE regress_maintain_all;
+VACUUM maintain_test;
+ANALYZE maintain_test;
+VACUUM (ANALYZE) maintain_test;
+CLUSTER maintain_test USING maintain_test_a_idx;
+REFRESH MATERIALIZED VIEW refresh_test;
+REINDEX TABLE maintain_test;
+REINDEX INDEX maintain_test_a_idx;
+REINDEX SCHEMA reindex_test;
+RESET ROLE;
+
+DROP TABLE maintain_test;
+DROP MATERIALIZED VIEW refresh_test;
+DROP SCHEMA reindex_test;
+DROP ROLE regress_no_maintain;
+DROP ROLE regress_maintain;
+DROP ROLE regress_maintain_all;

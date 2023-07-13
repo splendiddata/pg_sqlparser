@@ -1,19 +1,11 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for syntax checking, not for the testing of a commandline paser.
- * So input for the copy statements is removed.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
- 
- 
 -- directory paths are passed to us in environment variables
--- Deactivated for SplendidDataTest:\getenv abs_srcdir PG_ABS_SRCDIR
+\getenv abs_srcdir PG_ABS_SRCDIR
 
 CREATE TABLE testjsonb (
        j jsonb
 );
 
--- Deactivated for SplendidDataTest:\set filename :abs_srcdir '/data/jsonb.data'
+\set filename :abs_srcdir '/data/jsonb.data'
 COPY testjsonb FROM :'filename';
 
 -- Strings.
@@ -93,6 +85,12 @@ SELECT '{
 		"two":"two",
 		"averyveryveryveryveryveryveryveryveryverylongfieldname":}'::jsonb;
 -- ERROR missing value for last field
+
+-- test non-error-throwing input
+select pg_input_is_valid('{"a":true}', 'jsonb');
+select pg_input_is_valid('{"a":true', 'jsonb');
+select * from pg_input_error_info('{"a":true', 'jsonb');
+select * from pg_input_error_info('{"a":1e1000000}', 'jsonb');
 
 -- make sure jsonb is passed through json generators without being escaped
 SELECT array_to_json(ARRAY [jsonb '{"a":1}', jsonb '{"b":[2,3]}']);
@@ -1195,7 +1193,7 @@ select jsonb_set('{"a": {"b": [1, 2, 3]}}', '{a, b, NULL}', '"new_value"');
 
 -- jsonb_set_lax
 
--- Deactivated for SplendidDataTest: \pset null NULL
+\pset null NULL
 
 -- pass though non nulls to jsonb_set
 select jsonb_set_lax('{"a":1,"b":2}','{b}','5') ;
@@ -1212,7 +1210,7 @@ select jsonb_set_lax('{"a":1,"b":2}', '{b}', null, null_value_treatment => 'retu
 select jsonb_set_lax('{"a":1,"b":2}', '{b}', null, null_value_treatment => 'delete_key') as delete_key;
 select jsonb_set_lax('{"a":1,"b":2}', '{b}', null, null_value_treatment => 'use_json_null') as use_json_null;
 
--- Deactivated for SplendidDataTest: \pset null ''
+\pset null ''
 
 -- jsonb_insert
 select jsonb_insert('{"a": [0,1,2]}', '{a, 1}', '"new_value"');
@@ -1422,6 +1420,24 @@ delete from test_jsonb_subscript;
 insert into test_jsonb_subscript values (1, 'null');
 update test_jsonb_subscript set test_json[0] = '1';
 update test_jsonb_subscript set test_json[0][0] = '1';
+
+-- try some things with short-header and toasted subscript values
+
+drop table test_jsonb_subscript;
+create temp table test_jsonb_subscript (
+       id text,
+       test_json jsonb
+);
+
+insert into test_jsonb_subscript values('foo', '{"foo": "bar"}');
+insert into test_jsonb_subscript
+  select s, ('{"' || s || '": "bar"}')::jsonb from repeat('xyzzy', 500) s;
+select length(id), test_json[id] from test_jsonb_subscript;
+update test_jsonb_subscript set test_json[id] = '"baz"';
+select length(id), test_json[id] from test_jsonb_subscript;
+\x
+table test_jsonb_subscript;
+\x
 
 -- jsonb to tsvector
 select to_tsvector('{"a": "aaa bbb ddd ccc", "b": ["eee fff ggg"], "c": {"d": "hhh iii"}}'::jsonb);

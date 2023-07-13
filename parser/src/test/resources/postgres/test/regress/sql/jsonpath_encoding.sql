@@ -1,22 +1,14 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for syntax checking, not for the testing of a commandline paser.
- * So input for the copy statements is removed.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
-
-
 --
 -- encoding-sensitive tests for jsonpath
 --
 
 -- We provide expected-results files for UTF8 (jsonpath_encoding.out)
 -- and for SQL_ASCII (jsonpath_encoding_1.out).  Skip otherwise.
--- Deactivated for SplendidDataTest: SELECT getdatabaseencoding() NOT IN ('UTF8', 'SQL_ASCII')
--- Deactivated for SplendidDataTest:        AS skip_test \gset
--- Deactivated for SplendidDataTest: \if :skip_test
--- Deactivated for SplendidDataTest: \quit
--- Deactivated for SplendidDataTest: \endif
+SELECT getdatabaseencoding() NOT IN ('UTF8', 'SQL_ASCII')
+       AS skip_test \gset
+\if :skip_test
+\quit
+\endif
 
 SELECT getdatabaseencoding();           -- just to label the results files
 

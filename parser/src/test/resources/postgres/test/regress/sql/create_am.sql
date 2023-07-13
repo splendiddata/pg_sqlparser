@@ -1,7 +1,7 @@
 /*
  * This file has been altered by SplendidData.
  * It is only used for syntax checking, not for the testing of a commandline paser.
- * So input for the copy statements is removed.
+ * So some statements that are expected to fail are removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
 
@@ -129,11 +129,11 @@ SELECT f1 FROM tableam_tbl_heap2 ORDER BY f1;
 -- Deactivated for SplendidDataTest: CREATE SEQUENCE tableam_seq_heap2 USING heap2;
 
 -- CREATE MATERIALIZED VIEW does support USING
--- Deactivated for SplendidDataTest: CREATE MATERIALIZED VIEW tableam_tblmv_heap2 USING heap2 AS SELECT * FROM tableam_tbl_heap2;
+CREATE MATERIALIZED VIEW tableam_tblmv_heap2 USING heap2 AS SELECT * FROM tableam_tbl_heap2;
 SELECT f1 FROM tableam_tblmv_heap2 ORDER BY f1;
 
 -- CREATE TABLE ..  PARTITION BY doesn't not support USING
--- Deactivated for SplendidDataTest: CREATE TABLE tableam_parted_heap2 (a text, b int) PARTITION BY list (a) USING heap2;
+CREATE TABLE tableam_parted_heap2 (a text, b int) PARTITION BY list (a) USING heap2;
 
 CREATE TABLE tableam_parted_heap2 (a text, b int) PARTITION BY list (a);
 -- new partitions will inherit from the current default, rather the partition root

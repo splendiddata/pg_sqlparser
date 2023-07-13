@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -592,7 +592,8 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
                     /*
                      * Avoid a class cast exception from String to Boolean
                      */
-                    .replaceAll("else$", "else\n                        \\$\\$ = Boolean.TRUE;");
+                    .replaceAll("else$", "else {\n                        \\$\\$ = Boolean.TRUE;")
+                    .replaceAll("^(\\s*)}\\s*$", "                    }\n$1}");
         }
     }),
     AlterOptRoleElem(new GrammarRuleSpecialProcessing() {

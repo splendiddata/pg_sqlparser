@@ -30,7 +30,7 @@ public class JsonReturning extends Node {
     public JsonFormat format;
 
     /** target type Oid */
-    @XmlAttribute
+    @XmlElement
     public Oid typid;
 
     /** target type modifier */
@@ -79,6 +79,16 @@ public class JsonReturning extends Node {
 
     @Override
     public String toString() {
-        return ("Please implement " + getClass().getName() + ".toString()");
+        StringBuilder result = new StringBuilder();
+        String separator = "";
+        if (typmod != 0) {
+            result.append('(').append(typmod).append(')');
+            separator = " ";
+        }
+        if (format != null) {
+            result.append(separator).append(format);
+        }
+        
+        return result.toString();
     }
 }

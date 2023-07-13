@@ -1,10 +1,9 @@
 /*
  * This file has been altered by SplendidData.
  * It is only used for syntax checking, not for the testing of a commandline paser.
- * So input for the copy statements is removed.
+ * So some statements that are expected to fail are removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
-
 
 
 --
@@ -76,6 +75,25 @@ drop domain domainvarchar restrict;
 drop domain domainnumeric restrict;
 drop domain domainint4 restrict;
 drop domain domaintext;
+
+
+-- Test non-error-throwing input
+
+create domain positiveint int4 check(value > 0);
+create domain weirdfloat float8 check((1 / value) < 10);
+
+select pg_input_is_valid('1', 'positiveint');
+select pg_input_is_valid('junk', 'positiveint');
+select pg_input_is_valid('-1', 'positiveint');
+select * from pg_input_error_info('junk', 'positiveint');
+select * from pg_input_error_info('-1', 'positiveint');
+select * from pg_input_error_info('junk', 'weirdfloat');
+select * from pg_input_error_info('0.01', 'weirdfloat');
+-- We currently can't trap errors raised in the CHECK expression itself
+select * from pg_input_error_info('0', 'weirdfloat');
+
+drop domain positiveint;
+drop domain weirdfloat;
 
 
 -- Test domains over array types
@@ -161,7 +179,7 @@ explain (verbose, costs off)
   update dcomptable set d1.r = (d1).r - 1, d1.i = (d1).i + 1 where (d1).i > 0;
 create rule silly as on delete to dcomptable do instead
   update dcomptable set d1.r = (d1).r - 1, d1.i = (d1).i + 1 where (d1).i > 0;
--- Deactivated for SplendidDataTest: \d+ dcomptable
+\d+ dcomptable
 
 create function makedcomp(r float8, i float8) returns dcomptype
 as 'select row(r, i)' language sql;
@@ -236,7 +254,7 @@ explain (verbose, costs off)
 create rule silly as on delete to dcomptable do instead
   update dcomptable set d1[1].r = d1[1].r - 1, d1[1].i = d1[1].i + 1
     where d1[1].i > 0;
--- Deactivated for SplendidDataTest: \d+ dcomptable
+\d+ dcomptable
 
 drop table dcomptable;
 drop type comptype cascade;
@@ -296,6 +314,10 @@ update dcomptable set f1[1].cf2 = 5;
 table dcomptable;
 update dcomptable set f1[1].cf1 = -1;  -- fail
 update dcomptable set f1[1].cf1 = 1;
+table dcomptable;
+-- if there's no constraints, a different code path is taken:
+alter domain dcomptype drop constraint dcomptype_check;
+update dcomptable set f1[1].cf1 = -1;  -- now ok
 table dcomptable;
 
 drop table dcomptable;

@@ -1,9 +1,9 @@
 /*
  * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So input for the copy statements is removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
-
 
 
 /*
@@ -12,13 +12,13 @@
  * because other encodings don't support all the characters used.
  */
 
--- Deactivated for SplendidDataTest: SELECT getdatabaseencoding() <> 'UTF8' OR
--- Deactivated for SplendidDataTest:        (SELECT count(*) FROM pg_collation WHERE collname IN ('de_DE', 'en_US', 'sv_SE', 'tr_TR') AND collencoding = pg_char_to_encoding('UTF8')) <> 4 OR
--- Deactivated for SplendidDataTest:        version() !~ 'linux-gnu'
--- Deactivated for SplendidDataTest:        AS skip_test \gset
--- Deactivated for SplendidDataTest: \if :skip_test
--- Deactivated for SplendidDataTest: \quit
--- Deactivated for SplendidDataTest: \endif
+SELECT getdatabaseencoding() <> 'UTF8' OR
+       (SELECT count(*) FROM pg_collation WHERE collname IN ('de_DE', 'en_US', 'sv_SE', 'tr_TR') AND collencoding = pg_char_to_encoding('UTF8')) <> 4 OR
+       version() !~ 'linux-gnu'
+       AS skip_test \gset
+\if :skip_test
+\quit
+\endif
 
 SET client_encoding TO UTF8;
 
@@ -31,7 +31,7 @@ CREATE TABLE collate_test1 (
     b text COLLATE "en_US" NOT NULL
 );
 
--- Deactivated for SplendidDataTest: \d collate_test1
+\d collate_test1
 
 CREATE TABLE collate_test_fail (
     a int,
@@ -52,7 +52,7 @@ CREATE TABLE collate_test_like (
     LIKE collate_test1
 );
 
--- Deactivated for SplendidDataTest: \d collate_test_like
+\d collate_test_like
 
 CREATE TABLE collate_test2 (
     a int,
@@ -367,7 +367,7 @@ CREATE SCHEMA test_schema;
 do $$
 BEGIN
   EXECUTE 'CREATE COLLATION test0 (locale = ' ||
-          quote_literal(current_setting('lc_collate')) || ');';
+          quote_literal((SELECT datcollate FROM pg_database WHERE datname = current_database())) || ');';
 END
 $$;
 CREATE COLLATION test0 FROM "C"; -- fail, duplicate name
@@ -376,13 +376,13 @@ CREATE COLLATION IF NOT EXISTS test0 (locale = 'foo'); -- ok, skipped
 do $$
 BEGIN
   EXECUTE 'CREATE COLLATION test1 (lc_collate = ' ||
-          quote_literal(current_setting('lc_collate')) ||
+          quote_literal((SELECT datcollate FROM pg_database WHERE datname = current_database())) ||
           ', lc_ctype = ' ||
-          quote_literal(current_setting('lc_ctype')) || ');';
+          quote_literal((SELECT datctype FROM pg_database WHERE datname = current_database())) || ');';
 END
 $$;
--- Deactivated for SplendidDataTest: CREATE COLLATION test3 (lc_collate = 'en_US.utf8'); -- fail, need lc_ctype
--- Deactivated for SplendidDataTest: CREATE COLLATION testx (locale = 'nonsense'); -- fail
+CREATE COLLATION test3 (lc_collate = 'en_US.utf8'); -- fail, need lc_ctype
+CREATE COLLATION testx (locale = 'nonsense'); -- fail
 
 CREATE COLLATION test4 FROM nonsense;
 CREATE COLLATION test5 FROM test0;
@@ -419,7 +419,7 @@ DROP ROLE regress_test_role;
 ALTER COLLATION "en_US" REFRESH VERSION;
 
 -- also test for database while we are here
--- Deactivated for SplendidDataTest: SELECT current_database() AS datname \gset
+SELECT current_database() AS datname \gset
 -- Deactivated for SplendidDataTest: ALTER DATABASE :"datname" REFRESH COLLATION VERSION;
 
 
@@ -453,6 +453,11 @@ select textrange_en_us('A','Z') @> 'b'::text;
 
 drop type textrange_c;
 drop type textrange_en_us;
+
+
+-- standard collations
+
+SELECT * FROM collate_test2 ORDER BY b COLLATE UCS_BASIC;
 
 
 -- nondeterministic collations

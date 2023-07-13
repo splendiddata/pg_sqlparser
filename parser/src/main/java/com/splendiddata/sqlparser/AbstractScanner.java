@@ -212,6 +212,61 @@ public abstract class AbstractScanner extends AbstractCProgram implements com.sp
                     }
                 }
                 break;
+            case WITHOUT:
+                currentyylval = yylval;
+                currentPosition = position;
+                nextToken = scan();
+                nextKeyword = ScanKeyword.fromValue(nextToken);
+                if (nextKeyword == null) {
+                    nextPosition = position;
+                    position = currentPosition;
+                    nextyylval = yylval;
+                    yylval = currentyylval;
+                } else {
+                    switch (nextKeyword) {
+                    case TIME:
+                    case ORDINALITY:
+                        keyword = ScanKeyword.WITHOUT_LA;
+                        result = keyword.getValue();
+                        position = currentPosition;
+                        break;
+                    default:
+                        nextPosition = position;
+                        position = currentPosition;
+                        nextyylval = yylval;
+                        yylval = currentyylval;
+                        break;
+                    }
+                }
+                break;
+// TODO: find out where this is necessary and adapt accordingly
+//            case FORMAT:
+//                currentyylval = yylval;
+//                currentPosition = position;
+//                nextToken = scan();
+//                nextKeyword = ScanKeyword.fromValue(nextToken);
+//                if (nextKeyword == null) {
+//                    nextPosition = position;
+//                    position = currentPosition;
+//                    nextyylval = yylval;
+//                    yylval = currentyylval;
+//                } else {
+//                    switch (nextKeyword) {
+//                    case TIME:
+//                    case ORDINALITY:
+//                        keyword = ScanKeyword.FORMAT_LA;
+//                        result = keyword.getValue();
+//                        position = currentPosition;
+//                        break;
+//                    default:
+//                        nextPosition = position;
+//                        position = currentPosition;
+//                        nextyylval = yylval;
+//                        yylval = currentyylval;
+//                        break;
+//                    }
+//                }
+//                break;
             case Op:
                 if ("op".equalsIgnoreCase(yylval.toString())) {
                     keyword = ScanKeyword.IDENT;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -139,10 +139,16 @@ public class ReindexStmt extends Node {
         switch (kind) {
         case REINDEX_OBJECT_SCHEMA:
         case REINDEX_OBJECT_DATABASE:
-            result.append(kind).append(' ').append(ParserUtil.identifierToSql(name));
+            result.append(kind);
+            if (name != null) {
+                result.append(' ').append(ParserUtil.identifierToSql(name));
+            }
             break;
         case REINDEX_OBJECT_SYSTEM:
-            result.append("system").append(' ').append(ParserUtil.identifierToSql(name));
+            result.append("system");
+            if (name != null) {
+                result.append(' ').append(ParserUtil.identifierToSql(name));
+            }
             break;
         case REINDEX_OBJECT_TABLE:
         case REINDEX_OBJECT_INDEX:

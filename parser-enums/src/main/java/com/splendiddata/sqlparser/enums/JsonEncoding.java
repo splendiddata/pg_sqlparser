@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -25,17 +25,27 @@ package com.splendiddata.sqlparser.enums;
  */
 public enum JsonEncoding {
     /** unspecified */
-    JS_ENC_DEFAULT,
-    JS_ENC_UTF8,
-    JS_ENC_UTF16,
-    JS_ENC_UTF32;
+    JS_ENC_DEFAULT(""),
+    JS_ENC_UTF8("encoding UTF8"),
+    JS_ENC_UTF16("encoding UTF16"),
+    JS_ENC_UTF32("encoding UTF32");
 
     /**
      * String containing all values with "|" characters between them, that can be used as argument in a regular
      * expression.
      */
     public static final String REPLACEMENT_REGEXP_PART;
+    
+    private final String text; 
 
+    private JsonEncoding(String text) {
+         this.text=text;
+    }
+    
+    public String toString() {
+        return text;
+    }
+    
     static {
         StringBuilder format = new StringBuilder();
         String separator = "";

@@ -10,6 +10,7 @@ package com.splendiddata.sqlparser.structure;
 
 import com.splendiddata.sqlparser.enums.NodeTag;
 
+import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
@@ -37,6 +38,7 @@ public class JsonArrayQueryConstructor extends Node {
     public JsonFormat format;
 
     /** skip NULL elements? */
+    @XmlAttribute
     public boolean absent_on_null;
 
     /**
@@ -86,6 +88,20 @@ public class JsonArrayQueryConstructor extends Node {
 
     @Override
     public String toString() {
-        return ("Please implement " + getClass().getName() + ".toString()");
+        StringBuilder result = new StringBuilder("json_array");
+        String separator = "(";
+        if (query != null) {
+            result.append(separator).append(query);
+            separator = " ";
+        }
+        if (!absent_on_null) {
+            result.append(separator).append("null on null");
+            separator = " ";
+        }
+        if (output != null) {
+            result.append(separator).append("returning ").append(output);
+        }
+        result.append(")");
+        return result.toString();
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -110,7 +110,12 @@ public class SqlParserTestGuiController implements Initializable {
             sqlText.requestFocus();
         }));
         sqlText.caretPositionProperty()
-                .addListener((observable, oldValue, newValue) -> caretPos.setText(newValue.toString()));
+                .addListener((observable, oldValue, newValue) -> {try {
+                    caretPos.setText(newValue.toString());
+                } catch (Exception e) {                    
+                    log.error(e, e);
+                    caretPos.setText(e.getMessage());
+                }});
     }
 
     /**

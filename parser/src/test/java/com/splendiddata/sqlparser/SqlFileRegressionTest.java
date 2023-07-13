@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -22,6 +22,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
+import java.nio.charset.MalformedInputException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -31,6 +33,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
@@ -54,27 +58,106 @@ import com.splendiddata.sqlparser.structure.Value;
 public class SqlFileRegressionTest {
     private static final Logger log = LogManager.getLogger(SqlFileRegressionTest.class);
 
+    private static final class CopyStmtFilter implements Predicate<String> {
+
+        /**
+         * Lines that start with \copy
+         */
+        private static final Pattern COPY_STMT_PATTERN = Pattern.compile("(?i)^\\\\COPY");
+
+        /**
+         * True for lines between \copy and \.
+         */
+        private boolean inCopyStatement = false;
+
+        /**
+         * @see java.util.function.Predicate#test(java.lang.Object)
+         *
+         * @param line
+         *            The line to check
+         * @return false for lines between \copy and \., true for all other lines
+         */
+        @Override
+        public boolean test(String line) {
+            if (inCopyStatement) {
+                if (line.startsWith("\\.")) {
+                    inCopyStatement = false;
+                }
+                return false;
+            }
+            inCopyStatement = COPY_STMT_PATTERN.matcher(line).matches();
+            return true;
+        }
+
+        void reset() {
+            inCopyStatement = false;
+        }
+    };
+
+    private static final CopyStmtFilter COPY_STMT_FILTER = new CopyStmtFilter();
+
     private List<SqlParserErrorData> parserErrors = new ArrayList<>();
+    private static Path projectDirectory;
+    private static Path inputTestResourcesPath;
+    private static Path outputTestResourcesPath;
 
     /**
      * Returns all sql files that are to be tested
+     * <p>
+     * The files are preprocessed and copied to the target/test/resources directory. Preprocessing consists of:
+     * <ul>
+     * <li>All lines that are starting with a backslash (\) or a colon (:) are commented out
+     * <li>'\;' is replaced by just a semi colon (;)
+     * <li>Everywhere the literal '\gset' is replaced by '; -- '
+     * <li>The colon (:) character is removed everywhere a single colon precedes an identifier or a text literal
+     * <li>Data for PSQL \COPY statements is filtered out
+     * </ul>
      *
      * @return Stream<Path> with all files to be tested
      */
-    @SuppressWarnings("unused")
     private static Stream<Path> getSqlTestFiles() {
         List<Path> paths = new ArrayList<>();
         FileVisitor<Path> fileVisitor = new SimpleFileVisitor<>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                 if (attrs.isRegularFile() && !file.getFileName().toString().startsWith(".")) {
-                    paths.add(file);
+                    Path relativePath = inputTestResourcesPath.relativize(file);
+                    Path preprocessedFile = Paths.get(outputTestResourcesPath.toString(), relativePath.toString())
+                            .toAbsolutePath();
+                    log.debug(() -> "Preprocessing " + relativePath + " to " + preprocessedFile);
+                    try {
+                        Files.createDirectories(preprocessedFile.getParent());
+                        try (PrintWriter pw = new PrintWriter(
+                                Files.newBufferedWriter(preprocessedFile, StandardCharsets.UTF_8));
+                                BufferedReader br = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
+                            COPY_STMT_FILTER.reset();
+                            br.lines().filter(line -> COPY_STMT_FILTER.test(line))
+                                    .map(line -> line.replaceAll("(?i)\\\\crosstabview", "; -- \\crosstabview")
+                                            .replaceAll("(?i)\\\\gset", "; -- \\gset")
+                                            .replaceAll("(?i)\\\\gexec", "; -- \\gexec").replace("\\;", ";")
+                                            .replaceAll("([^:\\d]):(['\\w^\\d])", "$1$2").replaceAll("^\\\\", "-- \\\\")
+                                            .replaceAll("^:", "-- :"))
+                                    .forEach(line -> pw.println(line));
+                        }
+                        paths.add(preprocessedFile);
+                    } catch (MalformedInputException e) {
+                        // Probably the collate.windows.win1252.sql file, which is not UTF-8 encoded 
+                        try {
+                            log.info(e.getMessage() + "  - just copying " + file);
+                            Files.copy(file, preprocessedFile);
+                            paths.add(preprocessedFile);
+                        } catch (IOException e1) {
+                            log.error(e, e);
+                        }
+                    } catch (IOException e) {
+                        log.error(e, e);
+                    }
                 }
                 return FileVisitResult.CONTINUE;
             }
         };
 
-        Path projectDirectory = Paths.get(".");
+        projectDirectory = Paths.get(".");
         try {
             projectDirectory = projectDirectory.toAbsolutePath().getParent();
             if (!projectDirectory.toAbsolutePath().endsWith("parser")) {
@@ -85,11 +168,13 @@ public class SqlFileRegressionTest {
                  */
                 projectDirectory = Paths.get(projectDirectory.toAbsolutePath().toString(), "parser");
             }
-            Files.walkFileTree(Paths.get(projectDirectory.toString(), "src/test/resources/commands"), fileVisitor);
-            Files.walkFileTree(Paths.get(projectDirectory.toString(), "src/test/resources/postgres/test/regress/sql"),
-                    fileVisitor);
+            inputTestResourcesPath = Paths.get(projectDirectory.toString(), "src/test/resources");
+            outputTestResourcesPath = Paths.get(projectDirectory.toString(), "target/test/resources");
+
+            Files.walkFileTree(Paths.get(inputTestResourcesPath.toString(), "commands"), fileVisitor);
+            Files.walkFileTree(Paths.get(inputTestResourcesPath.toString(), "postgres/test/regress/sql"), fileVisitor);
         } catch (Exception e) {
-            log.error("getSqlTestFiles()->failed, basde directory = " + projectDirectory.toAbsolutePath(), e);
+            log.error("getSqlTestFiles()->failed, base directory = " + projectDirectory.toAbsolutePath(), e);
         }
 
         return paths.stream().sorted();
@@ -114,7 +199,7 @@ public class SqlFileRegressionTest {
             log.trace(str.toString());
         }
 
-        try (Reader reader = new SqlTextReader(new FileReader(file.toFile()))) {
+        try (Reader reader = Files.newBufferedReader(file)) {
             SqlParser parser = new SqlParser(reader, error -> parserErrors.add(error));
             Assertions.assertTrue(parser.parse(), "Parser error in: " + fileName + "\n" + parserErrors);
             Assertions.assertNotNull(parser.getResult(), "Expected non-null result: " + fileName);
@@ -204,46 +289,5 @@ public class SqlFileRegressionTest {
                 }
             }
         }
-    }
-
-    private static final class SqlTextReader extends BufferedReader {
-        /**
-         * Constructor
-         *
-         * @param in
-         */
-        SqlTextReader(Reader in) {
-            super(in);
-        }
-
-        /**
-         * @see java.io.BufferedReader#read(char[], int, int)
-         *
-         * @param cbuf
-         * @param off
-         * @param len
-         * @return
-         * @throws IOException
-         */
-        @Override
-        public int read(char[] cbuf, int off, int len) throws IOException {
-            int result = super.read(cbuf, off, len);
-            for (int i = 0; i < result; i++) {
-                if (cbuf[off + i] == '\n' && i < result - 3) {
-                    if (cbuf[off + i + 1] == '\\') {
-                        cbuf[off + i + 1] = '-';
-                        cbuf[off + i + 2] = '-';
-                    }
-                } else if (cbuf[off + i] == ':' && i < result - 1 && cbuf[off + i + 1] == '\'' && i > 0
-                        && (cbuf[off + i - 1] == ' ' || cbuf[off + i - 1] == '(')) {
-                    /*
-                     * Remove the colon from :'some_filename' constructs
-                     */
-                    cbuf[off + i] = ' ';
-                }
-            }
-            return result;
-        }
-
     }
 }

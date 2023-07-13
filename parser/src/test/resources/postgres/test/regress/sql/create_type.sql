@@ -1,20 +1,12 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for syntax checking, not for the testing of a commandline paser.
- * So input for the copy statements is removed.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
- 
- 
 --
 -- CREATE_TYPE
 --
 
 -- directory path and dlsuffix are passed to us in environment variables
--- Deactivated for SplendidDataTest: \getenv libdir PG_LIBDIR
--- Deactivated for SplendidDataTest: \getenv dlsuffix PG_DLSUFFIX
+\getenv libdir PG_LIBDIR
+\getenv dlsuffix PG_DLSUFFIX
 
--- Deactivated for SplendidDataTest: \set regresslib :libdir '/regress' :dlsuffix
+\set regresslib :libdir '/regress' :dlsuffix
 
 --
 -- Test the "old style" approach of making the I/O functions first,
@@ -199,6 +191,14 @@ select format_type('varchar'::regtype, 42);
 select format_type('bpchar'::regtype, null);
 -- this behavior difference is intentional
 select format_type('bpchar'::regtype, -1);
+
+-- Test non-error-throwing APIs using widget, which still throws errors
+SELECT pg_input_is_valid('(1,2,3)', 'widget');
+SELECT pg_input_is_valid('(1,2)', 'widget');  -- hard error expected
+SELECT pg_input_is_valid('{"(1,2,3)"}', 'widget[]');
+SELECT pg_input_is_valid('{"(1,2)"}', 'widget[]');  -- hard error expected
+SELECT pg_input_is_valid('("(1,2,3)")', 'mytab');
+SELECT pg_input_is_valid('("(1,2)")', 'mytab');  -- hard error expected
 
 -- Test creation of an operator over a user-defined type
 

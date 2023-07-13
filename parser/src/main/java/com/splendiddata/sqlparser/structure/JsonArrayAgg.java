@@ -78,6 +78,20 @@ public class JsonArrayAgg extends Node {
 
     @Override
     public String toString() {
-        return ("Please implement " + getClass().getName() + ".toString()");
+        StringBuilder result = new StringBuilder("json_arrayagg(");
+        String separator = "";
+        if (arg != null) {
+            result.append(arg);
+            separator = " ";
+        }
+        if (!absent_on_null) {
+            result.append(separator).append("null on null");
+            separator = " ";
+        }
+        result.append(')');
+        if (constructor != null) {
+            result.append(separator).append(constructor);
+        }
+        return result.toString();
     }
 }

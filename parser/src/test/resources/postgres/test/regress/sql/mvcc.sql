@@ -1,11 +1,3 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
-
-
-
 --
 -- Verify that index scans encountering dead rows produced by an
 -- aborted subtransaction of the current transaction can utilize the
@@ -27,7 +19,7 @@ CREATE INDEX clean_aborted_self_key ON clean_aborted_self(key);
 INSERT INTO clean_aborted_self (key, data) VALUES (-1, 'just to allocate metapage');
 
 -- save index size from before the changes, for comparison
--- Deactivated for SplendidDataTest:SELECT pg_relation_size('clean_aborted_self_key') AS clean_aborted_self_key_before \gset
+SELECT pg_relation_size('clean_aborted_self_key') AS clean_aborted_self_key_before \gset
 
 DO $$
 BEGIN
@@ -46,7 +38,7 @@ BEGIN
 END;$$;
 
 -- show sizes only if they differ
--- Deactivated for SplendidDataTest:SELECT :clean_aborted_self_key_before AS size_before, pg_relation_size('clean_aborted_self_key') size_after
--- Deactivated for SplendidDataTest:WHERE :clean_aborted_self_key_before != pg_relation_size('clean_aborted_self_key');
+SELECT :clean_aborted_self_key_before AS size_before, pg_relation_size('clean_aborted_self_key') size_after
+WHERE :clean_aborted_self_key_before != pg_relation_size('clean_aborted_self_key');
 
 ROLLBACK;

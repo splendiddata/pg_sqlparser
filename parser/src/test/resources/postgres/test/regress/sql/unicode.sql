@@ -1,14 +1,15 @@
 /*
  * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So some statements that are expected to fail are removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
 
 
--- Deactivated for SplendidDataTest: SELECT getdatabaseencoding() <> 'UTF8' AS skip_test \gset
--- Deactivated for SplendidDataTest: \if :skip_test
--- Deactivated for SplendidDataTest: \quit
--- Deactivated for SplendidDataTest: \endif
+SELECT getdatabaseencoding() <> 'UTF8' AS skip_test \gset
+\if :skip_test
+\quit
+\endif
 
 SELECT U&'\0061\0308bc' <> U&'\00E4bc' COLLATE "C" AS sanity_check;
 

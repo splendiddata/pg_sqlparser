@@ -1,9 +1,9 @@
 /*
  * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So some statements that are expected to fail are removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
-
 
 
 --
@@ -11,12 +11,12 @@
 --
 
 -- directory paths and dlsuffix are passed to us in environment variables
--- Deactivated for SplendidDataTest: \getenv libdir PG_LIBDIR
--- Deactivated for SplendidDataTest: \getenv dlsuffix PG_DLSUFFIX
+\getenv libdir PG_LIBDIR
+\getenv dlsuffix PG_DLSUFFIX
 
--- Deactivated for SplendidDataTest: \set autoinclib :libdir '/autoinc' :dlsuffix
--- Deactivated for SplendidDataTest: \set refintlib :libdir '/refint' :dlsuffix
--- Deactivated for SplendidDataTest: \set regresslib :libdir '/regress' :dlsuffix
+\set autoinclib :libdir '/autoinc' :dlsuffix
+\set refintlib :libdir '/refint' :dlsuffix
+\set regresslib :libdir '/regress' :dlsuffix
 
 CREATE FUNCTION autoinc ()
 	RETURNS trigger
@@ -358,8 +358,8 @@ SELECT * FROM main_table ORDER BY a, b;
 -- test triggers with WHEN clause
 --
 
-CREATE TRIGGER modified_a BEFORE UPDATE OF a ON main_table
-FOR EACH ROW WHEN (OLD.a <> NEW.a) EXECUTE PROCEDURE trigger_func('modified_a');
+-- Deactivated for SplendidDataTest: CREATE TRIGGER modified_a BEFORE UPDATE OF a ON main_table
+-- Deactivated for SplendidDataTest: FOR EACH ROW WHEN (OLD.a <> NEW.a) EXECUTE PROCEDURE trigger_func('modified_a');
 CREATE TRIGGER modified_any BEFORE UPDATE OF a ON main_table
 FOR EACH ROW WHEN (OLD.* IS DISTINCT FROM NEW.*) EXECUTE PROCEDURE trigger_func('modified_any');
 CREATE TRIGGER insert_a AFTER INSERT ON main_table
@@ -459,22 +459,22 @@ DROP TABLE some_t;
 -- bogus cases
 -- Deactivated for SplendidDataTest: CREATE TRIGGER error_upd_and_col BEFORE UPDATE OR UPDATE OF a ON main_table
 -- Deactivated for SplendidDataTest: FOR EACH ROW EXECUTE PROCEDURE trigger_func('error_upd_and_col');
--- Deactivated for SplendidDataTest: CREATE TRIGGER error_upd_a_a BEFORE UPDATE OF a, a ON main_table
--- Deactivated for SplendidDataTest: FOR EACH ROW EXECUTE PROCEDURE trigger_func('error_upd_a_a');
+CREATE TRIGGER error_upd_a_a BEFORE UPDATE OF a, a ON main_table
+FOR EACH ROW EXECUTE PROCEDURE trigger_func('error_upd_a_a');
 -- Deactivated for SplendidDataTest: CREATE TRIGGER error_ins_a BEFORE INSERT OF a ON main_table
 -- Deactivated for SplendidDataTest: FOR EACH ROW EXECUTE PROCEDURE trigger_func('error_ins_a');
--- Deactivated for SplendidDataTest: CREATE TRIGGER error_ins_when BEFORE INSERT OR UPDATE ON main_table
--- Deactivated for SplendidDataTest: FOR EACH ROW WHEN (OLD.a <> NEW.a)
--- Deactivated for SplendidDataTest: EXECUTE PROCEDURE trigger_func('error_ins_old');
--- Deactivated for SplendidDataTest: CREATE TRIGGER error_del_when BEFORE DELETE OR UPDATE ON main_table
--- Deactivated for SplendidDataTest: FOR EACH ROW WHEN (OLD.a <> NEW.a)
--- Deactivated for SplendidDataTest: EXECUTE PROCEDURE trigger_func('error_del_new');
--- Deactivated for SplendidDataTest: CREATE TRIGGER error_del_when BEFORE INSERT OR UPDATE ON main_table
--- Deactivated for SplendidDataTest: FOR EACH ROW WHEN (NEW.tableoid <> 0)
--- Deactivated for SplendidDataTest: EXECUTE PROCEDURE trigger_func('error_when_sys_column');
--- Deactivated for SplendidDataTest: CREATE TRIGGER error_stmt_when BEFORE UPDATE OF a ON main_table
--- Deactivated for SplendidDataTest: FOR EACH STATEMENT WHEN (OLD.* IS DISTINCT FROM NEW.*)
--- Deactivated for SplendidDataTest: EXECUTE PROCEDURE trigger_func('error_stmt_when');
+CREATE TRIGGER error_ins_when BEFORE INSERT OR UPDATE ON main_table
+FOR EACH ROW WHEN (OLD.a <> NEW.a)
+EXECUTE PROCEDURE trigger_func('error_ins_old');
+CREATE TRIGGER error_del_when BEFORE DELETE OR UPDATE ON main_table
+FOR EACH ROW WHEN (OLD.a <> NEW.a)
+EXECUTE PROCEDURE trigger_func('error_del_new');
+CREATE TRIGGER error_del_when BEFORE INSERT OR UPDATE ON main_table
+FOR EACH ROW WHEN (NEW.tableoid <> 0)
+EXECUTE PROCEDURE trigger_func('error_when_sys_column');
+CREATE TRIGGER error_stmt_when BEFORE UPDATE OF a ON main_table
+FOR EACH STATEMENT WHEN (OLD.* IS DISTINCT FROM NEW.*)
+EXECUTE PROCEDURE trigger_func('error_stmt_when');
 
 -- check dependency restrictions
 ALTER TABLE main_table DROP COLUMN b;
@@ -697,7 +697,7 @@ CREATE TRIGGER z_min_update
 BEFORE UPDATE ON min_updates_test
 FOR EACH ROW EXECUTE PROCEDURE suppress_redundant_updates_trigger();
 
--- Deactivated for SplendidDataTest: \set QUIET false
+\set QUIET false
 
 UPDATE min_updates_test SET f1 = f1;
 
@@ -705,7 +705,7 @@ UPDATE min_updates_test SET f2 = f2 + 1;
 
 UPDATE min_updates_test SET f3 = 2 WHERE f3 is null;
 
--- Deactivated for SplendidDataTest: \set QUIET true
+\set QUIET true
 
 SELECT * FROM min_updates_test;
 
@@ -837,7 +837,7 @@ FOR EACH STATEMENT EXECUTE PROCEDURE view_trigger('after_view_upd_stmt');
 CREATE TRIGGER after_del_stmt_trig AFTER DELETE ON main_view
 FOR EACH STATEMENT EXECUTE PROCEDURE view_trigger('after_view_del_stmt');
 
--- Deactivated for SplendidDataTest: \set QUIET false
+\set QUIET false
 
 -- Insert into view using trigger
 INSERT INTO main_view VALUES (20, 30);
@@ -859,15 +859,15 @@ UPDATE main_view SET b = 0 WHERE false;
 DELETE FROM main_view WHERE a IN (20,21);
 DELETE FROM main_view WHERE a = 31 RETURNING a, b;
 
--- Deactivated for SplendidDataTest: \set QUIET true
+\set QUIET true
 
 -- Describe view should list triggers
--- Deactivated for SplendidDataTest: \d main_view
+\d main_view
 
 -- Test dropping view triggers
 DROP TRIGGER instead_of_insert_trig ON main_view;
 DROP TRIGGER instead_of_delete_trig ON main_view;
--- Deactivated for SplendidDataTest: \d+ main_view
+\d+ main_view
 DROP VIEW main_view;
 
 --
@@ -968,7 +968,7 @@ $$;
 CREATE TRIGGER city_update_trig INSTEAD OF UPDATE ON city_view
 FOR EACH ROW EXECUTE PROCEDURE city_update();
 
--- Deactivated for SplendidDataTest: \set QUIET false
+\set QUIET false
 
 -- INSERT .. RETURNING
 INSERT INTO city_view(city_name) VALUES('Tokyo') RETURNING *;
@@ -992,7 +992,7 @@ UPDATE city_view v1 SET country_name = v2.country_name FROM city_view v2
 -- DELETE .. RETURNING
 DELETE FROM city_view WHERE city_name = 'Birmingham' RETURNING *;
 
--- Deactivated for SplendidDataTest: \set QUIET true
+\set QUIET true
 
 -- read-only view with WHERE clause
 CREATE VIEW european_city_view AS
@@ -1005,13 +1005,13 @@ AS 'begin RETURN NULL; end';
 CREATE TRIGGER no_op_trig INSTEAD OF INSERT OR UPDATE OR DELETE
 ON european_city_view FOR EACH ROW EXECUTE PROCEDURE no_op_trig_fn();
 
--- Deactivated for SplendidDataTest: \set QUIET false
+\set QUIET false
 
 INSERT INTO european_city_view VALUES (0, 'x', 10000, 'y', 'z');
 UPDATE european_city_view SET population = 10000;
 DELETE FROM european_city_view;
 
--- Deactivated for SplendidDataTest: \set QUIET true
+\set QUIET true
 
 -- rules bypassing no-op triggers
 CREATE RULE european_city_insert_rule AS ON INSERT TO european_city_view
@@ -1030,7 +1030,7 @@ RETURNING NEW.*;
 CREATE RULE european_city_delete_rule AS ON DELETE TO european_city_view
 DO INSTEAD DELETE FROM city_view WHERE city_id = OLD.city_id RETURNING *;
 
--- Deactivated for SplendidDataTest: \set QUIET false
+\set QUIET false
 
 -- INSERT not limited by view's WHERE clause, but UPDATE AND DELETE are
 INSERT INTO european_city_view(city_name, country_name)
@@ -1054,7 +1054,7 @@ UPDATE city_view v SET population = 599657
     RETURNING co.country_id, v.country_name,
               v.city_id, v.city_name, v.population;
 
--- Deactivated for SplendidDataTest: \set QUIET true
+\set QUIET true
 
 SELECT * FROM city_view;
 
@@ -1450,7 +1450,7 @@ select tgrelid::regclass, tgname, tgfoid::regproc from pg_trigger
 
 -- check detach behavior
 create trigger trg1 after insert on trigpart for each row execute procedure trigger_nothing();
--- Deactivated for SplendidDataTest: \d trigpart3
+\d trigpart3
 alter table trigpart detach partition trigpart3;
 drop trigger trg1 on trigpart3; -- fail due to "does not exist"
 alter table trigpart detach partition trigpart4;
@@ -1465,14 +1465,14 @@ select tgrelid::regclass::text, tgname, tgfoid::regproc, tgenabled, tgisinternal
   where tgname ~ '^trg1' order by 1;
 create table trigpart3 (like trigpart);
 create trigger trg1 after insert on trigpart3 for each row execute procedure trigger_nothing();
--- Deactivated for SplendidDataTest: \d trigpart3
+\d trigpart3
 alter table trigpart attach partition trigpart3 FOR VALUES FROM (2000) to (3000); -- fail
 drop table trigpart3;
 
 -- check display of unrelated triggers
 create trigger samename after delete on trigpart execute function trigger_nothing();
 create trigger samename after delete on trigpart1 execute function trigger_nothing();
--- Deactivated for SplendidDataTest: \d trigpart1
+\d trigpart1
 
 drop table trigpart;
 drop function trigger_nothing();
@@ -1889,6 +1889,26 @@ alter table parent enable always trigger tg;
 select tgrelid::regclass, tgname, tgenabled from pg_trigger
   where tgrelid in ('parent'::regclass, 'child1'::regclass)
   order by tgrelid::regclass::text, tgname;
+-- This variant malfunctioned in some releases.
+alter table parent disable trigger user;
+select tgrelid::regclass, tgname, tgenabled from pg_trigger
+  where tgrelid in ('parent'::regclass, 'child1'::regclass)
+  order by tgrelid::regclass::text, tgname;
+drop table parent, child1;
+
+-- Check processing of foreign key triggers
+create table parent (a int primary key, f int references parent)
+  partition by list (a);
+create table child1 partition of parent for values in (1);
+select tgrelid::regclass, rtrim(tgname, '0123456789') as tgname,
+  tgfoid::regproc, tgenabled
+  from pg_trigger where tgrelid in ('parent'::regclass, 'child1'::regclass)
+  order by tgrelid::regclass::text, tgfoid;
+alter table parent disable trigger all;
+select tgrelid::regclass, rtrim(tgname, '0123456789') as tgname,
+  tgfoid::regproc, tgenabled
+  from pg_trigger where tgrelid in ('parent'::regclass, 'child1'::regclass)
+  order by tgrelid::regclass::text, tgfoid;
 drop table parent, child1;
 
 -- Verify that firing state propagates correctly on creation, too
@@ -2750,7 +2770,7 @@ for each row execute procedure f();
 create trigger parenttrig after insert on child
 for each row execute procedure f();
 alter trigger parenttrig on parent rename to anothertrig;
--- Deactivated for SplendidDataTest: \d+ child
+\d+ child
 
 drop table parent, child;
 drop function f();

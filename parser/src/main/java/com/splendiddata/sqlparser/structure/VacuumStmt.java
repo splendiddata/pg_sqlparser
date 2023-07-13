@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -115,8 +115,14 @@ public class VacuumStmt extends Node {
             for (DefElem option : options) {
                 result.append(separator).append(option.defname);
                 separator = ", ";
-                if (option.arg != null) {
-                    result.append(' ').append(option.arg);
+                switch (option.defname) {
+                case "buffer_usage_limit":
+                    result.append(" '").append(option.arg).append('\'');
+                    break;
+                default:
+                    if (option.arg != null) {
+                        result.append(' ').append(option.arg);
+                    }
                 }
             }
             result.append(')');

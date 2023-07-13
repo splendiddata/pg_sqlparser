@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -17,6 +17,7 @@
 
 package com.splendiddata.sqlparser.structure;
 
+import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
@@ -39,6 +40,7 @@ public class A_Const extends Expr {
     /** SQL NULL constant
      * @since Postgres 15
      */
+    @XmlAttribute
     public boolean isnull;
 
     /**

@@ -1,15 +1,16 @@
 /*
  * This file has been altered by SplendidData.
  * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
+ * The deactivated lines are marked by: -- Deactivated for SplendidDataTest:  
  */
  
  
--- directory paths and dlsuffix are passed to us in environment variables
--- Deactivated for SplendidDataTest: \getenv libdir PG_LIBDIR
--- Deactivated for SplendidDataTest: \getenv dlsuffix PG_DLSUFFIX
 
--- Deactivated for SplendidDataTest: \set regresslib :libdir '/regress' :dlsuffix
+-- directory paths and dlsuffix are passed to us in environment variables
+\getenv libdir PG_LIBDIR
+\getenv dlsuffix PG_DLSUFFIX
+
+\set regresslib :libdir '/regress' :dlsuffix
 
 --
 -- num_nulls()
@@ -125,8 +126,8 @@ select count(*) > 0 as ok from (select pg_ls_waldir()) ss;
 -- Test not-run-to-completion cases.
 select * from pg_ls_waldir() limit 0;
 select count(*) > 0 as ok from (select * from pg_ls_waldir() limit 1) ss;
--- Deactivated for SplendidDataTest: select (w).size = :segsize as ok
--- Deactivated for SplendidDataTest: from (select pg_ls_waldir() w) ss where length((w).name) = 24 limit 1;
+select (w).size = :segsize as ok
+from (select pg_ls_waldir() w) ss where length((w).name) = 24 limit 1;
 
 select count(*) >= 0 as ok from pg_ls_archive_statusdir();
 
@@ -230,3 +231,17 @@ SELECT * FROM tenk1 a JOIN my_gen_series(1,1000) g ON a.unique1 = g;
 
 EXPLAIN (COSTS OFF)
 SELECT * FROM tenk1 a JOIN my_gen_series(1,10) g ON a.unique1 = g;
+
+-- Test functions for control data
+SELECT count(*) > 0 AS ok FROM pg_control_checkpoint();
+SELECT count(*) > 0 AS ok FROM pg_control_init();
+SELECT count(*) > 0 AS ok FROM pg_control_recovery();
+SELECT count(*) > 0 AS ok FROM pg_control_system();
+
+-- pg_split_walfile_name
+SELECT * FROM pg_split_walfile_name(NULL);
+SELECT * FROM pg_split_walfile_name('invalid');
+SELECT segment_number > 0 AS ok_segment_number, timeline_id
+  FROM pg_split_walfile_name('000000010000000100000000');
+SELECT segment_number > 0 AS ok_segment_number, timeline_id
+  FROM pg_split_walfile_name('ffffffFF00000001000000af');

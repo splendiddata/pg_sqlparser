@@ -1,9 +1,9 @@
 /*
  * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So some statements that are expected to fail are removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
-
 
 
 -- Generic extended statistics support
@@ -82,7 +82,7 @@ CREATE STATISTICS ab1_b_c_stats ON b, c FROM ab1;
 CREATE STATISTICS ab1_a_b_c_stats ON a, b, c FROM ab1;
 CREATE STATISTICS ab1_b_a_stats ON b, a FROM ab1;
 ALTER TABLE ab1 DROP COLUMN a;
--- Deactivated for SplendidDataTest: \d ab1
+\d ab1
 -- Ensure statistics are dropped when table is
 SELECT stxname FROM pg_statistic_ext WHERE stxname LIKE 'ab1%';
 DROP TABLE ab1;
@@ -97,13 +97,13 @@ ANALYZE ab1;
 ALTER TABLE ab1 ALTER a SET STATISTICS -1;
 -- setting statistics target 0 skips the statistics, without printing any message, so check catalog
 ALTER STATISTICS ab1_a_b_stats SET STATISTICS 0;
--- Deactivated for SplendidDataTest: \d ab1
+\d ab1
 ANALYZE ab1;
 SELECT stxname, stxdndistinct, stxddependencies, stxdmcv, stxdinherit
   FROM pg_statistic_ext s LEFT JOIN pg_statistic_ext_data d ON (d.stxoid = s.oid)
  WHERE s.stxname = 'ab1_a_b_stats';
 ALTER STATISTICS ab1_a_b_stats SET STATISTICS -1;
--- Deactivated for SplendidDataTest: \d+ ab1
+\d+ ab1
 -- partial analyze doesn't build stats either
 ANALYZE ab1 (a);
 ANALYZE ab1;
@@ -147,10 +147,11 @@ DROP TABLE stxdinh, stxdinh1, stxdinh2;
 CREATE TABLE stxdinp(i int, a int, b int) PARTITION BY RANGE (i);
 CREATE TABLE stxdinp1 PARTITION OF stxdinp FOR VALUES FROM (1) TO (100);
 INSERT INTO stxdinp SELECT 1, a/100, a/100 FROM generate_series(1, 999) a;
-CREATE STATISTICS stxdinp ON a, b FROM stxdinp;
+CREATE STATISTICS stxdinp ON (a + 1), a, b FROM stxdinp;
 VACUUM ANALYZE stxdinp; -- partitions are processed recursively
 SELECT 1 FROM pg_statistic_ext WHERE stxrelid = 'stxdinp'::regclass;
 SELECT * FROM check_estimated_rows('SELECT a, b FROM stxdinp GROUP BY 1, 2');
+SELECT * FROM check_estimated_rows('SELECT a + 1, b FROM ONLY stxdinp GROUP BY 1, 2');
 DROP TABLE stxdinp;
 
 -- basic test for statistics on expressions
@@ -1290,25 +1291,25 @@ WITH (autovacuum_enabled = off);
 
 INSERT INTO mcv_lists_uuid (a, b, c)
      SELECT
-         md5(mod(i,100)::text)::uuid,
-         md5(mod(i,50)::text)::uuid,
-         md5(mod(i,25)::text)::uuid
+         fipshash(mod(i,100)::text)::uuid,
+         fipshash(mod(i,50)::text)::uuid,
+         fipshash(mod(i,25)::text)::uuid
      FROM generate_series(1,5000) s(i);
 
 ANALYZE mcv_lists_uuid;
 
-SELECT * FROM check_estimated_rows('SELECT * FROM mcv_lists_uuid WHERE a = ''1679091c-5a88-0faf-6fb5-e6087eb1b2dc'' AND b = ''1679091c-5a88-0faf-6fb5-e6087eb1b2dc''');
+SELECT * FROM check_estimated_rows('SELECT * FROM mcv_lists_uuid WHERE a = ''e7f6c011-776e-8db7-cd33-0b54174fd76f'' AND b = ''e7f6c011-776e-8db7-cd33-0b54174fd76f''');
 
-SELECT * FROM check_estimated_rows('SELECT * FROM mcv_lists_uuid WHERE a = ''1679091c-5a88-0faf-6fb5-e6087eb1b2dc'' AND b = ''1679091c-5a88-0faf-6fb5-e6087eb1b2dc'' AND c = ''1679091c-5a88-0faf-6fb5-e6087eb1b2dc''');
+SELECT * FROM check_estimated_rows('SELECT * FROM mcv_lists_uuid WHERE a = ''e7f6c011-776e-8db7-cd33-0b54174fd76f'' AND b = ''e7f6c011-776e-8db7-cd33-0b54174fd76f'' AND c = ''e7f6c011-776e-8db7-cd33-0b54174fd76f''');
 
 CREATE STATISTICS mcv_lists_uuid_stats (mcv) ON a, b, c
   FROM mcv_lists_uuid;
 
 ANALYZE mcv_lists_uuid;
 
-SELECT * FROM check_estimated_rows('SELECT * FROM mcv_lists_uuid WHERE a = ''1679091c-5a88-0faf-6fb5-e6087eb1b2dc'' AND b = ''1679091c-5a88-0faf-6fb5-e6087eb1b2dc''');
+SELECT * FROM check_estimated_rows('SELECT * FROM mcv_lists_uuid WHERE a = ''e7f6c011-776e-8db7-cd33-0b54174fd76f'' AND b = ''e7f6c011-776e-8db7-cd33-0b54174fd76f''');
 
-SELECT * FROM check_estimated_rows('SELECT * FROM mcv_lists_uuid WHERE a = ''1679091c-5a88-0faf-6fb5-e6087eb1b2dc'' AND b = ''1679091c-5a88-0faf-6fb5-e6087eb1b2dc'' AND c = ''1679091c-5a88-0faf-6fb5-e6087eb1b2dc''');
+SELECT * FROM check_estimated_rows('SELECT * FROM mcv_lists_uuid WHERE a = ''e7f6c011-776e-8db7-cd33-0b54174fd76f'' AND b = ''e7f6c011-776e-8db7-cd33-0b54174fd76f'' AND c = ''e7f6c011-776e-8db7-cd33-0b54174fd76f''');
 
 DROP TABLE mcv_lists_uuid;
 
@@ -1322,7 +1323,7 @@ WITH (autovacuum_enabled = off);
 
 INSERT INTO mcv_lists_arrays (a, b, c)
      SELECT
-         ARRAY[md5((i/100)::text), md5((i/100-1)::text), md5((i/100+1)::text)],
+         ARRAY[fipshash((i/100)::text), fipshash((i/100-1)::text), fipshash((i/100+1)::text)],
          ARRAY[(i/100-1)::numeric/1000, (i/100)::numeric/1000, (i/100+1)::numeric/1000],
          ARRAY[(i/100-1), i/100, (i/100+1)]
      FROM generate_series(1,5000) s(i);
@@ -1522,7 +1523,7 @@ DROP TABLE expr_stats;
 
 -- statistics on expressions with different data types
 CREATE TABLE expr_stats (a int, b name, c text);
-INSERT INTO expr_stats SELECT mod(i,10), md5(mod(i,10)::text), md5(mod(i,10)::text) FROM generate_series(1,1000) s(i);
+INSERT INTO expr_stats SELECT mod(i,10), fipshash(mod(i,10)::text), fipshash(mod(i,10)::text) FROM generate_series(1,1000) s(i);
 ANALYZE expr_stats;
 
 SELECT * FROM check_estimated_rows('SELECT * FROM expr_stats WHERE a = 0 AND (b || c) <= ''z'' AND (c || b) >= ''0''');
@@ -1576,12 +1577,12 @@ ANALYZE tststats.priv_test_tbl;
 
 -- Check printing info about extended statistics by \dX
 create table stts_t1 (a int, b int);
--- Deactivated for SplendidDataTest: create statistics (ndistinct) on a, b from stts_t1;
--- Deactivated for SplendidDataTest: create statistics (ndistinct, dependencies) on a, b from stts_t1;
--- Deactivated for SplendidDataTest: create statistics (ndistinct, dependencies, mcv) on a, b from stts_t1;
+create statistics (ndistinct) on a, b from stts_t1;
+create statistics (ndistinct, dependencies) on a, b from stts_t1;
+create statistics (ndistinct, dependencies, mcv) on a, b from stts_t1;
 
 create table stts_t2 (a int, b int, c int);
--- Deactivated for SplendidDataTest: create statistics on b, c from stts_t2;
+create statistics on b, c from stts_t2;
 
 create table stts_t3 (col1 int, col2 int, col3 int);
 create statistics stts_hoge on col1, col2, col3 from stts_t3;
@@ -1595,28 +1596,28 @@ insert into stts_t1 select i,i from generate_series(1,100) i;
 analyze stts_t1;
 set search_path to public, stts_s1, stts_s2, tststats;
 
--- Deactivated for SplendidDataTest: \dX
--- Deactivated for SplendidDataTest: \dX stts_t*
--- Deactivated for SplendidDataTest: \dX *stts_hoge
--- Deactivated for SplendidDataTest: \dX+
--- Deactivated for SplendidDataTest: \dX+ stts_t*
--- Deactivated for SplendidDataTest: \dX+ *stts_hoge
--- Deactivated for SplendidDataTest: \dX+ stts_s2.stts_yama
+\dX
+\dX stts_t*
+\dX *stts_hoge
+\dX+
+\dX+ stts_t*
+\dX+ *stts_hoge
+\dX+ stts_s2.stts_yama
 
--- Deactivated for SplendidDataTest: create statistics (mcv) ON a, b, (a+b), (a-b) FROM stts_t1;
--- Deactivated for SplendidDataTest: create statistics (mcv) ON a, b, (a+b), (a-b) FROM stts_t1;
--- Deactivated for SplendidDataTest: create statistics (mcv) ON (a+b), (a-b) FROM stts_t1;
--- Deactivated for SplendidDataTest: \dX stts_t*expr*
+create statistics (mcv) ON a, b, (a+b), (a-b) FROM stts_t1;
+create statistics (mcv) ON a, b, (a+b), (a-b) FROM stts_t1;
+create statistics (mcv) ON (a+b), (a-b) FROM stts_t1;
+\dX stts_t*expr*
 drop statistics stts_t1_a_b_expr_expr_stat;
 drop statistics stts_t1_a_b_expr_expr_stat1;
 drop statistics stts_t1_expr_expr_stat;
 
 set search_path to public, stts_s1;
--- Deactivated for SplendidDataTest: \dX
+\dX
 
 create role regress_stats_ext nosuperuser;
 set role regress_stats_ext;
--- Deactivated for SplendidDataTest: \dX
+\dX
 reset role;
 
 drop table stts_t1, stts_t2, stts_t3;

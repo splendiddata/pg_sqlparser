@@ -110,7 +110,7 @@ create rule irule2 as on insert to inserttest2 do also
 create rule irule3 as on insert to inserttest2 do also
   insert into inserttest (f4[1].if1, f4[1].if2[2])
   select new.f1, new.f2;
--- Deactivated for SplendidDataTest: \d+ inserttest2
+\d+ inserttest2
 
 drop table inserttest2;
 drop table inserttest;

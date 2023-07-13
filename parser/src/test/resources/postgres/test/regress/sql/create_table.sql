@@ -1,10 +1,9 @@
 /*
  * This file has been altered by SplendidData.
  * It is only used for syntax checking, not for the testing of a commandline paser.
- * So input for the copy statements is removed.
+ * So some statements that are expected to fail are removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
-
 
 
 --
@@ -54,22 +53,22 @@ DEALLOCATE select1;
 
 -- create an extra wide table to test for issues related to that
 -- (temporarily hide query, to avoid the long CREATE TABLE stmt)
--- Deactivated for SplendidDataTest: \set ECHO none
+\set ECHO none
 SELECT 'CREATE TABLE extra_wide_table(firstc text, '|| array_to_string(array_agg('c'||i||' bool'),',')||', lastc text);'
-FROM generate_series(1, 1100) g(i);
--- Deactivated for SplendidDataTest: \gexec
--- Deactivated for SplendidDataTest: \set ECHO all
+FROM generate_series(1, 1100) g(i)
+\gexec
+\set ECHO all
 INSERT INTO extra_wide_table(firstc, lastc) VALUES('first col', 'last col');
 SELECT firstc, lastc FROM extra_wide_table;
 
 -- check that tables with oids cannot be created anymore
 -- Deactivated for SplendidDataTest: CREATE TABLE withoid() WITH OIDS;
--- Deactivated for SplendidDataTest: CREATE TABLE withoid() WITH (oids);
--- Deactivated for SplendidDataTest: CREATE TABLE withoid() WITH (oids = true);
+CREATE TABLE withoid() WITH (oids);
+CREATE TABLE withoid() WITH (oids = true);
 
 -- but explicitly not adding oids is still supported
--- Deactivated for SplendidDataTest: CREATE TEMP TABLE withoutoid() WITHOUT OIDS; DROP TABLE withoutoid;
--- Deactivated for SplendidDataTest: CREATE TEMP TABLE withoutoid() WITH (oids = false); DROP TABLE withoutoid;
+CREATE TEMP TABLE withoutoid() WITHOUT OIDS; DROP TABLE withoutoid;
+CREATE TEMP TABLE withoutoid() WITH (oids = false); DROP TABLE withoutoid;
 
 -- check restriction with default expressions
 -- invalid use of column reference in default expressions
@@ -227,12 +226,12 @@ CREATE TABLE partitioned2 (
 CREATE TABLE fail () INHERITS (partitioned2);
 
 -- Partition key in describe output
--- Deactivated for SplendidDataTest: \d partitioned
--- Deactivated for SplendidDataTest: \d partitioned2
+\d partitioned
+\d+ partitioned2
 
 INSERT INTO partitioned2 VALUES (1, 'hello');
 CREATE TABLE part2_1 PARTITION OF partitioned2 FOR VALUES FROM (-1, 'aaaaa') TO (100, 'ccccc');
--- Deactivated for SplendidDataTest: \d+ part2_1
+\d+ part2_1
 
 DROP TABLE partitioned, partitioned2;
 
@@ -256,7 +255,7 @@ create table partitioned2
   partition of partitioned for values in ('(2,4)');
 explain (costs off)
 select * from partitioned where partitioned = '(1,2)'::partitioned;
--- Deactivated for SplendidDataTest: \d+ partitioned1
+\d+ partitioned1
 drop table partitioned;
 
 -- check that dependencies of partition columns are handled correctly
@@ -305,23 +304,23 @@ CREATE TABLE part_p1 PARTITION OF list_parted FOR VALUES IN ('1');
 CREATE TABLE part_p2 PARTITION OF list_parted FOR VALUES IN (2);
 CREATE TABLE part_p3 PARTITION OF list_parted FOR VALUES IN ((2+1));
 CREATE TABLE part_null PARTITION OF list_parted FOR VALUES IN (null);
--- Deactivated for SplendidDataTest: \d+ list_parted
+\d+ list_parted
 
 -- forbidden expressions for partition bound with list partitioned table
--- Deactivated for SplendidDataTest: CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN (somename);
--- Deactivated for SplendidDataTest: CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN (somename.somename);
--- Deactivated for SplendidDataTest: CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN (a);
--- Deactivated for SplendidDataTest: CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN (sum(a));
--- Deactivated for SplendidDataTest: CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN (sum(somename));
--- Deactivated for SplendidDataTest: CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN (sum(1));
--- Deactivated for SplendidDataTest: CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN ((select 1));
--- Deactivated for SplendidDataTest: CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN (generate_series(4, 6));
--- Deactivated for SplendidDataTest: CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN ((1+1) collate "POSIX");
+CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN (somename);
+CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN (somename.somename);
+CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN (a);
+CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN (sum(a));
+CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN (sum(somename));
+CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN (sum(1));
+CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN ((select 1));
+CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN (generate_series(4, 6));
+CREATE TABLE part_bogus_expr_fail PARTITION OF list_parted FOR VALUES IN ((1+1) collate "POSIX");
 
 -- syntax does not allow empty list of values for list partitions
 -- Deactivated for SplendidDataTest: CREATE TABLE fail_part PARTITION OF list_parted FOR VALUES IN ();
 -- trying to specify range for list partitioned table
--- Deactivated for SplendidDataTest: CREATE TABLE fail_part PARTITION OF list_parted FOR VALUES FROM (1) TO (2);
+CREATE TABLE fail_part PARTITION OF list_parted FOR VALUES FROM (1) TO (2);
 -- trying to specify modulus and remainder for list partitioned table
 CREATE TABLE fail_part PARTITION OF list_parted FOR VALUES WITH (MODULUS 10, REMAINDER 1);
 
@@ -382,11 +381,11 @@ CREATE TABLE fail_part PARTITION OF range_parted FOR VALUES IN ('a');
 CREATE TABLE fail_part PARTITION OF range_parted FOR VALUES WITH (MODULUS 10, REMAINDER 1);
 -- each of start and end bounds must have same number of values as the
 -- length of the partition key
--- Deactivated for SplendidDataTest: CREATE TABLE fail_part PARTITION OF range_parted FOR VALUES FROM ('a', 1) TO ('z');
--- Deactivated for SplendidDataTest: CREATE TABLE fail_part PARTITION OF range_parted FOR VALUES FROM ('a') TO ('z', 1);
+CREATE TABLE fail_part PARTITION OF range_parted FOR VALUES FROM ('a', 1) TO ('z');
+CREATE TABLE fail_part PARTITION OF range_parted FOR VALUES FROM ('a') TO ('z', 1);
 
 -- cannot specify null values in range bounds
--- Deactivated for SplendidDataTest: CREATE TABLE fail_part PARTITION OF range_parted FOR VALUES FROM (null) TO (maxvalue);
+CREATE TABLE fail_part PARTITION OF range_parted FOR VALUES FROM (null) TO (maxvalue);
 
 -- trying to specify modulus and remainder for range partitioned table
 CREATE TABLE fail_part PARTITION OF range_parted FOR VALUES WITH (MODULUS 10, REMAINDER 1);
@@ -450,9 +449,9 @@ CREATE TABLE range_parted2 (
 ) PARTITION BY RANGE (a);
 
 -- trying to create range partition with empty range
--- Deactivated for SplendidDataTest: CREATE TABLE fail_part PARTITION OF range_parted2 FOR VALUES FROM (1) TO (0);
+CREATE TABLE fail_part PARTITION OF range_parted2 FOR VALUES FROM (1) TO (0);
 -- note that the range '[1, 1)' has no elements
--- Deactivated for SplendidDataTest: CREATE TABLE fail_part PARTITION OF range_parted2 FOR VALUES FROM (1) TO (1);
+CREATE TABLE fail_part PARTITION OF range_parted2 FOR VALUES FROM (1) TO (1);
 
 CREATE TABLE part0 PARTITION OF range_parted2 FOR VALUES FROM (minvalue) TO (1);
 CREATE TABLE fail_part PARTITION OF range_parted2 FOR VALUES FROM (minvalue) TO (2);
@@ -569,7 +568,7 @@ create table parted_notnull_inh_test (a int default 1, b int not null default 0)
 create table parted_notnull_inh_test1 partition of parted_notnull_inh_test (a not null, b default 1) for values in (1);
 insert into parted_notnull_inh_test (b) values (null);
 -- note that while b's default is overridden, a's default is preserved
--- Deactivated for SplendidDataTest: \d parted_notnull_inh_test1
+\d parted_notnull_inh_test1
 drop table parted_notnull_inh_test;
 
 -- check that collations are assigned in partition bound expressions
@@ -607,32 +606,32 @@ create table test_part_coll_cast2 partition of test_part_coll_posix for values f
 drop table test_part_coll_posix;
 
 -- Partition bound in describe output
--- Deactivated for SplendidDataTest: \d+ part_b
+\d+ part_b
 
 -- Both partition bound and partition key in describe output
--- Deactivated for SplendidDataTest: \d+ part_c
+\d+ part_c
 
 -- a level-2 partition's constraint will include the parent's expressions
--- Deactivated for SplendidDataTest: \d+ part_c_1_10
+\d+ part_c_1_10
 
 -- Show partition count in the parent's describe output
 -- Tempted to include \d+ output listing partitions with bound info but
 -- output could vary depending on the order in which partition oids are
 -- returned.
--- Deactivated for SplendidDataTest: \d parted
--- Deactivated for SplendidDataTest: \d hash_parted
+\d parted
+\d hash_parted
 
 -- check that we get the expected partition constraints
 CREATE TABLE range_parted4 (a int, b int, c int) PARTITION BY RANGE (abs(a), abs(b), c);
 CREATE TABLE unbounded_range_part PARTITION OF range_parted4 FOR VALUES FROM (MINVALUE, MINVALUE, MINVALUE) TO (MAXVALUE, MAXVALUE, MAXVALUE);
--- Deactivated for SplendidDataTest: \d+ unbounded_range_part
+\d+ unbounded_range_part
 DROP TABLE unbounded_range_part;
 CREATE TABLE range_parted4_1 PARTITION OF range_parted4 FOR VALUES FROM (MINVALUE, MINVALUE, MINVALUE) TO (1, MAXVALUE, MAXVALUE);
--- Deactivated for SplendidDataTest: \d+ range_parted4_1
+\d+ range_parted4_1
 CREATE TABLE range_parted4_2 PARTITION OF range_parted4 FOR VALUES FROM (3, 4, 5) TO (6, 7, MAXVALUE);
--- Deactivated for SplendidDataTest: \d+ range_parted4_2
+\d+ range_parted4_2
 CREATE TABLE range_parted4_3 PARTITION OF range_parted4 FOR VALUES FROM (6, 8, MINVALUE) TO (9, MAXVALUE, MAXVALUE);
--- Deactivated for SplendidDataTest: \d+ range_parted4_3
+\d+ range_parted4_3
 DROP TABLE range_parted4;
 
 -- user-defined operator class in partition key
@@ -658,20 +657,23 @@ CREATE TABLE parted_col_comment (a int, b text) PARTITION BY LIST (a);
 COMMENT ON TABLE parted_col_comment IS 'Am partitioned table';
 COMMENT ON COLUMN parted_col_comment.a IS 'Partition key';
 SELECT obj_description('parted_col_comment'::regclass);
--- Deactivated for SplendidDataTest: \d+ parted_col_comment
+\d+ parted_col_comment
 DROP TABLE parted_col_comment;
+
+-- specifying storage parameters for partitioned tables is not supported
+CREATE TABLE parted_col_comment (a int, b text) PARTITION BY LIST (a) WITH (fillfactor=100);
 
 -- list partitioning on array type column
 CREATE TABLE arrlp (a int[]) PARTITION BY LIST (a);
 CREATE TABLE arrlp12 PARTITION OF arrlp FOR VALUES IN ('{1}', '{2}');
--- Deactivated for SplendidDataTest: \d+ arrlp12
+\d+ arrlp12
 DROP TABLE arrlp;
 
 -- partition on boolean column
 create table boolspart (a bool) partition by list (a);
 create table boolspart_t partition of boolspart for values in (true);
 create table boolspart_f partition of boolspart for values in (false);
--- Deactivated for SplendidDataTest: \d+ boolspart
+\d+ boolspart
 drop table boolspart;
 
 -- partitions mixing temporary and permanent relations
@@ -739,6 +741,6 @@ create index part_column_drop_d_pred on part_column_drop(d) where d = 2;
 create index part_column_drop_d_expr on part_column_drop((d = 2));
 create table part_column_drop_1_10 partition of
   part_column_drop for values from (1) to (10);
--- Deactivated for SplendidDataTest: \d part_column_drop
--- Deactivated for SplendidDataTest: \d part_column_drop_1_10
+\d part_column_drop
+\d part_column_drop_1_10
 drop table part_column_drop;

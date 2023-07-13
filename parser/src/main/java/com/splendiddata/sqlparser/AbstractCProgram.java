@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -206,11 +206,11 @@ public class AbstractCProgram implements SqlParserErrorReporter {
     /**
      * Translates to return arg1.compareTo(arg2);
      *
-     * @param arg1
-     * @param arg2
+     * @param arg1 String to compare to
+     * @param arg2 String to compare with
      * @return int see {@link String#compareTo(String)}
      */
-    int strcmp(String arg1, String arg2) {
+    static int strcmp(String arg1, String arg2) {
         return arg1.compareTo(arg2);
     }
 

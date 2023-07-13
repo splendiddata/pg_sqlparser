@@ -1,11 +1,3 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for syntax checking, not for the testing of a commandline paser.
- * So input for the copy statements is removed.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
- 
- 
 -- Check that stack depth detection mechanism works and
 -- max_stack_depth is not set too high.
 
@@ -21,17 +13,17 @@ create function infinite_recurse() returns int as
 -- (We still create the function, so as not to have a cross-platform
 -- difference in the end state of the regression database.)
 
--- Deactivated for SplendidDataTest: SELECT version() ~ 'powerpc64[^,]*-linux-gnu'
--- Deactivated for SplendidDataTest:        AS skip_test \gset
--- Deactivated for SplendidDataTest: \if :skip_test
--- Deactivated for SplendidDataTest: \quit
--- Deactivated for SplendidDataTest: \endif
+SELECT version() ~ 'powerpc64[^,]*-linux-gnu'
+       AS skip_test \gset
+\if :skip_test
+\quit
+\endif
 
 -- The full error report is not very stable, so we show only SQLSTATE
 -- and primary error message.
 
--- Deactivated for SplendidDataTest: \set VERBOSITY sqlstate
+\set VERBOSITY sqlstate
 
 select infinite_recurse();
 
--- Deactivated for SplendidDataTest: \echo :LAST_ERROR_MESSAGE
+\echo :LAST_ERROR_MESSAGE

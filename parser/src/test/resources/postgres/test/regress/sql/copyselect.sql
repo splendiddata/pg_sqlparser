@@ -1,9 +1,9 @@
 /*
  * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So some statements that are expected to fail are removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
-
 
 
 --
@@ -90,12 +90,12 @@ drop view v_test1;
 drop table test1;
 
 -- psql handling of COPY in multi-command strings
--- Deactivated for SplendidDataTest: copy (select 1) to stdout\; select 1/0;	-- row, then error
--- Deactivated for SplendidDataTest: select 1/0\; copy (select 1) to stdout; -- error only
--- Deactivated for SplendidDataTest: copy (select 1) to stdout\; copy (select 2) to stdout\; select 0\; select 3; -- 1 2 3
+copy (select 1) to stdout\; select 1/0;	-- row, then error
+select 1/0\; copy (select 1) to stdout; -- error only
+copy (select 1) to stdout\; copy (select 2) to stdout\; select 3\; select 4; -- 1 2 3 4
 
 create table test3 (c int);
--- Deactivated for SplendidDataTest: select 0\; copy test3 from stdin\; copy test3 from stdin\; select 1; -- 1
+select 0\; copy test3 from stdin\; copy test3 from stdin\; select 1; -- 0 1
 -- Deactivated for SplendidDataTest: 1
 -- Deactivated for SplendidDataTest: \.
 -- Deactivated for SplendidDataTest: 2

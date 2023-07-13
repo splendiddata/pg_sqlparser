@@ -33,11 +33,11 @@ CREATE PUBLICATION testpub_xxx WITH (foo);
 CREATE PUBLICATION testpub_xxx WITH (publish = 'cluster, vacuum');
 CREATE PUBLICATION testpub_xxx WITH (publish_via_partition_root = 'true', publish_via_partition_root = '0');
 
--- Deactivated for SplendidDataTest: \dRp
+\dRp
 
 ALTER PUBLICATION testpub_default SET (publish = 'insert, update, delete');
 
--- Deactivated for SplendidDataTest: \dRp
+\dRp
 
 --- adding tables
 CREATE SCHEMA pub_test;
@@ -71,13 +71,13 @@ CREATE PUBLICATION testpub_fortable FOR TABLE testpub_tbl1;
 RESET client_min_messages;
 -- should be able to add schema to 'FOR TABLE' publication
 ALTER PUBLICATION testpub_fortable ADD TABLES IN SCHEMA pub_test;
--- Deactivated for SplendidDataTest: \dRp+ testpub_fortable
+\dRp+ testpub_fortable
 -- should be able to drop schema from 'FOR TABLE' publication
 ALTER PUBLICATION testpub_fortable DROP TABLES IN SCHEMA pub_test;
--- Deactivated for SplendidDataTest: \dRp+ testpub_fortable
+\dRp+ testpub_fortable
 -- should be able to set schema to 'FOR TABLE' publication
 ALTER PUBLICATION testpub_fortable SET TABLES IN SCHEMA pub_test;
--- Deactivated for SplendidDataTest: \dRp+ testpub_fortable
+\dRp+ testpub_fortable
 
 SET client_min_messages = 'ERROR';
 CREATE PUBLICATION testpub_forschema FOR TABLES IN SCHEMA pub_test;
@@ -85,26 +85,30 @@ CREATE PUBLICATION testpub_forschema FOR TABLES IN SCHEMA pub_test;
 -- schema
 CREATE PUBLICATION testpub_for_tbl_schema FOR TABLES IN SCHEMA pub_test, TABLE pub_test.testpub_nopk;
 RESET client_min_messages;
--- Deactivated for SplendidDataTest: \dRp+ testpub_for_tbl_schema
+\dRp+ testpub_for_tbl_schema
+
+-- weird parser corner case
+-- Deactivated for SplendidDataTest: CREATE PUBLICATION testpub_parsertst FOR TABLE pub_test.testpub_nopk, CURRENT_SCHEMA;
+-- Deactivated for SplendidDataTest: CREATE PUBLICATION testpub_parsertst FOR TABLES IN SCHEMA foo, test.foo;
 
 -- should be able to add a table of the same schema to the schema publication
 ALTER PUBLICATION testpub_forschema ADD TABLE pub_test.testpub_nopk;
--- Deactivated for SplendidDataTest: \dRp+ testpub_forschema
+\dRp+ testpub_forschema
 
 -- should be able to drop the table
 ALTER PUBLICATION testpub_forschema DROP TABLE pub_test.testpub_nopk;
--- Deactivated for SplendidDataTest: \dRp+ testpub_forschema
+\dRp+ testpub_forschema
 
 -- fail - can't drop a table from the schema publication which isn't in the
 -- publication
 ALTER PUBLICATION testpub_forschema DROP TABLE pub_test.testpub_nopk;
 -- should be able to set table to schema publication
 ALTER PUBLICATION testpub_forschema SET TABLE pub_test.testpub_nopk;
--- Deactivated for SplendidDataTest: \dRp+ testpub_forschema
+\dRp+ testpub_forschema
 
 SELECT pubname, puballtables FROM pg_publication WHERE pubname = 'testpub_foralltables';
--- Deactivated for SplendidDataTest: \d+ testpub_tbl2
--- Deactivated for SplendidDataTest: \dRp+ testpub_foralltables
+\d+ testpub_tbl2
+\dRp+ testpub_foralltables
 
 DROP TABLE testpub_tbl2;
 DROP PUBLICATION testpub_foralltables, testpub_fortable, testpub_forschema, testpub_for_tbl_schema;
@@ -115,8 +119,8 @@ SET client_min_messages = 'ERROR';
 CREATE PUBLICATION testpub3 FOR TABLE testpub_tbl3;
 CREATE PUBLICATION testpub4 FOR TABLE ONLY testpub_tbl3;
 RESET client_min_messages;
--- Deactivated for SplendidDataTest: \dRp+ testpub3
--- Deactivated for SplendidDataTest: \dRp+ testpub4
+\dRp+ testpub3
+\dRp+ testpub4
 
 DROP TABLE testpub_tbl3, testpub_tbl3a;
 DROP PUBLICATION testpub3, testpub4;
@@ -135,7 +139,7 @@ ALTER TABLE testpub_parted ATTACH PARTITION testpub_parted2 FOR VALUES IN (2);
 UPDATE testpub_parted1 SET a = 1;
 -- only parent is listed as being in publication, not the partition
 ALTER PUBLICATION testpub_forparted ADD TABLE testpub_parted;
--- Deactivated for SplendidDataTest: \dRp+ testpub_forparted
+\dRp+ testpub_forparted
 -- works despite missing REPLICA IDENTITY, because no actual update happened
 UPDATE testpub_parted SET a = 1 WHERE false;
 -- should now fail, because parent's publication replicates updates
@@ -144,7 +148,7 @@ ALTER TABLE testpub_parted DETACH PARTITION testpub_parted1;
 -- works again, because parent's publication is no longer considered
 UPDATE testpub_parted1 SET a = 1;
 ALTER PUBLICATION testpub_forparted SET (publish_via_partition_root = true);
--- Deactivated for SplendidDataTest: \dRp+ testpub_forparted
+\dRp+ testpub_forparted
 -- still fail, because parent's publication replicates updates
 UPDATE testpub_parted2 SET a = 2;
 ALTER PUBLICATION testpub_forparted DROP TABLE testpub_parted;
@@ -168,34 +172,34 @@ SET client_min_messages = 'ERROR';
 -- validation of referenced columns is less strict than for delete/update.
 CREATE PUBLICATION testpub5 FOR TABLE testpub_rf_tbl1, testpub_rf_tbl2 WHERE (c <> 'test' AND d < 5) WITH (publish = 'insert');
 RESET client_min_messages;
--- Deactivated for SplendidDataTest: \dRp+ testpub5
--- Deactivated for SplendidDataTest: \d testpub_rf_tbl3
+\dRp+ testpub5
+\d testpub_rf_tbl3
 ALTER PUBLICATION testpub5 ADD TABLE testpub_rf_tbl3 WHERE (e > 1000 AND e < 2000);
--- Deactivated for SplendidDataTest: \dRp+ testpub5
--- Deactivated for SplendidDataTest: \d testpub_rf_tbl3
+\dRp+ testpub5
+\d testpub_rf_tbl3
 ALTER PUBLICATION testpub5 DROP TABLE testpub_rf_tbl2;
--- Deactivated for SplendidDataTest: \dRp+ testpub5
+\dRp+ testpub5
 -- remove testpub_rf_tbl1 and add testpub_rf_tbl3 again (another WHERE expression)
 ALTER PUBLICATION testpub5 SET TABLE testpub_rf_tbl3 WHERE (e > 300 AND e < 500);
--- Deactivated for SplendidDataTest: \dRp+ testpub5
--- Deactivated for SplendidDataTest: \d testpub_rf_tbl3
+\dRp+ testpub5
+\d testpub_rf_tbl3
 -- test \d <tablename> (now it displays filter information)
 SET client_min_messages = 'ERROR';
 CREATE PUBLICATION testpub_rf_yes FOR TABLE testpub_rf_tbl1 WHERE (a > 1) WITH (publish = 'insert');
 CREATE PUBLICATION testpub_rf_no FOR TABLE testpub_rf_tbl1;
 RESET client_min_messages;
--- Deactivated for SplendidDataTest: \d testpub_rf_tbl1
+\d testpub_rf_tbl1
 DROP PUBLICATION testpub_rf_yes, testpub_rf_no;
 -- some more syntax tests to exercise other parser pathways
 SET client_min_messages = 'ERROR';
 CREATE PUBLICATION testpub_syntax1 FOR TABLE testpub_rf_tbl1, ONLY testpub_rf_tbl3 WHERE (e < 999) WITH (publish = 'insert');
 RESET client_min_messages;
--- Deactivated for SplendidDataTest: \dRp+ testpub_syntax1
+\dRp+ testpub_syntax1
 DROP PUBLICATION testpub_syntax1;
 SET client_min_messages = 'ERROR';
 CREATE PUBLICATION testpub_syntax2 FOR TABLE testpub_rf_tbl1, testpub_rf_schema1.testpub_rf_tbl5 WHERE (h < 999) WITH (publish = 'insert');
 RESET client_min_messages;
--- Deactivated for SplendidDataTest: \dRp+ testpub_syntax2
+\dRp+ testpub_syntax2
 DROP PUBLICATION testpub_syntax2;
 -- fail - schemas don't allow WHERE clause
 SET client_min_messages = 'ERROR';
@@ -262,7 +266,7 @@ CREATE PUBLICATION testpub6 FOR TABLES IN SCHEMA testpub_rf_schema2;
 -- should be able to set publication with schema and table of the same schema
 ALTER PUBLICATION testpub6 SET TABLES IN SCHEMA testpub_rf_schema2, TABLE testpub_rf_schema2.testpub_rf_tbl6 WHERE (i < 99);
 RESET client_min_messages;
--- Deactivated for SplendidDataTest: \dRp+ testpub6
+\dRp+ testpub6
 
 DROP TABLE testpub_rf_tbl1;
 DROP TABLE testpub_rf_tbl2;
@@ -446,7 +450,7 @@ SET client_min_messages = 'ERROR';
 CREATE PUBLICATION testpub_table_ins WITH (publish = 'insert, truncate');
 RESET client_min_messages;
 ALTER PUBLICATION testpub_table_ins ADD TABLE testpub_tbl5 (a);		-- ok
--- Deactivated for SplendidDataTest: \dRp+ testpub_table_ins
+\dRp+ testpub_table_ins
 
 -- tests with REPLICA IDENTITY FULL
 CREATE TABLE testpub_tbl6 (a int, b text, c text);
@@ -462,13 +466,13 @@ UPDATE testpub_tbl6 SET a = 1;
 -- make sure changing the column list is propagated to the catalog
 CREATE TABLE testpub_tbl7 (a int primary key, b text, c text);
 ALTER PUBLICATION testpub_fortable ADD TABLE testpub_tbl7 (a, b);
--- Deactivated for SplendidDataTest: \d+ testpub_tbl7
+\d+ testpub_tbl7
 -- ok: the column list is the same, we should skip this table (or at least not fail)
 ALTER PUBLICATION testpub_fortable SET TABLE testpub_tbl7 (a, b);
--- Deactivated for SplendidDataTest: \d+ testpub_tbl7
+\d+ testpub_tbl7
 -- ok: the column list changes, make sure the catalog gets updated
 ALTER PUBLICATION testpub_fortable SET TABLE testpub_tbl7 (a, c);
--- Deactivated for SplendidDataTest: \d+ testpub_tbl7
+\d+ testpub_tbl7
 
 -- column list for partitioned tables has to cover replica identities for
 -- all child relations
@@ -578,8 +582,8 @@ RESET client_min_messages;
 CREATE TABLE testpub_tbl_both_filters (a int, b int, c int, PRIMARY KEY (a,c));
 ALTER TABLE testpub_tbl_both_filters REPLICA IDENTITY USING INDEX testpub_tbl_both_filters_pkey;
 ALTER PUBLICATION testpub_both_filters ADD TABLE testpub_tbl_both_filters (a,c) WHERE (c != 1);
--- Deactivated for SplendidDataTest: \dRp+ testpub_both_filters
--- Deactivated for SplendidDataTest: \d+ testpub_tbl_both_filters
+\dRp+ testpub_both_filters
+\d+ testpub_tbl_both_filters
 
 DROP TABLE testpub_tbl_both_filters;
 DROP PUBLICATION testpub_both_filters;
@@ -746,7 +750,7 @@ ALTER PUBLICATION testpub_fortbl ADD TABLE testpub_tbl1;
 -- fail - already added
 CREATE PUBLICATION testpub_fortbl FOR TABLE testpub_tbl1;
 
--- Deactivated for SplendidDataTest: \dRp+ testpub_fortbl
+\dRp+ testpub_fortbl
 
 -- fail - view
 ALTER PUBLICATION testpub_default ADD TABLE testpub_view;
@@ -757,15 +761,15 @@ ALTER PUBLICATION testpub_default ADD TABLE pub_test.testpub_nopk;
 
 ALTER PUBLICATION testpib_ins_trunct ADD TABLE pub_test.testpub_nopk, testpub_tbl1;
 
--- Deactivated for SplendidDataTest: \d+ pub_test.testpub_nopk
--- Deactivated for SplendidDataTest: \d+ testpub_tbl1
--- Deactivated for SplendidDataTest: \dRp+ testpub_default
+\d+ pub_test.testpub_nopk
+\d+ testpub_tbl1
+\dRp+ testpub_default
 
 ALTER PUBLICATION testpub_default DROP TABLE testpub_tbl1, pub_test.testpub_nopk;
 -- fail - nonexistent
 ALTER PUBLICATION testpub_default DROP TABLE pub_test.testpub_nopk;
 
--- Deactivated for SplendidDataTest: \d+ testpub_tbl1
+\d+ testpub_tbl1
 
 -- verify relation cache invalidation when a primary key is added using
 -- an existing index
@@ -825,7 +829,7 @@ REVOKE CREATE ON DATABASE regression FROM regress_publication_user2;
 DROP TABLE testpub_parted;
 DROP TABLE testpub_tbl1;
 
--- Deactivated for SplendidDataTest: \dRp+ testpub_default
+\dRp+ testpub_default
 
 -- fail - must be owner of publication
 SET ROLE regress_publication_user_dummy;
@@ -834,14 +838,14 @@ RESET ROLE;
 
 ALTER PUBLICATION testpub_default RENAME TO testpub_foo;
 
--- Deactivated for SplendidDataTest: \dRp testpub_foo
+\dRp testpub_foo
 
 -- rename back to keep the rest simple
 ALTER PUBLICATION testpub_foo RENAME TO testpub_default;
 
 ALTER PUBLICATION testpub_default OWNER TO regress_publication_user2;
 
--- Deactivated for SplendidDataTest: \dRp testpub_default
+\dRp testpub_default
 
 -- adding schemas and tables
 CREATE SCHEMA pub_test1;
@@ -856,10 +860,10 @@ CREATE TABLE "CURRENT_SCHEMA"."CURRENT_SCHEMA"(id int);
 -- suppress warning that depends on wal_level
 SET client_min_messages = 'ERROR';
 CREATE PUBLICATION testpub1_forschema FOR TABLES IN SCHEMA pub_test1;
--- Deactivated for SplendidDataTest: \dRp+ testpub1_forschema
+\dRp+ testpub1_forschema
 
 CREATE PUBLICATION testpub2_forschema FOR TABLES IN SCHEMA pub_test1, pub_test2, pub_test3;
--- Deactivated for SplendidDataTest: \dRp+ testpub2_forschema
+\dRp+ testpub2_forschema
 
 -- check create publication on CURRENT_SCHEMA
 CREATE PUBLICATION testpub3_forschema FOR TABLES IN SCHEMA CURRENT_SCHEMA;
@@ -870,11 +874,11 @@ CREATE PUBLICATION testpub_fortable FOR TABLE "CURRENT_SCHEMA"."CURRENT_SCHEMA";
 
 RESET client_min_messages;
 
--- Deactivated for SplendidDataTest: \dRp+ testpub3_forschema
--- Deactivated for SplendidDataTest: \dRp+ testpub4_forschema
--- Deactivated for SplendidDataTest: \dRp+ testpub5_forschema
--- Deactivated for SplendidDataTest: \dRp+ testpub6_forschema
--- Deactivated for SplendidDataTest: \dRp+ testpub_fortable
+\dRp+ testpub3_forschema
+\dRp+ testpub4_forschema
+\dRp+ testpub5_forschema
+\dRp+ testpub6_forschema
+\dRp+ testpub_fortable
 
 -- check create publication on CURRENT_SCHEMA where search_path is not set
 SET SEARCH_PATH='';
@@ -899,55 +903,55 @@ CREATE PUBLICATION testpub1_forschema1 FOR TABLES IN SCHEMA testpub_view;
 
 -- dropping the schema should reflect the change in publication
 DROP SCHEMA pub_test3;
--- Deactivated for SplendidDataTest: \dRp+ testpub2_forschema
+\dRp+ testpub2_forschema
 
 -- renaming the schema should reflect the change in publication
 ALTER SCHEMA pub_test1 RENAME to pub_test1_renamed;
--- Deactivated for SplendidDataTest: \dRp+ testpub2_forschema
+\dRp+ testpub2_forschema
 
 ALTER SCHEMA pub_test1_renamed RENAME to pub_test1;
--- Deactivated for SplendidDataTest: \dRp+ testpub2_forschema
+\dRp+ testpub2_forschema
 
 -- alter publication add schema
--- Deactivated for SplendidDataTest: ALTER PUBLICATION testpub1_forschema ADD ALL TABLES IN SCHEMA pub_test2;
--- Deactivated for SplendidDataTest: \dRp+ testpub1_forschema
+ALTER PUBLICATION testpub1_forschema ADD TABLES IN SCHEMA pub_test2;
+\dRp+ testpub1_forschema
 
 -- add non existent schema
 ALTER PUBLICATION testpub1_forschema ADD TABLES IN SCHEMA non_existent_schema;
--- Deactivated for SplendidDataTest: \dRp+ testpub1_forschema
+\dRp+ testpub1_forschema
 
 -- add a schema which is already added to the publication
 ALTER PUBLICATION testpub1_forschema ADD TABLES IN SCHEMA pub_test1;
--- Deactivated for SplendidDataTest: \dRp+ testpub1_forschema
+\dRp+ testpub1_forschema
 
 -- alter publication drop schema
 ALTER PUBLICATION testpub1_forschema DROP TABLES IN SCHEMA pub_test2;
--- Deactivated for SplendidDataTest: \dRp+ testpub1_forschema
+\dRp+ testpub1_forschema
 
 -- drop schema that is not present in the publication
 ALTER PUBLICATION testpub1_forschema DROP TABLES IN SCHEMA pub_test2;
--- Deactivated for SplendidDataTest: \dRp+ testpub1_forschema
+\dRp+ testpub1_forschema
 
 -- drop a schema that does not exist in the system
 ALTER PUBLICATION testpub1_forschema DROP TABLES IN SCHEMA non_existent_schema;
--- Deactivated for SplendidDataTest: \dRp+ testpub1_forschema
+\dRp+ testpub1_forschema
 
 -- drop all schemas
 ALTER PUBLICATION testpub1_forschema DROP TABLES IN SCHEMA pub_test1;
--- Deactivated for SplendidDataTest: \dRp+ testpub1_forschema
+\dRp+ testpub1_forschema
 
 -- alter publication set multiple schema
 ALTER PUBLICATION testpub1_forschema SET TABLES IN SCHEMA pub_test1, pub_test2;
--- Deactivated for SplendidDataTest: \dRp+ testpub1_forschema
+\dRp+ testpub1_forschema
 
 -- alter publication set non-existent schema
 ALTER PUBLICATION testpub1_forschema SET TABLES IN SCHEMA non_existent_schema;
--- Deactivated for SplendidDataTest: \dRp+ testpub1_forschema
+\dRp+ testpub1_forschema
 
 -- alter publication set it duplicate schemas should set the schemas after
 -- removing the duplicate schemas
 ALTER PUBLICATION testpub1_forschema SET TABLES IN SCHEMA pub_test1, pub_test1;
--- Deactivated for SplendidDataTest: \dRp+ testpub1_forschema
+\dRp+ testpub1_forschema
 
 -- Verify that it fails to add a schema with a column specification
 -- Deactivated for SplendidDataTest: ALTER PUBLICATION testpub1_forschema ADD TABLES IN SCHEMA foo (a, b);
@@ -1014,9 +1018,9 @@ UPDATE pub_testpart1.child_parent2 set a = 1;
 SET client_min_messages = 'ERROR';
 CREATE PUBLICATION testpub3_forschema;
 RESET client_min_messages;
--- Deactivated for SplendidDataTest: \dRp+ testpub3_forschema
+\dRp+ testpub3_forschema
 ALTER PUBLICATION testpub3_forschema SET TABLES IN SCHEMA pub_test1;
--- Deactivated for SplendidDataTest: \dRp+ testpub3_forschema
+\dRp+ testpub3_forschema
 
 -- create publication including both 'FOR TABLE' and 'FOR TABLES IN SCHEMA'
 SET client_min_messages = 'ERROR';
@@ -1024,8 +1028,8 @@ CREATE PUBLICATION testpub_forschema_fortable FOR TABLES IN SCHEMA pub_test1, TA
 CREATE PUBLICATION testpub_fortable_forschema FOR TABLE pub_test2.tbl1, TABLES IN SCHEMA pub_test1;
 RESET client_min_messages;
 
--- Deactivated for SplendidDataTest: \dRp+ testpub_forschema_fortable
--- Deactivated for SplendidDataTest: \dRp+ testpub_fortable_forschema
+\dRp+ testpub_forschema_fortable
+\dRp+ testpub_fortable_forschema
 
 -- fail specifying table without any of 'FOR TABLES IN SCHEMA' or
 --'FOR TABLE' or 'FOR ALL TABLES'

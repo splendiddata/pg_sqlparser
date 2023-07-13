@@ -42,7 +42,8 @@ public class JsonKeyValue extends Node {
     /**
      * Copy constructor
      *
-     * @param original to copy
+     * @param original
+     *            to copy
      */
     public JsonKeyValue(JsonKeyValue original) {
         super(original);
@@ -68,6 +69,16 @@ public class JsonKeyValue extends Node {
 
     @Override
     public String toString() {
-        return ("Please implement " + getClass().getName() + ".toString()");
+        StringBuilder result = new StringBuilder();
+        if (key != null) {
+            result.append(key);
+        }
+        result.append(": ");
+        if (value == null) {
+            result.append("null");
+        } else {
+            result.append(value);
+        }
+        return result.toString();
     }
 }

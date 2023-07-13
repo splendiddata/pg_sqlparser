@@ -55,8 +55,12 @@ public class GrantRoleStmt extends Node {
     @XmlElement(name = "option")
     public List<DefElem> opt;
 
-    /** with admin option */
-    @XmlAttribute
+    /**
+     * with admin option
+     * 
+     * @deprecated The admin option has moved to the opt list in Postgres 16
+     */
+    @Deprecated(since = "Postgres 16", forRemoval = true)
     public boolean admin_opt;
 
     /** set grantor to other than current role */
@@ -92,7 +96,6 @@ public class GrantRoleStmt extends Node {
         if (original.opt != null) {
             this.opt = original.opt.clone();
         }
-        this.admin_opt = original.admin_opt;
         if (original.grantor != null) {
             this.grantor = original.grantor.clone();
         }
@@ -135,29 +138,59 @@ public class GrantRoleStmt extends Node {
                 result.append(separator).append(ParserUtil.identifierToSql(grantee.toString()));
                 separator = ", ";
             }
-            if (admin_opt) {
-                result.append(" with admin option");
+            separator = " ";
+            if (opt != null) {
+                separator = " with ";
+                for (DefElem option : opt) {
+                    switch (option.defname) {
+                    case "set":
+                    case "admin":
+                    case "inherit":
+                        result.append(separator).append(option.defname).append(' ').append(option.arg);
+                        separator = ", ";
+                        break;
+                    default:
+                        result.append("????? " + getClass().getName() + ".toString(): What to do with opt "
+                                + ParserUtil.stmtToXml(opt) + "??????");
+                    }
+                }
+                separator = " ";
             }
         } else {
             result.append("revoke");
-            if (admin_opt) {
-                result.append(" admin option for");
+            if (opt != null) {
+                for (DefElem option : opt) {
+                    switch (option.defname) {
+                    case "set":
+                    case "admin":
+                    case "inherit":
+                        result.append(separator).append(option.defname).append(" option");
+                        separator = " ";
+                        break;
+                    default:
+                        result.append("????? " + getClass().getName() + ".toString(): What to do with opt "
+                                + ParserUtil.stmtToXml(opt) + "??????");
+                    }
+                }
+                separator = " for ";
             }
             for (AccessPriv grantedRole : granted_roles) {
                 result.append(separator).append(grantedRole);
                 separator = ", ";
             }
+            separator = " ";
             result.append(" from");
             separator = " ";
             for (RoleSpec grantee : grantee_roles) {
                 result.append(separator).append(ParserUtil.identifierToSql(grantee.toString()));
                 separator = ", ";
             }
+            separator = " ";
             result.append(behavior);
         }
-
-        if (opt != null) {
-            result.append("????? " + getClass().getName() + ".toString(): What to do with opt ??????");
+        if (grantor != null) {
+            result.append(separator).append("granted by ").append(grantor);
+            separator = " ";
         }
         return result.toString();
     }

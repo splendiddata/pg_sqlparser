@@ -1,9 +1,9 @@
 /*
  * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So input for the copy statements is removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
-
 
 
 --
@@ -271,7 +271,7 @@ UNION ALL
 )
 SELECT sum(n) FROM t;
 
--- Deactivated for SplendidDataTest: \d+ sums_1_100
+\d+ sums_1_100
 
 -- corner case in which sub-WITH gets initialized first
 with recursive q as (
@@ -422,6 +422,41 @@ with recursive search_graph(f, t, label) as (
 ) search breadth first by f, t set seq
 select * from search_graph order by seq;
 
+-- a constant initial value causes issues for EXPLAIN
+explain (verbose, costs off)
+with recursive test as (
+  select 1 as x
+  union all
+  select x + 1
+  from test
+) search depth first by x set y
+select * from test limit 5;
+
+with recursive test as (
+  select 1 as x
+  union all
+  select x + 1
+  from test
+) search depth first by x set y
+select * from test limit 5;
+
+explain (verbose, costs off)
+with recursive test as (
+  select 1 as x
+  union all
+  select x + 1
+  from test
+) search breadth first by x set y
+select * from test limit 5;
+
+with recursive test as (
+  select 1 as x
+  union all
+  select x + 1
+  from test
+) search breadth first by x set y
+select * from test limit 5;
+
 -- various syntax errors
 with recursive search_graph(f, t, label) as (
 	select * from graph0 g
@@ -568,6 +603,32 @@ with recursive search_graph(f, t, label) as (
 	where g.f = sg.t
 ) cycle f, t set is_cycle to 'Y' default 'N' using path
 select * from search_graph;
+
+explain (verbose, costs off)
+with recursive test as (
+  select 0 as x
+  union all
+  select (x + 1) % 10
+  from test
+) cycle x set is_cycle using path
+select * from test;
+
+with recursive test as (
+  select 0 as x
+  union all
+  select (x + 1) % 10
+  from test
+) cycle x set is_cycle using path
+select * from test;
+
+with recursive test as (
+  select 0 as x
+  union all
+  select (x + 1) % 10
+  from test
+    where not is_cycle  -- redundant, but legal
+) cycle x set is_cycle using path
+select * from test;
 
 -- multiple CTEs
 with recursive
@@ -1193,7 +1254,7 @@ CREATE TEMP TABLE bug6051_3 AS
 CREATE RULE bug6051_3_ins AS ON INSERT TO bug6051_3 DO INSTEAD
   SELECT i FROM bug6051_2;
 
-BEGIN; SET LOCAL force_parallel_mode = on;
+BEGIN; SET LOCAL debug_parallel_query = on;
 
 WITH t1 AS ( DELETE FROM bug6051_3 RETURNING * )
   INSERT INTO bug6051_3 SELECT * FROM t1;

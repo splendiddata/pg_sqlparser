@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -247,35 +244,26 @@ public class CreateStmt extends Node {
             }
             result.append(')');
         }
-        
+
         if (partspec != null) {
             result.append(' ').append(partspec);
         }
 
         if (options != null) {
-            if (options.size() == 1 && "oids".equals(options.get(0).defname.toLowerCase())) {
-                Value val = (Value) options.get(0).arg;
-                if (val == null || val.val.ival == 0) {
-                    result.append(" without oids");
-                } else {
-                    result.append(" with oids");
-                }
-            } else {
-                result.append(" with (");
-                String separator = "";
-                for (DefElem option : options) {
-                    result.append(separator).append(option.defname.toLowerCase());
-                    if (option.arg != null) {
-                        if (NodeTag.T_Integer.equals(option.arg.type)) {
-                            result.append(" = ").append(option.arg);
-                        } else {
-                            result.append(" = ").append(ParserUtil.toSqlTextString(option.arg.toString()));
-                        }
+            result.append(" with (");
+            String separator = "";
+            for (DefElem option : options) {
+                result.append(separator).append(option.defname.toLowerCase());
+                if (option.arg != null) {
+                    if (NodeTag.T_Integer.equals(option.arg.type)) {
+                        result.append(" = ").append(option.arg);
+                    } else {
+                        result.append(" = ").append(ParserUtil.toSqlTextString(option.arg.toString()));
                     }
-                    separator = ", ";
                 }
-                result.append(')');
+                separator = ", ";
             }
+            result.append(')');
         }
 
         if (oncommit != null) {
@@ -304,7 +292,7 @@ public class CreateStmt extends Node {
         if (accessMethod != null) {
             result.append(" using ").append(ParserUtil.identifierToSql(accessMethod));
         }
-        
+
         return result.toString();
     }
 }

@@ -1,11 +1,3 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
-
-
-
 -- xid and xid8
 
 -- values in range, in octal, decimal, hex
@@ -18,11 +10,19 @@ select '010'::xid,
 	   '0xffffffffffffffff'::xid8,
 	   '-1'::xid8;
 
--- garbage values are not yet rejected (perhaps they should be)
+-- garbage values
 select ''::xid;
 select 'asdf'::xid;
 select ''::xid8;
 select 'asdf'::xid8;
+
+-- Also try it with non-error-throwing API
+SELECT pg_input_is_valid('42', 'xid');
+SELECT pg_input_is_valid('asdf', 'xid');
+SELECT * FROM pg_input_error_info('0xffffffffff', 'xid');
+SELECT pg_input_is_valid('42', 'xid8');
+SELECT pg_input_is_valid('asdf', 'xid8');
+SELECT * FROM pg_input_error_info('0xffffffffffffffffffff', 'xid8');
 
 -- equality
 select '1'::xid = '1'::xid;
@@ -76,6 +76,13 @@ select '0:1:'::pg_snapshot;
 select '12:13:0'::pg_snapshot;
 select '12:16:14,13'::pg_snapshot;
 
+-- also try it with non-error-throwing API
+select pg_input_is_valid('12:13:', 'pg_snapshot');
+select pg_input_is_valid('31:12:', 'pg_snapshot');
+select * from pg_input_error_info('31:12:', 'pg_snapshot');
+select pg_input_is_valid('12:16:14,13', 'pg_snapshot');
+select * from pg_input_error_info('12:16:14,13', 'pg_snapshot');
+
 create temp table snapshot_test (
 	nr	integer,
 	snap	pg_snapshot
@@ -121,25 +128,25 @@ SELECT pg_snapshot '1:9223372036854775808:3';
 -- test pg_current_xact_id_if_assigned
 BEGIN;
 SELECT pg_current_xact_id_if_assigned() IS NULL;
--- Deactivated for SplendidDataTest: SELECT pg_current_xact_id() \gset
+SELECT pg_current_xact_id() \gset
 SELECT pg_current_xact_id_if_assigned() IS NOT DISTINCT FROM xid8 :'pg_current_xact_id';
 COMMIT;
 
 -- test xid status functions
 BEGIN;
--- Deactivated for SplendidDataTest: SELECT pg_current_xact_id() AS committed \gset
+SELECT pg_current_xact_id() AS committed \gset
 COMMIT;
 
 BEGIN;
--- Deactivated for SplendidDataTest: SELECT pg_current_xact_id() AS rolledback \gset
+SELECT pg_current_xact_id() AS rolledback \gset
 ROLLBACK;
 
 BEGIN;
--- Deactivated for SplendidDataTest: SELECT pg_current_xact_id() AS inprogress \gset
+SELECT pg_current_xact_id() AS inprogress \gset
 
--- Deactivated for SplendidDataTest: SELECT pg_xact_status(:committed::text::xid8) AS committed;
--- Deactivated for SplendidDataTest: SELECT pg_xact_status(:rolledback::text::xid8) AS rolledback;
--- Deactivated for SplendidDataTest: SELECT pg_xact_status(:inprogress::text::xid8) AS inprogress;
+SELECT pg_xact_status(:committed::text::xid8) AS committed;
+SELECT pg_xact_status(:rolledback::text::xid8) AS rolledback;
+SELECT pg_xact_status(:inprogress::text::xid8) AS inprogress;
 SELECT pg_xact_status('1'::xid8); -- BootstrapTransactionId is always committed
 SELECT pg_xact_status('2'::xid8); -- FrozenTransactionId is always committed
 SELECT pg_xact_status('3'::xid8); -- in regress testing FirstNormalTransactionId will always be behind oldestXmin
@@ -160,5 +167,5 @@ EXCEPTION
     RAISE NOTICE 'Got expected error for xid in the future';
 END;
 $$;
--- Deactivated for SplendidDataTest: SELECT test_future_xid_status((:inprogress + 10000)::text::xid8);
+SELECT test_future_xid_status((:inprogress + 10000)::text::xid8);
 ROLLBACK;

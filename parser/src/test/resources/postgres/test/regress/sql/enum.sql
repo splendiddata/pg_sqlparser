@@ -1,11 +1,11 @@
 /*
  * This file has been altered by SplendidData.
  * It is only used for syntax checking, not for the testing of a commandline paser.
- * So input for the copy statements is removed.
+ * So some statements that are expected to fail are removed.
  * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
  */
- 
- 
+
+
 --
 -- Enum tests
 --
@@ -22,6 +22,14 @@ SELECT COUNT(*) FROM pg_enum WHERE enumtypid = 'rainbow'::regtype;
 --
 SELECT 'red'::rainbow;
 SELECT 'mauve'::rainbow;
+
+-- Also try it with non-error-throwing API
+SELECT pg_input_is_valid('red', 'rainbow');
+SELECT pg_input_is_valid('mauve', 'rainbow');
+SELECT * FROM pg_input_error_info('mauve', 'rainbow');
+\x
+SELECT * FROM pg_input_error_info(repeat('too_long', 32), 'rainbow');
+\x
 
 --
 -- adding new values
