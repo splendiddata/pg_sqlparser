@@ -461,7 +461,8 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
                     /*
                      * The SplitColQualList method needs replacement
                      */
-                    .replace("SplitColQualList($6, &n->constraints, &n->collClause,", "n.collClause = splitColQualList($5, n.constraints,");
+                    .replace("SplitColQualList($6, &n->constraints, &n->collClause,",
+                            "n.collClause = splitColQualList($5, n.constraints,");
         }
     }),
 
@@ -715,6 +716,15 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
     zone_value(new GrammarRuleSpecialProcessing() {
         public String processLine(String line) {
             return line.replace(".ival.ival", ".val.ival");
+        }
+    }),
+    /** @since Postgres 16 */
+    NonReservedWord(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            if (line.contains("unreserved_keyword")) {
+                return "            | unreserved_keyword                    { $$ = $1.toString(); }";
+            }
+            return line;
         }
     }),
     //

@@ -99,7 +99,7 @@ public class JsonArrayQueryConstructor extends Node {
             separator = " ";
         }
         if (output != null) {
-            result.append(separator).append("returning ").append(output);
+            result.append(separator).append(output);
         }
         result.append(")");
         return result.toString();

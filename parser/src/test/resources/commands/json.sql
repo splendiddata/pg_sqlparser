@@ -31,6 +31,7 @@ select json_array(1,true,json '{"a":null}');
 select json_array(1,true,json '{"a":null}' null on null);
 select json_array(1,true,json '{"a":null}' returning a_type);
 select json_array(SELECT * FROM (VALUES(1),(2)) t);
+select json_array(SELECT * FROM (VALUES(1),(2)) t returning bytea format json encoding utf16);
 select row_to_json(row(1,'foo'));
 select json_build_array(1, 2, 'foo', 4, 5);
 select json_build_object('foo', 1, 2, row(3,'bar'));
@@ -68,7 +69,7 @@ select json_typeof('-123.4');
 /*
  * Aggregate functions from the Postgres manual
  */
--- SELECT json_objectagg(k:v) FROM (VALUES ('a'::text,current_date),('b',current_date + 1)) AS t(k,v);
--- SELECT json_objectagg(k:v) over(order by x) FROM (VALUES ('a'::text,current_date),('b',current_date + 1)) AS t(k,v);
+SELECT json_objectagg(k value v) FROM (VALUES ('a'::text,current_date),('b',current_date + 1)) AS t(k,v);
+SELECT json_objectagg(k: v) over(order by x) FROM (VALUES ('a'::text,current_date),('b',current_date + 1)) AS t(k,v);
 SELECT json_arrayagg(v) FROM (VALUES(2),(1)) t(v);
  
