@@ -27,3 +27,4 @@ alter user the_user reset config_param;
 alter user "all" reset config_param;
 alter user the_user reset all;
 alter user "all" reset all;
+alter user all set search_path = public;

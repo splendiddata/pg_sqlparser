@@ -59,7 +59,7 @@ public class AlterDatabaseRefreshCollStmt extends Node {
     public String toString() {
         StringBuilder result = new StringBuilder();
 
-        result.append("alter database ").append(dbname).append(" refresh colation version");
+        result.append("alter database ").append(dbname).append(" refresh collation version");
 
         return result.toString();
     }

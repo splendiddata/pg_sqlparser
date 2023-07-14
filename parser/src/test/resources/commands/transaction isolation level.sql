@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2023
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -15,11 +15,19 @@
  * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
  */
 
-alter tablespace a rename to b;
-alter tablespace tablespace owner to owner;
-alter tablespace tablespace set (a = a);
-alter tablespace tablespace set (a = a, b = b);
-alter tablespace ts reset (a);
-alter tablespace ts reset (a, "table", b);
+show transaction isolation level;
+show transaction_isolation;
 
-drop tablespace if exists ts_to_be_dropped;
+set transaction isolation level serializable;
+set transaction isolation level repeatable Read;
+set transaction isolation level read committed;
+set transaction isolation level read uncommitted;
+set transaction read write;
+set transaction read only;
+set transaction deferrable;
+set transaction not deferrable;
+set transaction isolation level repeatable read, read only, not deferrable;
+
+set transaction snapshot 'some_snapshod_id';
+
+SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED, DEFERRABLE;

@@ -8,6 +8,7 @@
 
 package com.splendiddata.sqlparser.structure;
 
+import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.JsonValueType;
 import com.splendiddata.sqlparser.enums.NodeTag;
 
@@ -71,6 +72,23 @@ public class JsonIsPredicate extends Node {
 
     @Override
     public String toString() {
-        return ("Please implement " + getClass().getName() + ".toString()");
+        StringBuilder result = new StringBuilder();
+        String separator = "";
+        if (expr != null) {
+            result.append(expr);
+            separator = " ";
+        }
+        result.append(separator).append("is json");
+        separator = " ";
+        if (item_type != null) {
+            result.append(item_type)
+;        }
+        if (unique_keys) {
+            result.append(separator).append("with unique keys");
+        }
+        if (format != null) {
+            result.append(format);
+        }
+        return result.toString();
     }
 }

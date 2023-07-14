@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -29,3 +29,26 @@ select * from some_schema.some_table order by 1 using operator(some_schema.<^<<)
 select 'i'::"char";
 select * from rows from (f1('arg1') as (a text, b integer), f2(x, y) as (c varchar(10))) with ordinality as f(x,y,z);
 SELECT x FROM test3cs WHERE x SIMILAR TO 'a%' escape '|';
+/*
+ * Copied from the Postgres manual
+ */
+SELECT product_id, p.name, (sum(s.units) * (p.price - p.cost)) AS profit
+    FROM products p LEFT JOIN sales s USING (product_id)
+    WHERE s.date > CURRENT_DATE - INTERVAL '4 weeks'
+    GROUP BY product_id, p.name, p.price, p.cost
+    HAVING sum(p.price * s.units) > 5000;
+SELECT brand, size, sum(sales) FROM items_sold GROUP BY GROUPING SETS ((brand), (size), ());
+select * group by CUBE ( a, b, c );
+select * group by rollup ( a, b, c );
+select * GROUP BY DISTINCT ROLLUP (a, b), ROLLUP (a, c);
+select * group by GROUPING SETS (
+    ( a, b, c ),
+    ( a, b    ),
+    ( a,    c ),
+    ( a       ),
+    (    b, c ),
+    (    b    ),
+    (       c ),
+    (         )
+);
+select * GROUP BY a, CUBE (b, c), GROUPING SETS ((d), (e))

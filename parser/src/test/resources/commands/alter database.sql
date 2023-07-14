@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -27,3 +27,4 @@ alter database db set a_aparmeter = default;
 alter database db set a_aparmeter from current;
 alter database db reset a_aparmeter;
 alter database db reset all;
+alter database my_db refresh collation version;

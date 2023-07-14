@@ -72,4 +72,20 @@ select json_typeof('-123.4');
 SELECT json_objectagg(k value v) FROM (VALUES ('a'::text,current_date),('b',current_date + 1)) AS t(k,v);
 SELECT json_objectagg(k: v) over(order by x) FROM (VALUES ('a'::text,current_date),('b',current_date + 1)) AS t(k,v);
 SELECT json_arrayagg(v) FROM (VALUES(2),(1)) t(v);
+
+SELECT js,
+  js IS JSON "json?",
+  js IS JSON SCALAR "scalar?",
+  js IS JSON OBJECT "object?",
+  js IS JSON ARRAY "array?"
+FROM (VALUES
+      ('123'), ('"abc"'), ('{"a": "b"}'), ('[1,2]'),('abc')) foo(js);
+      
+SELECT js,
+  js IS JSON OBJECT "object?",
+  js IS JSON ARRAY "array?",
+  js IS JSON ARRAY WITH UNIQUE KEYS "array w. UK?",
+  js IS JSON ARRAY WITHOUT UNIQUE KEYS "array w/o UK?"
+FROM (VALUES ('[{"a":"1"},
+ {"b":"2","b":"3"}]')) foo(js);
  
