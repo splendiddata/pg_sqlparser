@@ -21,7 +21,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * Copied from postgresql-16beta1/src/include/nodes/primnodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since Postgrres 16
+ * @since Postgres 16
  */
 @XmlRootElement(namespace = "parser")
 public class JsonFormat extends Node {

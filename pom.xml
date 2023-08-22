@@ -44,7 +44,7 @@
 		<sonar.exclusions>file:**/generated-sources/**</sonar.exclusions>
 		<log4j.version>2.20.0</log4j.version>
 		<javafx.version>11.0.2</javafx.version>
-		<jupiter.version>5.9.3</jupiter.version>
+		<jupiter.version>5.10.0</jupiter.version>
 		<p6spy.version>3.9.1</p6spy.version>
 		<jvx.version>2.8</jvx.version>
 	</properties>
@@ -95,7 +95,7 @@
 			<dependency>
 				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-plugin-api</artifactId>
-				<version>3.9.3</version>
+				<version>3.9.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven.plugin-tools</groupId>
@@ -111,13 +111,13 @@
 			<dependency>
 				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-core</artifactId>
-				<version>3.9.3</version>
+				<version>3.9.4</version>
 			</dependency>
 
 			<dependency>
 				<groupId>com.github.javaparser</groupId>
 				<artifactId>javaparser-core</artifactId>
-				<version>3.25.3</version>
+				<version>3.25.4</version>
 			</dependency>
 
 			<dependency>
@@ -159,7 +159,7 @@
 			<dependency>
 				<groupId>org.checkerframework</groupId>
 				<artifactId>checker-qual</artifactId>
-				<version>3.35.0</version>
+				<version>3.37.0</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

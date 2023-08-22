@@ -1456,13 +1456,12 @@ public class AbstractParser extends AbstractCProgram {
      * @since Postgres 16
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected CollateClause splitColQualList(List qualList, List<Constraint> constraintList,
-            core_yyscan_t yyscanner) {
+    protected CollateClause splitColQualList(List qualList, List<Constraint> constraintList, core_yyscan_t yyscanner) {
         if (qualList == null) {
             return null;
         }
         CollateClause collClause = null;
-        for (Node n : (List<Node>)qualList) {
+        for (Node n : (List<Node>) qualList) {
             if (n instanceof Constraint) {
                 constraintList.add((Constraint) n);
             } else if (n instanceof CollateClause) {
@@ -1491,7 +1490,7 @@ public class AbstractParser extends AbstractCProgram {
      * @param format
      *            for the returned JsonValueExpr
      * @return JsonValueExpr with the specified expr and format
-     * @since postgres 16
+     * @since Postgres 16
      */
     protected static JsonValueExpr makeJsonValueExpr(Expr expr, JsonFormat format) {
         JsonValueExpr jve = new JsonValueExpr();
@@ -1517,7 +1516,7 @@ public class AbstractParser extends AbstractCProgram {
      * @param location
      *            from the parser
      * @return JsonIsPredicate with the specified properties
-     * @since postgres 16
+     * @since Postgres 16
      */
     protected JsonIsPredicate makeJsonIsPredicate(Node expr, JsonFormat format, JsonValueType item_type,
             boolean unique_keys, Location location) {
@@ -1544,7 +1543,7 @@ public class AbstractParser extends AbstractCProgram {
      * @param i
      *            null location
      * @return JsonFormat with the specified
-     * @since postgres 16
+     * @since Postgres 16
      */
     protected JsonFormat makeJsonFormat(JsonFormatType type, JsonEncoding encoding, int i) {
         JsonFormat jf = new JsonFormat();
@@ -1568,7 +1567,7 @@ public class AbstractParser extends AbstractCProgram {
      * @param location
      *            for the JsonFormat to create
      * @return JsonFormat with the specified
-     * @since postgres 16
+     * @since Postgres 16
      */
     protected JsonFormat makeJsonFormat(JsonFormatType type, JsonEncoding encoding, Location location) {
         JsonFormat jf = new JsonFormat();
@@ -1590,14 +1589,35 @@ public class AbstractParser extends AbstractCProgram {
      * @param node
      *            property for the JsonKeyValue to construct
      * @return JsonKeyValue with the specified properties
-     * @since postgres 16
+     * @since Postgres 16
      */
     protected JsonKeyValue makeJsonKeyValue(Node key, Node node) {
         JsonKeyValue n = new JsonKeyValue();
 
-        n.key = (Expr)key;
+        n.key = (Expr) key;
         n.value = (JsonValueExpr) node;
 
         return n;
+    }
+
+    /**
+     * makeJsonValueExpr - creates a JsonValueExpr node
+     * <p>
+     * Copied from postgresql-16beta3/src/backend/nodes/makefuncs.c
+     *
+     * @param raw_expr property for the JsonValueExpr to construct
+     * @param formatted_expr  property for the JsonValueExpr to construct
+     * @param format  property for the JsonValueExpr to construct
+     * @return JsonValueExpr with the specified properties
+     * @since Postgres 16
+     */
+    protected JsonValueExpr makeJsonValueExpr(Expr raw_expr, Expr formatted_expr, JsonFormat format) {
+        JsonValueExpr jve = new JsonValueExpr();
+
+        jve.raw_expr = raw_expr;
+        jve.formatted_expr = formatted_expr;
+        jve.format = format;
+
+        return jve;
     }
 }

@@ -54,6 +54,12 @@
 -- Deactivated for SplendidDataTest: SELECT 1 as one, 2 as two \gx (title='foo bar')
 -- Deactivated for SplendidDataTest: \g
 
+-- \bind (extended query protocol)
+
+-- Deactivated for SplendidDataTest: SELECT 1 \bind \g
+-- Deactivated for SplendidDataTest: SELECT $1 \bind 'foo' \g
+-- Deactivated for SplendidDataTest: SELECT $1, $2 \bind 'foo' 'bar' \g
+
 -- errors
 -- parse error
 -- Deactivated for SplendidDataTest: SELECT foo \bind \g
