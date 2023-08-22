@@ -647,6 +647,20 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
                     .replace("{ $$ = lappend($1, $2); }", "{ if (yystack.valueAt (0) instanceof DefElem) { $$ = lappend($1, $2); } }");
         }
     }),
+    /** @since 13.12 */
+    stmtblock(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            switch (GrammarConverter.bisonVersion) {
+            case BISON_VERSION_2:
+            case BISON_VERSION_3:
+            case BISON_VERSION_3_3:
+            case BISON_VERSION_3_5:
+                return line.replace("(void) yynerrs;", "// yynerrs = 0;");
+            default:
+                return line.replace("(void) yynerrs;", "yynerrs = 0;");
+            }
+        }
+    }),
 
     /**
      * We're in the epilog section
