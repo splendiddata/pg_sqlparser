@@ -27,6 +27,21 @@ package com.splendiddata.sqlparser.grammartojava;
 public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
     DEFAULT(),
 
+    /** @since Postgres14.9 */
+    parse_toplevel(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            switch (GrammarConverter.bisonVersion) {
+            case BISON_VERSION_2:
+            case BISON_VERSION_3:
+            case BISON_VERSION_3_3:
+            case BISON_VERSION_3_5:
+                return line.replace("(void) yynerrs;", "// yynerrs = 0;");
+            default:
+                return line.replace("(void) yynerrs;", "yynerrs = 0;");
+            }
+        }
+    }),
+
     /**
      * Replaces "if ($n)" constructs with "if ($n != null)".
      */
