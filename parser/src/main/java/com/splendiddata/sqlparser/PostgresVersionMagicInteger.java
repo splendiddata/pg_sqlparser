@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -38,5 +38,8 @@ public class PostgresVersionMagicInteger {
 
     /** Version number 15 */
     public static final int VERSION_FIFTEEN = 15;
+
+    /** Vesion number 16 */
+    public static final int VERSION_SIXTEEN = 16;
 
 }

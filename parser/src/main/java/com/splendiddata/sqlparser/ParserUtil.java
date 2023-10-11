@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -307,12 +307,12 @@ public final class ParserUtil {
     }
 
     /**
-     * Returns parser version "15"
+     * Returns parser version "16"
      *
-     * @return String "15"
+     * @return String "16"
      */
     public static String getParserVersion() {
-        return "15";
+        return "16";
     }
 
     /**
@@ -324,7 +324,7 @@ public final class ParserUtil {
      * @return The major version of postgresql.
      */
     public static int getPostgresMajorVersion() {
-        return PostgresVersionMagicInteger.VERSION_FIFTEEN;
+        return PostgresVersionMagicInteger.VERSION_SIXTEEN;
     }
 
     /**
@@ -333,7 +333,7 @@ public final class ParserUtil {
      * @return String "PostgreSQL 15"
      */
     public static String getForPosgresVersion() {
-        return "PostgreSQL 15";
+        return "PostgreSQL 16";
     }
 
     /**
