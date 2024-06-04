@@ -47,7 +47,7 @@
 				<dependency>
 					<groupId>com.splendiddata.pgcode_formatter</groupId>
 					<artifactId>pgcode_formatter</artifactId>
-					<version>0.3-SNAPSHOT</version>
+					<version>0.3.1</version>
 				</dependency>
 			</dependencies>
 			<build>
