@@ -21,11 +21,23 @@
                         <manifestEntries>
                             <License>https://www.gnu.org/licenses/gpl-3.0.en.html</License>
                             <Vendor>https://www.splendiddata.com</Vendor>
-                            <Copyright>Copyright (c) Splendid Data Product Development B.V. 2013 - 2023</Copyright>
+                            <Copyright>Copyright (c) Splendid Data Product Development B.V. 2013 - 2024</Copyright>
                         </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 </project>
