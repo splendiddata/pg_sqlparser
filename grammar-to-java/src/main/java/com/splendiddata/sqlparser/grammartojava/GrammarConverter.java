@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -112,7 +112,7 @@ import com.splendiddata.sqlparser.enums.XmlStandaloneType;
  * @author Splendid Data Product Development B.V.
  * @since 0.0.1
  */
-@Mojo(name = "convertGrammar", executionStrategy = "always", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
+@Mojo(name = "convertGrammar", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 @Execute(goal = "convertGrammar", phase = LifecyclePhase.GENERATE_SOURCES)
 public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> {
     private Log log;

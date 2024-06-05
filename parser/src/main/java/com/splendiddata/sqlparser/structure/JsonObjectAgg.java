@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2023 - 2024
  *
  * This unpublished material is proprietary to Splendid Data Product Development B.V. All rights reserved. The methods
  * and techniques described herein are considered trade secrets and/or confidential. Reproduction or distribution, in
@@ -23,7 +23,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * @since Postgres 16
  */
 @XmlRootElement(namespace = "parser")
-public class JsonObjectAgg extends Node {
+public class JsonObjectAgg extends Expr {
 
     /** common fields */
     @XmlElement
@@ -98,10 +98,14 @@ public class JsonObjectAgg extends Node {
             result.append(separator).append("with unique keys");
             separator = " ";
         }
-        result.append(')');
         if (constructor != null) {
-            result.append(separator).append(constructor);
+            String constructorTxt = constructor.toString();
+            if (!constructorTxt.isBlank()) {
+                result.append(separator).append(constructor);
+                separator = " ";
+            }
         }
+        result.append(')');
         return result.toString();
     }
 }

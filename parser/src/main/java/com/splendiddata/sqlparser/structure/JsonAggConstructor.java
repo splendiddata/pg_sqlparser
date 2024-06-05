@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2023 - 2024
  *
  * This unpublished material is proprietary to Splendid Data Product Development B.V. All rights reserved. The methods
  * and techniques described herein are considered trade secrets and/or confidential. Reproduction or distribution, in
@@ -8,7 +8,6 @@
 
 package com.splendiddata.sqlparser.structure;
 
-import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.NodeTag;
 
 import jakarta.xml.bind.annotation.XmlElement;
@@ -98,17 +97,25 @@ public class JsonAggConstructor extends Node {
     public String toString() {
         StringBuilder result = new StringBuilder();
         String separator = "";
-        if (output != null) {
-            result.append(" ????? ").append(getClass().getName()).append(".toString(): What to do with output: ").append(ParserUtil.stmtToXml(output)).append(" ????? ");
-        }
-        if (agg_filter != null) {
-            result.append(" ????? ").append(getClass().getName()).append(".toString(): What to do with agg_filter: ").append(ParserUtil.stmtToXml(agg_filter)).append(" ????? ");
-        }
         if (agg_order != null) {
-            result.append(" ????? ").append(getClass().getName()).append(".toString(): What to do with agg_order: ").append(ParserUtil.stmtToXml(agg_order)).append(" ????? ");
+            result.append("order by");
+            separator = " ";
+            for (Node node : agg_order) {
+                result.append(separator).append(node);
+                separator = ", ";
+            }
+            separator = " ";
+        }       
+        if (output != null) {
+            result.append(separator).append(output);
+            separator = " ";
+        } 
+        if (agg_filter != null) {
+            result.append(") filter (where ").append(agg_filter);
+            separator = " ";
         }
         if (over != null) {
-            result.append(separator).append("over").append(over);
+            result.append(") over (").append(over);
         }
         
         return result.toString();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2023 - 2024
  *
  * This unpublished material is proprietary to Splendid Data Product Development B.V. All rights reserved. The methods
  * and techniques described herein are considered trade secrets and/or confidential. Reproduction or distribution, in
@@ -86,7 +86,11 @@ public class JsonReturning extends Node {
             separator = " ";
         }
         if (format != null) {
-            result.append(separator).append(format);
+            String formatTxt = format.toString();
+            if (!formatTxt.isBlank()) {
+                result.append(separator).append(format);
+                separator = " ";
+            }
         }
         
         return result.toString();

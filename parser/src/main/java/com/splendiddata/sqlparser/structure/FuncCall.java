@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -203,12 +203,13 @@ public class FuncCall extends Expr {
         }
 
         if (over != null) {
-            result.append(" over ");
+            result.append(" over (");
             if (over.name == null) {
                 result.append(over);
             } else {
                 result.append(over.name);
             }
+            result.append(')');
         }
 
         return result.toString();

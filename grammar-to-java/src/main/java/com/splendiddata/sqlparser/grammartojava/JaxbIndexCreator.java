@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -58,7 +58,7 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
  * @author Splendid Data Product Development B.V.
  * @since 5.1
  */
-@Mojo(name = "createJaxbIndex", executionStrategy = "always", defaultPhase = LifecyclePhase.COMPILE)
+@Mojo(name = "createJaxbIndex",defaultPhase = LifecyclePhase.COMPILE)
 @Execute(goal = "createJaxbIndex", phase = LifecyclePhase.COMPILE)
 public class JaxbIndexCreator extends AbstractMojo implements FileVisitor<Path> {
     private Log log = getLog();

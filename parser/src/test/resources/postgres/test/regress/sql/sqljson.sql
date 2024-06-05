@@ -1,3 +1,10 @@
+/*
+ * This file has been altered by SplendidData.
+ * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
+ * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
+ */
+
+
 -- JSON_OBJECT()
 SELECT JSON_OBJECT();
 SELECT JSON_OBJECT(RETURNING json);
@@ -7,7 +14,7 @@ SELECT JSON_OBJECT(RETURNING jsonb FORMAT JSON);
 SELECT JSON_OBJECT(RETURNING text);
 SELECT JSON_OBJECT(RETURNING text FORMAT JSON);
 SELECT JSON_OBJECT(RETURNING text FORMAT JSON ENCODING UTF8);
-SELECT JSON_OBJECT(RETURNING text FORMAT JSON ENCODING INVALID_ENCODING);
+-- Deactivated for SplendidDataTest: SELECT JSON_OBJECT(RETURNING text FORMAT JSON ENCODING INVALID_ENCODING);
 SELECT JSON_OBJECT(RETURNING bytea);
 SELECT JSON_OBJECT(RETURNING bytea FORMAT JSON);
 SELECT JSON_OBJECT(RETURNING bytea FORMAT JSON ENCODING UTF8);
@@ -153,7 +160,7 @@ SELECT	JSON_ARRAYAGG(NULL NULL ON NULL),
 		JSON_ARRAYAGG(NULL NULL ON NULL RETURNING jsonb)
 FROM generate_series(1, 5);
 
-\x
+-- Deactivated for SplendidDataTest: \x
 SELECT
 	JSON_ARRAYAGG(bar) as no_options,
 	JSON_ARRAYAGG(bar RETURNING jsonb) as returning_jsonb,
@@ -167,7 +174,7 @@ SELECT
 	JSON_ARRAYAGG(foo ORDER BY bar RETURNING jsonb) FILTER (WHERE bar > 2) as row_filtered_agg_returning_jsonb
 FROM
 	(VALUES (NULL), (3), (1), (NULL), (NULL), (5), (2), (4), (NULL)) foo(bar);
-\x
+-- Deactivated for SplendidDataTest: \x
 
 SELECT
 	bar, JSON_ARRAYAGG(bar) FILTER (WHERE bar > 2) OVER (PARTITION BY foo.bar % 2)
@@ -223,7 +230,7 @@ SELECT JSON_OBJECT('foo' : '1' FORMAT JSON, 'bar' : 'baz' RETURNING json);
 CREATE VIEW json_object_view AS
 SELECT JSON_OBJECT('foo' : '1' FORMAT JSON, 'bar' : 'baz' RETURNING json);
 
-\sv json_object_view
+-- Deactivated for SplendidDataTest: \sv json_object_view
 
 DROP VIEW json_object_view;
 
@@ -234,7 +241,7 @@ SELECT JSON_ARRAY('1' FORMAT JSON, 2 RETURNING json);
 CREATE VIEW json_array_view AS
 SELECT JSON_ARRAY('1' FORMAT JSON, 2 RETURNING json);
 
-\sv json_array_view
+-- Deactivated for SplendidDataTest: \sv json_array_view
 
 DROP VIEW json_array_view;
 
@@ -251,7 +258,7 @@ CREATE VIEW json_objectagg_view AS
 SELECT JSON_OBJECTAGG(i: ('111' || i)::bytea FORMAT JSON WITH UNIQUE RETURNING text) FILTER (WHERE i > 3)
 FROM generate_series(1,5) i;
 
-\sv json_objectagg_view
+-- Deactivated for SplendidDataTest: \sv json_objectagg_view
 
 DROP VIEW json_objectagg_view;
 
@@ -268,7 +275,7 @@ CREATE VIEW json_arrayagg_view AS
 SELECT JSON_ARRAYAGG(('111' || i)::bytea FORMAT JSON NULL ON NULL RETURNING text) FILTER (WHERE i > 3)
 FROM generate_series(1,5) i;
 
-\sv json_arrayagg_view
+-- Deactivated for SplendidDataTest: \sv json_arrayagg_view
 
 DROP VIEW json_arrayagg_view;
 
@@ -279,7 +286,7 @@ SELECT JSON_ARRAY(SELECT i FROM (VALUES (1), (2), (NULL), (4)) foo(i) RETURNING 
 CREATE VIEW json_array_subquery_view AS
 SELECT JSON_ARRAY(SELECT i FROM (VALUES (1), (2), (NULL), (4)) foo(i) RETURNING jsonb);
 
-\sv json_array_subquery_view
+-- Deactivated for SplendidDataTest: \sv json_array_subquery_view
 
 DROP VIEW json_array_subquery_view;
 
@@ -375,6 +382,6 @@ SELECT '1' IS JSON AS "any", ('1' || i) IS JSON SCALAR AS "scalar", '[]' IS NOT 
 CREATE VIEW is_json_view AS
 SELECT '1' IS JSON AS "any", ('1' || i) IS JSON SCALAR AS "scalar", '[]' IS NOT JSON ARRAY AS "array", '{}' IS JSON OBJECT WITH UNIQUE AS "object" FROM generate_series(1, 3) i;
 
-\sv is_json_view
+-- Deactivated for SplendidDataTest: \sv is_json_view
 
 DROP VIEW is_json_view;

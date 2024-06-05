@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -98,7 +98,7 @@ public class WindowDef extends Node {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder("(");
+        StringBuilder result = new StringBuilder();
         String leadingSpace = "";
         if (refname != null) {
             result.append(refname);
@@ -126,7 +126,7 @@ public class WindowDef extends Node {
         }
 
         if (frameOptions == FrameOption.FRAMEOPTION_DEFAULTS) {
-            return result.append(')').toString();
+            return result.toString();
         }
 
         if ((frameOptions & FrameOption.FRAMEOPTION_RANGE) != 0) {
@@ -164,7 +164,6 @@ public class WindowDef extends Node {
                 result.append(' ').append(endOffset).append(" following");
             }
         }
-        result.append(')');
         return result.toString();
     }
 

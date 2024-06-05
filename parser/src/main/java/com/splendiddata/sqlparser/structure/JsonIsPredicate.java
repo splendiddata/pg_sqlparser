@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2023 - 2024
  *
  * This unpublished material is proprietary to Splendid Data Product Development B.V. All rights reserved. The methods
  * and techniques described herein are considered trade secrets and/or confidential. Reproduction or distribution, in
@@ -8,7 +8,6 @@
 
 package com.splendiddata.sqlparser.structure;
 
-import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.JsonValueType;
 import com.splendiddata.sqlparser.enums.NodeTag;
 
@@ -81,13 +80,17 @@ public class JsonIsPredicate extends Node {
         result.append(separator).append("is json");
         separator = " ";
         if (item_type != null) {
-            result.append(item_type)
-;        }
+            result.append(item_type);
+        }
         if (unique_keys) {
             result.append(separator).append("with unique keys");
         }
         if (format != null) {
-            result.append(format);
+            String formatTxt = format.toString();
+            if (!formatTxt.isBlank()) {
+                result.append(separator).append(format);
+                separator = " ";
+            }
         }
         return result.toString();
     }

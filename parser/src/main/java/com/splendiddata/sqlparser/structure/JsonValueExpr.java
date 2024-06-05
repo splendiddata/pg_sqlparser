@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2023 - 2024
  *
  * This unpublished material is proprietary to Splendid Data Product Development B.V. All rights reserved. The methods
  * and techniques described herein are considered trade secrets and/or confidential. Reproduction or distribution, in
@@ -83,13 +83,19 @@ public class JsonValueExpr extends Node {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
+        String separator = "";
         if (formatted_expr != null) {
             result.append(formatted_expr);
+            separator = " ";
         } else if (raw_expr != null) {
             result.append(raw_expr);
+            separator = " ";
         }
         if (format != null) {
-            result.append(format);
+            String formatTxt = format.toString();
+            if (!formatTxt.isBlank()) {
+                result.append(separator).append(formatTxt);
+            }
         }
         return result.toString();
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2023 - 2024
  *
  * This unpublished material is proprietary to Splendid Data Product Development B.V. All rights reserved. The methods
  * and techniques described herein are considered trade secrets and/or confidential. Reproduction or distribution, in
@@ -24,7 +24,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * @since Postgres 16
  */
 @XmlRootElement(namespace = "parser")
-public class JsonObjectConstructor extends Node {
+public class JsonObjectConstructor extends Expr {
 
     /* list of JsonKeyValue pairs */
     @XmlElementWrapper(name = "exprs")
@@ -91,8 +91,8 @@ public class JsonObjectConstructor extends Node {
             }
             separator = " ";
         }
-        if (!absent_on_null) {
-            result.append(separator).append("null on null");
+        if (absent_on_null) {
+            result.append(separator).append("absent on null");
             separator = " ";
         }
         if (unique) {
@@ -100,7 +100,7 @@ public class JsonObjectConstructor extends Node {
             separator = " ";
         }
         if (output != null) {
-            result.append(output);
+            result.append(separator).append(output);
         }
         result.append(")");
         return result.toString();

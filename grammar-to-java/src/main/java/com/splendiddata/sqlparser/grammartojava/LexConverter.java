@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -48,7 +48,7 @@ import org.apache.maven.plugins.annotations.Parameter;
  * @author Splendid Data Product Development B.V.
  * @since 0.0.1
  */
-@Mojo(name = "convertLex", executionStrategy = "always", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
+@Mojo(name = "convertLex", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 @Execute(goal = "convertLex", phase = LifecyclePhase.GENERATE_SOURCES)
 public class LexConverter extends AbstractMojo implements FileVisitor<Path> {
     private Log log;

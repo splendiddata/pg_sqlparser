@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2023 - 2024
  *
  * This unpublished material is proprietary to Splendid Data Product Development B.V. All rights reserved. The methods
  * and techniques described herein are considered trade secrets and/or confidential. Reproduction or distribution, in
@@ -24,7 +24,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * @since Postgres 16
  */
 @XmlRootElement(namespace = "parser")
-public class JsonArrayConstructor extends Node {
+public class JsonArrayConstructor extends Expr {
 
     /** list of JsonValueExpr elements */
     @XmlElementWrapper(name = "exprs")
@@ -79,8 +79,8 @@ public class JsonArrayConstructor extends Node {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder("json_array");
-        String separator = "(";
+        StringBuilder result = new StringBuilder("json_array(");
+        String separator = "";
         if (exprs != null) {
             for (JsonValueExpr expr : exprs) {
                 result.append(separator).append(expr);
