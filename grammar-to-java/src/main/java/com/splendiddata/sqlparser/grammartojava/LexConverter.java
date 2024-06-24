@@ -179,7 +179,12 @@ public class LexConverter extends AbstractMojo implements FileVisitor<Path> {
                 } else if (pctPctCount == 0
                         && (matcher = IDENTIFIER_DEFINITION_PATTERN.matcher(convertedLine)).matches()) {
                     convertedLine = matcher.group(1) + " =" + matcher.group(2);
-                    convertedLine = convertedLine.replace("[^\"]+", "[^\\\"]+");
+                    convertedLine = convertedLine
+                            /*
+                             * Apparently JFlex doesn't interpret \v as vertical white space. So put in the UTF characters
+                             */
+                            .replace("\\v", "\\x0B\\x85\\u2028\\u2029")
+                            .replace("[^\"]+", "[^\\\"]+");
                 } else if (STANDARD_LINE_PATTERN.matcher(line).matches()) {
                     convertedLine = specialRule.processLine(convertedLine);
                     convertedLine = convertedLine

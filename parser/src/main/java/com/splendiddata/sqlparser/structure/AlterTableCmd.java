@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -306,8 +303,8 @@ public class AlterTableCmd extends Node {
             return result.toString();
         case AT_SetStatistics:
             if (name == null) {
-                return new StringBuilder().append("alter column ").append(num)
-                        .append(" set statistics ").append(def).toString();
+                return new StringBuilder().append("alter column ").append(num).append(" set statistics ").append(def)
+                        .toString();
             }
             return new StringBuilder().append("alter column ").append(ParserUtil.identifierToSql(name))
                     .append(" set statistics ").append(def).toString();
@@ -340,6 +337,14 @@ public class AlterTableCmd extends Node {
             return "detach partition " + def;
         case AT_DetachPartitionFinalize:
             return "detach partition " + def + " finalize";
+        case AT_SplitPartition:
+            PartitionCmd partCmd = (PartitionCmd) def;
+            return new StringBuilder("split partition ").append(partCmd.name).append(" into ").append(partCmd.partlist)
+                    .toString();
+        case AT_MergePartitions:
+            partCmd = (PartitionCmd) def;
+            return new StringBuilder("merge partitions ").append(partCmd.partlist).append(" into ").append(partCmd.name)
+                    .toString();
         case AT_AddIdentity:
             return new StringBuilder(" alter column ").append(name).append(" add ").append(def).toString();
         case AT_DropIdentity:
@@ -367,7 +372,13 @@ public class AlterTableCmd extends Node {
             }
             return result.toString();
         case AT_SetAccessMethod:
+            if (name == null) {
+                return " set access method default";
+            }
             return " set access method " + ParserUtil.identifierToSql(name);
+        case AT_SetExpression:
+            return new StringBuilder(" alter column ").append(name).append(" set expression as (").append(def)
+                    .append(')').toString();
         default:
             return ParserUtil.reportUnknownValue("subtype", subtype, getClass());
         }

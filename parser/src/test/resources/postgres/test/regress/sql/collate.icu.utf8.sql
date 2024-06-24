@@ -11,12 +11,12 @@
  */
 
 /* skip test if not UTF8 server encoding or no ICU collations installed */
-SELECT getdatabaseencoding() <> 'UTF8' OR
-       (SELECT count(*) FROM pg_collation WHERE collprovider = 'i' AND collname <> 'unicode') = 0
-       AS skip_test \gset
-\if :skip_test
-\quit
-\endif
+-- Deactivated for SplendidDataTest: SELECT getdatabaseencoding() <> 'UTF8' OR
+-- Deactivated for SplendidDataTest:        (SELECT count(*) FROM pg_collation WHERE collprovider = 'i' AND collname <> 'unicode') = 0
+-- Deactivated for SplendidDataTest:        AS skip_test \gset
+-- Deactivated for SplendidDataTest: \if :skip_test
+-- Deactivated for SplendidDataTest: \quit
+-- Deactivated for SplendidDataTest: \endif
 
 SET client_encoding TO UTF8;
 
@@ -29,7 +29,7 @@ CREATE TABLE collate_test1 (
     b text COLLATE "en-x-icu" NOT NULL
 );
 
-\d collate_test1
+-- Deactivated for SplendidDataTest: \d collate_test1
 
 CREATE TABLE collate_test_fail (
     a int,
@@ -50,7 +50,7 @@ CREATE TABLE collate_test_like (
     LIKE collate_test1
 );
 
-\d collate_test_like
+-- Deactivated for SplendidDataTest: \d collate_test_like
 
 CREATE TABLE collate_test2 (
     a int,
@@ -371,14 +371,14 @@ SET icu_validation_level = disabled;
 do $$
 BEGIN
   EXECUTE 'CREATE COLLATION test0 (provider = icu, locale = ' ||
-          quote_literal((SELECT CASE WHEN datlocprovider='i' THEN daticulocale ELSE datcollate END FROM pg_database WHERE datname = current_database())) || ');';
+          quote_literal((SELECT CASE WHEN datlocprovider='i' THEN datlocale ELSE datcollate END FROM pg_database WHERE datname = current_database())) || ');';
 END
 $$;
 CREATE COLLATION test0 FROM "C"; -- fail, duplicate name
 do $$
 BEGIN
   EXECUTE 'CREATE COLLATION test1 (provider = icu, locale = ' ||
-          quote_literal((SELECT CASE WHEN datlocprovider='i' THEN daticulocale ELSE datcollate END FROM pg_database WHERE datname = current_database())) || ');';
+          quote_literal((SELECT CASE WHEN datlocprovider='i' THEN datlocale ELSE datcollate END FROM pg_database WHERE datname = current_database())) || ');';
 END
 $$;
 
@@ -428,7 +428,7 @@ DROP ROLE regress_test_role;
 ALTER COLLATION "en-x-icu" REFRESH VERSION;
 
 -- also test for database while we are here
-SELECT current_database() AS datname \gset
+-- Deactivated for SplendidDataTest: SELECT current_database() AS datname \gset
 -- Deactivated for SplendidDataTest: ALTER DATABASE :"datname" REFRESH COLLATION VERSION;
 
 
@@ -446,8 +446,8 @@ CREATE INDEX collate_dep_test4i ON collate_dep_test4t (b COLLATE test0);
 DROP COLLATION test0 RESTRICT; -- fail
 DROP COLLATION test0 CASCADE;
 
-\d collate_dep_test1
-\d collate_dep_test2
+-- Deactivated for SplendidDataTest: \d collate_dep_test1
+-- Deactivated for SplendidDataTest: \d collate_dep_test2
 
 DROP TABLE collate_dep_test1, collate_dep_test4t;
 DROP TYPE collate_dep_test2;
@@ -563,6 +563,7 @@ SELECT x FROM test3cs WHERE x LIKE 'a%';
 SELECT x FROM test3cs WHERE x ILIKE 'a%';
 SELECT x FROM test3cs WHERE x SIMILAR TO 'a%';
 SELECT x FROM test3cs WHERE x ~ 'a';
+SET enable_hashagg TO off;
 SELECT x FROM test1cs UNION SELECT x FROM test2cs ORDER BY x;
 SELECT x FROM test2cs UNION SELECT x FROM test1cs ORDER BY x;
 SELECT x FROM test1cs INTERSECT SELECT x FROM test2cs;
@@ -570,6 +571,7 @@ SELECT x FROM test2cs INTERSECT SELECT x FROM test1cs;
 SELECT x FROM test1cs EXCEPT SELECT x FROM test2cs;
 SELECT x FROM test2cs EXCEPT SELECT x FROM test1cs;
 SELECT DISTINCT x FROM test3cs ORDER BY x;
+RESET enable_hashagg;
 SELECT count(DISTINCT x) FROM test3cs;
 SELECT x, count(*) FROM test3cs GROUP BY x ORDER BY x;
 SELECT x, row_number() OVER (ORDER BY x), rank() OVER (ORDER BY x) FROM test3cs ORDER BY x;

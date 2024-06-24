@@ -32,7 +32,7 @@ import com.splendiddata.sqlparser.enums.NodeTag;
  * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
-public class ResTarget extends Node {
+public class ResTarget extends Expr {
 
     /** column name or NULL */
     @XmlAttribute

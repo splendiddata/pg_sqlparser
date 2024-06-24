@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -33,6 +33,15 @@ public class DeallocateStmt extends Node {
     public String name;
 
     /**
+     * True if DEALLOCATE ALL. This is redundant with "name == NULL", but we make it a separate field so that exactly
+     * this condition (and not the precise name) will be accounted for in query jumbling.
+     * 
+     * @since Postgres 17
+     */
+    @XmlAttribute
+    public boolean isall;
+
+    /**
      * Constructor
      */
     public DeallocateStmt() {
@@ -48,6 +57,7 @@ public class DeallocateStmt extends Node {
     public DeallocateStmt(DeallocateStmt original) {
         super(original);
         this.name = original.name;
+        this.isall = original.isall;
     }
 
     @Override

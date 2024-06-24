@@ -30,7 +30,7 @@ import com.splendiddata.sqlparser.enums.SQLValueFunctionOp;
  * @since 5.0
  */
 @XmlRootElement(namespace = "parser")
-public class SQLValueFunction extends Node {
+public class SQLValueFunction extends Expr {
 
     /** which function this is */
     @XmlAttribute

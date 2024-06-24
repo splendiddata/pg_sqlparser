@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -48,6 +48,15 @@ public class MergeStmt extends Node {
     @XmlElement(name = "indirectionNode")
     public List<MergeWhenClause> mergeWhenClauses;
 
+    /**
+     * list of expressions to return
+     * 
+     * @since Postgres 17
+     */
+    @XmlElementWrapper(name = "returningList")
+    @XmlElement(name = "returningNode")
+    public List<Expr> returningList;
+
     /** WITH clause */
     @XmlElement
     public WithClause withClause;
@@ -79,6 +88,9 @@ public class MergeStmt extends Node {
         if (original.mergeWhenClauses != null) {
             this.mergeWhenClauses = original.mergeWhenClauses.clone();
         }
+        if (original.returningList != null) {
+            this.returningList = original.returningList.clone();
+        }
         if (original.withClause != null) {
             this.withClause = original.withClause.clone();
         }
@@ -99,6 +111,9 @@ public class MergeStmt extends Node {
         if (mergeWhenClauses != null) {
             clone.mergeWhenClauses = mergeWhenClauses.clone();
         }
+        if (returningList != null) {
+            clone.returningList = returningList.clone();
+        }
         if (withClause != null) {
             clone.withClause = withClause.clone();
         }
@@ -116,6 +131,13 @@ public class MergeStmt extends Node {
         if (mergeWhenClauses != null) {
             for (MergeWhenClause mergeWhenClause : mergeWhenClauses) {
                 result.append(' ').append(mergeWhenClause);
+            }
+        }
+        if (returningList != null) {
+            String separator = " returning ";
+            for (Expr returningNode : returningList) {
+                result.append(separator).append(returningNode);
+                separator = ", ";
             }
         }
 

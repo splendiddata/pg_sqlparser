@@ -1,3 +1,11 @@
+/*
+ * This file has been altered by SplendidData.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So some statements that are expected to fail are removed.
+ * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
+ */
+
+
 --
 -- CREATE_AGGREGATE
 --
@@ -135,7 +143,7 @@ alter aggregate my_percentile_disc(float8 ORDER BY anyelement)
 alter aggregate my_rank(VARIADIC "any" ORDER BY VARIADIC "any")
   rename to test_rank;
 
-\da test_*
+-- Deactivated for SplendidDataTest: \da test_*
 
 -- moving-aggregate options
 
@@ -148,7 +156,7 @@ CREATE AGGREGATE sumdouble (float8)
     minvfunc = float8mi
 );
 
--- aggregate combine and serializcreate aggregate case_agg (sfunc1 = int4pl, basetype = 'int4', stype1 = int4, initcond1 = '0', parallel = safe)ation functions
+-- aggregate combine and serialization functions
 
 -- can't specify just one of serialfunc and deserialfunc
 CREATE AGGREGATE myavg (numeric)
@@ -311,13 +319,13 @@ CREATE AGGREGATE wrongreturntype (float8)
 
 -- invalid: non-lowercase quoted identifiers
 
--- Deactivated for SplendidDataTest: CREATE AGGREGATE case_agg ( -- old syntax
--- Deactivated for SplendidDataTest: 	"Sfunc1" = int4pl,
--- Deactivated for SplendidDataTest: 	"Basetype" = int4,
--- Deactivated for SplendidDataTest: 	"Stype1" = int4,
--- Deactivated for SplendidDataTest: 	"Initcond1" = '0',
--- Deactivated for SplendidDataTest: 	"Parallel" = safe
--- Deactivated for SplendidDataTest: );
+CREATE AGGREGATE case_agg ( -- old syntax
+	"Sfunc1" = int4pl,
+	"Basetype" = int4,
+	"Stype1" = int4,
+	"Initcond1" = '0',
+	"Parallel" = safe
+);
 
 CREATE AGGREGATE case_agg(float8)
 (

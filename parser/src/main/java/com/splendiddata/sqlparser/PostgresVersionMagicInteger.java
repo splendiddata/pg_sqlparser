@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -24,12 +24,6 @@ package com.splendiddata.sqlparser;
  */
 public class PostgresVersionMagicInteger {
 
-    /** Version number 11 */
-    public static final int VERSION_ELEVEN = 11;
-
-    /** Version number 12 */
-    public static final int VERSION_TWELVE = 12;
-
     /** Version number 13 */
     public static final int VERSION_THIRTEEN = 13;
 
@@ -41,5 +35,8 @@ public class PostgresVersionMagicInteger {
 
     /** Vesion number 16 */
     public static final int VERSION_SIXTEEN = 16;
+
+    /** Vesion number 16 */
+    public static final int VERSION_SEVENTEEN = 17;
 
 }

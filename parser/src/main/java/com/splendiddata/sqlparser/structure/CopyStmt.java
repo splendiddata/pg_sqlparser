@@ -204,6 +204,8 @@ public class CopyStmt extends Node {
                 case "force_not_null":
                 case "force_null":
                 case "convert_selectively":
+                case "on_error":
+                case "log_verbosity":
                     if (option.arg != null) {
                         result.append(' ').append(option.arg);
                     }

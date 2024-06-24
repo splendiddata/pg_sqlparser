@@ -12,13 +12,13 @@
  * because other encodings don't support all the characters used.
  */
 
-SELECT getdatabaseencoding() <> 'UTF8' OR
-       (SELECT count(*) FROM pg_collation WHERE collname IN ('de_DE', 'en_US', 'sv_SE', 'tr_TR') AND collencoding = pg_char_to_encoding('UTF8')) <> 4 OR
-       version() !~ 'linux-gnu'
-       AS skip_test \gset
-\if :skip_test
-\quit
-\endif
+-- Deactivated for SplendidDataTest: SELECT getdatabaseencoding() <> 'UTF8' OR
+-- Deactivated for SplendidDataTest:        (SELECT count(*) FROM pg_collation WHERE collname IN ('de_DE', 'en_US', 'sv_SE', 'tr_TR') AND collencoding = pg_char_to_encoding('UTF8')) <> 4 OR
+-- Deactivated for SplendidDataTest:        version() !~ 'linux-gnu'
+-- Deactivated for SplendidDataTest:        AS skip_test \gset
+-- Deactivated for SplendidDataTest: \if :skip_test
+-- Deactivated for SplendidDataTest: \quit
+-- Deactivated for SplendidDataTest: \endif
 
 SET client_encoding TO UTF8;
 
@@ -31,7 +31,7 @@ CREATE TABLE collate_test1 (
     b text COLLATE "en_US" NOT NULL
 );
 
-\d collate_test1
+-- Deactivated for SplendidDataTest: \d collate_test1
 
 CREATE TABLE collate_test_fail (
     a int,
@@ -52,7 +52,7 @@ CREATE TABLE collate_test_like (
     LIKE collate_test1
 );
 
-\d collate_test_like
+-- Deactivated for SplendidDataTest: \d collate_test_like
 
 CREATE TABLE collate_test2 (
     a int,
@@ -419,7 +419,7 @@ DROP ROLE regress_test_role;
 ALTER COLLATION "en_US" REFRESH VERSION;
 
 -- also test for database while we are here
-SELECT current_database() AS datname \gset
+-- Deactivated for SplendidDataTest: SELECT current_database() AS datname \gset
 -- Deactivated for SplendidDataTest: ALTER DATABASE :"datname" REFRESH COLLATION VERSION;
 
 
@@ -437,8 +437,8 @@ CREATE INDEX collate_dep_test4i ON collate_dep_test4t (b COLLATE test0);
 DROP COLLATION test0 RESTRICT; -- fail
 DROP COLLATION test0 CASCADE;
 
-\d collate_dep_test1
-\d collate_dep_test2
+-- Deactivated for SplendidDataTest: \d collate_dep_test1
+-- Deactivated for SplendidDataTest: \d collate_dep_test2
 
 DROP TABLE collate_dep_test1, collate_dep_test4t;
 DROP TYPE collate_dep_test2;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -38,6 +38,21 @@ public enum JsonExprOp {
      * expression.
      */
     public static final String REPLACEMENT_REGEXP_PART;
+
+    public String toString() {
+        switch (this) {
+        case JSON_EXISTS_OP:
+            return "json_exists";
+        case JSON_QUERY_OP:
+            return "json_query";
+        case JSON_TABLE_OP:
+            return "json_table";
+        case JSON_VALUE_OP:
+            return "json_value";
+        default:
+            return "????? Please implement " + this.name() + " in " + this.getClass().getName() + ".toString() ?????";
+        }
+    }
 
     static {
         StringBuilder format = new StringBuilder();

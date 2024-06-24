@@ -41,6 +41,31 @@ public enum JsonBehaviorType {
      * expression.
      */
     public static final String REPLACEMENT_REGEXP_PART;
+    
+    public String toString() {
+        switch (this) {
+        case JSON_BEHAVIOR_DEFAULT:
+            return "default";
+        case JSON_BEHAVIOR_EMPTY:
+            return "empty";
+        case JSON_BEHAVIOR_EMPTY_ARRAY:
+            return "????? please implement " + this.name() + " in " + this.getClass().getName() + ".toString() ?????";
+        case JSON_BEHAVIOR_EMPTY_OBJECT:
+            return "????? please implement " + this.name() + " in " + this.getClass().getName() + ".toString() ?????";
+        case JSON_BEHAVIOR_ERROR:
+            return "error";
+        case JSON_BEHAVIOR_FALSE:
+            return "false";
+        case JSON_BEHAVIOR_NULL:
+            return "null";
+        case JSON_BEHAVIOR_TRUE:
+            return "true";
+        case JSON_BEHAVIOR_UNKNOWN:
+            return "????? please implement " + this.name() + " in " + this.getClass().getName() + ".toString() ?????";
+        default:
+            return "????? please implement " + this.name() + " in " + this.getClass().getName() + ".toString() ?????";
+        }
+    }
 
     static {
         StringBuilder format = new StringBuilder();

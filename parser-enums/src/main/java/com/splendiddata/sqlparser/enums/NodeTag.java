@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -440,6 +440,8 @@ public enum NodeTag {
     T_UpdateStmt,
     /** @since Postgres 15 */
     T_MergeStmt,
+    /** @since Postgres 17 */
+    T_MergeSupportFunc,
     T_SelectStmt,
     /** @since 14.0 */
     T_ReturnStmt,
@@ -645,6 +647,8 @@ public enum NodeTag {
     T_PartitionRangeDatum,
     /** @since 5.0 */
     T_PartitionCmd,
+    /** @since Postgres 17 */
+    T_SinglePartitionSpec,
     /** @since 6.0 - Postgres version 11 */
     T_VacuumRelation,
     /** @since Postgres 15 */
@@ -683,6 +687,8 @@ public enum NodeTag {
     T_JsonBehavior,
     /** @since Postgres 15 */
     T_JsonOutput,
+    /** @since Postgres 17 */
+    T_JsonTablePathSpec,
 
     /*
      * TAGS FOR REPLICATION GRAMMAR PARSE NODES (replnodes.h)

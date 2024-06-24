@@ -323,13 +323,11 @@ public class SelectStmt extends Expr {
         }
 
         if (windowClause != null) {
-            result.append(" window (");
-            String separator = "";
+            String separator = " window ";
             for (WindowDef window : windowClause) {
-                result.append(separator).append(window.name).append(" as ").append(window);
+                result.append(separator).append(window.name).append(" as (").append(window).append(')');
                 separator = ", ";
             }
-            result.append(')');
         }
 
         if (sortClause != null) {

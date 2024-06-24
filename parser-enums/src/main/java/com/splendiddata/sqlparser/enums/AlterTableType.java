@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -33,6 +33,12 @@ public enum AlterTableType {
     AT_DropNotNull,
     /** alter column set not null */
     AT_SetNotNull,
+    /**
+     * alter column set expression
+     * 
+     * @since Postgres 17
+     */
+    AT_SetExpression,
     /**
      * alter column drop expression
      * 
@@ -181,6 +187,18 @@ public enum AlterTableType {
      * @since 14.0
      */
     AT_DetachPartitionFinalize,
+    /**
+     * SPLIT PARTITION
+     * 
+     * @since Postgres 17
+     */
+    AT_SplitPartition,
+    /**
+     * MERGE PARTITIONS
+     * 
+     * @since Postgres 17
+     */
+    AT_MergePartitions,
     /**
      * ADD IDENTITY
      * 

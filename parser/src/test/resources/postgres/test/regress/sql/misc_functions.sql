@@ -1,11 +1,3 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest:  
- */
- 
- 
-
 -- directory paths and dlsuffix are passed to us in environment variables
 \getenv libdir PG_LIBDIR
 \getenv dlsuffix PG_DLSUFFIX
@@ -116,9 +108,9 @@ DROP ROLE regress_log_memory;
 -- The outputs of these are variable, so we can't just print their results
 -- directly, but we can at least verify that the code doesn't fail.
 --
--- Deactivated for SplendidDataTest: select setting as segsize
--- Deactivated for SplendidDataTest: from pg_settings where name = 'wal_segment_size'
--- Deactivated for SplendidDataTest: \gset
+select setting as segsize
+from pg_settings where name = 'wal_segment_size'
+\gset
 
 select count(*) > 0 as ok from pg_ls_waldir();
 -- Test ProjectSet as well as FunctionScan
@@ -238,10 +230,46 @@ SELECT count(*) > 0 AS ok FROM pg_control_init();
 SELECT count(*) > 0 AS ok FROM pg_control_recovery();
 SELECT count(*) > 0 AS ok FROM pg_control_system();
 
--- pg_split_walfile_name
+-- pg_split_walfile_name, pg_walfile_name & pg_walfile_name_offset
 SELECT * FROM pg_split_walfile_name(NULL);
 SELECT * FROM pg_split_walfile_name('invalid');
 SELECT segment_number > 0 AS ok_segment_number, timeline_id
   FROM pg_split_walfile_name('000000010000000100000000');
 SELECT segment_number > 0 AS ok_segment_number, timeline_id
   FROM pg_split_walfile_name('ffffffFF00000001000000af');
+SELECT setting::int8 AS segment_size
+FROM pg_settings
+WHERE name = 'wal_segment_size'
+\gset
+SELECT segment_number, file_offset
+FROM pg_walfile_name_offset('0/0'::pg_lsn + :segment_size),
+     pg_split_walfile_name(file_name);
+SELECT segment_number, file_offset
+FROM pg_walfile_name_offset('0/0'::pg_lsn + :segment_size + 1),
+     pg_split_walfile_name(file_name);
+SELECT segment_number, file_offset = :segment_size - 1
+FROM pg_walfile_name_offset('0/0'::pg_lsn + :segment_size - 1),
+     pg_split_walfile_name(file_name);
+
+-- pg_current_logfile
+CREATE ROLE regress_current_logfile;
+-- not available by default
+SELECT has_function_privilege('regress_current_logfile',
+  'pg_current_logfile()', 'EXECUTE');
+GRANT pg_monitor TO regress_current_logfile;
+-- role has privileges of pg_monitor and can execute the function
+SELECT has_function_privilege('regress_current_logfile',
+  'pg_current_logfile()', 'EXECUTE');
+DROP ROLE regress_current_logfile;
+
+-- pg_column_toast_chunk_id
+CREATE TABLE test_chunk_id (a TEXT, b TEXT STORAGE EXTERNAL);
+INSERT INTO test_chunk_id VALUES ('x', repeat('x', 8192));
+SELECT t.relname AS toastrel FROM pg_class c
+  LEFT JOIN pg_class t ON c.reltoastrelid = t.oid
+  WHERE c.relname = 'test_chunk_id'
+\gset
+SELECT pg_column_toast_chunk_id(a) IS NULL,
+  pg_column_toast_chunk_id(b) IN (SELECT chunk_id FROM pg_toast.:toastrel)
+  FROM test_chunk_id;
+DROP TABLE test_chunk_id;

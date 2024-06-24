@@ -721,10 +721,33 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
     /** @since Postgres 16 */
     NonReservedWord(new GrammarRuleSpecialProcessing() {
         public String processLine(String line) {
-            if (line.contains("unreserved_keyword")) {
-                return "            | unreserved_keyword                    { $$ = $1.toString(); }";
-            }
-            return line;
+            return line.replace("pstrdup($1)", "$1.toString()");
+        }
+    }),
+    /** @since Postgres 17 */
+    DomainConstraintElem(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line.replace("processCASbits(", "processCASbits(n, ");
+        }
+    }),
+    /** @since Postgres 17 */
+    JsonType(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line.replace("$$->location", "((TypeName)$$).location");
+        }
+    }),
+    /** @since Postgres 17 */
+    json_format_clause(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line.replaceAll("int\\s+encoding;", "JsonEncoding encoding = JsonEncoding.JS_ENC_DEFAULT;")
+                    .replace("!pg_strcasecmp", "0 == pg_strcasecmp");
+        }
+    }),
+    /** @since Postgres 17 */
+    json_table(new GrammarRuleSpecialProcessing() {
+        public String processLine(String line) {
+            return line.replace("val.node.type", "val.type")
+                    .replace("val.sval.sval", "val.val.str");
         }
     }),
     //

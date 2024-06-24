@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -24,6 +24,8 @@ package com.splendiddata.sqlparser.enums;
  * @since Postgres 15
  */
 public enum JsonWrapper {
+    /** @since Postgres 17 */
+    JSW_UNSPEC,
     JSW_NONE,
     JSW_CONDITIONAL,
     JSW_UNCONDITIONAL;

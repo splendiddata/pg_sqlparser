@@ -16,6 +16,7 @@ package com.splendiddata.sqlparser.structure;
 
 import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.CmdType;
+import com.splendiddata.sqlparser.enums.MergeMatchKind;
 import com.splendiddata.sqlparser.enums.NodeTag;
 import com.splendiddata.sqlparser.enums.OverridingKind;
 
@@ -38,9 +39,21 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(namespace = "parser")
 public class MergeWhenClause extends Node {
 
-    /** true=MATCHED, false=NOT MATCHED */
-    @XmlAttribute
+    /**
+     * true=MATCHED, false=NOT MATCHED
+     * 
+     * @deprecated since 17.0 - please use matchKind instead
+     */
+    @Deprecated(forRemoval = true)
     public boolean matched;
+
+    /**
+     * MATCHED/NOT MATCHED BY SOURCE/TARGET
+     * 
+     * @since Postgres 17
+     */
+    @XmlAttribute
+    public MergeMatchKind matchKind;
 
     /** INSERT/UPDATE/DELETE/DO NOTHING */
     @XmlAttribute
@@ -81,6 +94,7 @@ public class MergeWhenClause extends Node {
     public MergeWhenClause(MergeWhenClause original) {
         super(original);
         this.matched = original.matched;
+        this.matchKind = original.matchKind;
         this.commandType = original.commandType;
         this.override = original.override;
         if (original.condition != null) {
@@ -112,11 +126,7 @@ public class MergeWhenClause extends Node {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        result.append("when");
-        if (!matched) {
-            result.append(" not");
-        }
-        result.append(" matched then ");
+        result.append(matchKind).append(" then ");
         switch (commandType) {
         case CMD_DELETE:
             result.append("delete");

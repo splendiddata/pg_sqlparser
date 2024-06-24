@@ -74,16 +74,22 @@ COPY x from stdin (force_not_null (a), force_not_null (b));
 COPY x from stdin (force_null (a), force_null (b));
 COPY x from stdin (convert_selectively (a), convert_selectively (b));
 COPY x from stdin (encoding 'sql_ascii', encoding 'sql_ascii');
+COPY x from stdin (on_error ignore, on_error ignore);
+COPY x from stdin (log_verbosity default, log_verbosity verbose);
 
 -- incorrect options
 COPY x to stdin (format BINARY, delimiter ',');
 COPY x to stdin (format BINARY, null 'x');
+COPY x from stdin (format BINARY, on_error ignore);
+COPY x from stdin (on_error unsupported);
 COPY x to stdin (format TEXT, force_quote(a));
 COPY x from stdin (format CSV, force_quote(a));
 COPY x to stdout (format TEXT, force_not_null(a));
 COPY x to stdin (format CSV, force_not_null(a));
 COPY x to stdout (format TEXT, force_null(a));
 COPY x to stdin (format CSV, force_null(a));
+COPY x to stdin (format BINARY, on_error unsupported);
+COPY x to stdout (log_verbosity unsupported);
 
 -- too many columns in column list: should fail
 COPY x (a, b, c, d, e, d, c) from stdin;
@@ -91,7 +97,7 @@ COPY x (a, b, c, d, e, d, c) from stdin;
 -- missing data: should fail
 COPY x from stdin;
 
-\.
+-- Deactivated for SplendidDataTest: \.
 COPY x from stdin;
 -- Deactivated for SplendidDataTest: 2000	230	23	23
 -- Deactivated for SplendidDataTest: \.
@@ -127,7 +133,7 @@ COPY x from stdin WITH DELIMITER AS ':' NULL AS E'\\X' ENCODING 'sql_ascii';
 -- Deactivated for SplendidDataTest: 4008:8:Delimiter:\::\:
 -- Deactivated for SplendidDataTest: \.
 
-COPY x TO stdout WHERE a = 1;
+-- Deactivated for SplendidDataTest: COPY x TO stdout WHERE a = 1;
 COPY x from stdin WHERE a = 50004;
 -- Deactivated for SplendidDataTest: 50003	24	34	44	54
 -- Deactivated for SplendidDataTest: 50004	25	35	45	55
@@ -182,10 +188,10 @@ COPY y TO stdout (FORMAT CSV, QUOTE '''', DELIMITER '|');
 COPY y TO stdout (FORMAT CSV, FORCE_QUOTE (col2), ESCAPE E'\\');
 COPY y TO stdout (FORMAT CSV, FORCE_QUOTE *);
 
-\copy y TO stdout (FORMAT CSV)
-\copy y TO stdout (FORMAT CSV, QUOTE '''', DELIMITER '|')
-\copy y TO stdout (FORMAT CSV, FORCE_QUOTE (col2), ESCAPE E'\\')
-\copy y TO stdout (FORMAT CSV, FORCE_QUOTE *)
+-- Deactivated for SplendidDataTest: \copy y TO stdout (FORMAT CSV)
+-- Deactivated for SplendidDataTest: \copy y TO stdout (FORMAT CSV, QUOTE '''', DELIMITER '|')
+-- Deactivated for SplendidDataTest: \copy y TO stdout (FORMAT CSV, FORCE_QUOTE (col2), ESCAPE E'\\')
+-- Deactivated for SplendidDataTest: \copy y TO stdout (FORMAT CSV, FORCE_QUOTE *)
 
 --test that we read consecutive LFs properly
 
@@ -323,7 +329,7 @@ CREATE TEMP TABLE forcetest (
     d TEXT,
     e TEXT
 );
-\pset null NULL
+-- Deactivated for SplendidDataTest: \pset null NULL
 -- should succeed with no effect ("b" remains an empty string, "c" remains NULL)
 BEGIN;
 COPY forcetest (a, b, c) FROM STDIN WITH (FORMAT csv, FORCE_NOT_NULL(b), FORCE_NULL(c));
@@ -352,7 +358,37 @@ ROLLBACK;
 BEGIN;
 COPY forcetest (d, e) FROM STDIN WITH (FORMAT csv, FORCE_NULL(b));
 ROLLBACK;
-\pset null ''
+-- should succeed with no effect ("b" remains an empty string, "c" remains NULL)
+BEGIN;
+COPY forcetest (a, b, c) FROM STDIN WITH (FORMAT csv, FORCE_NOT_NULL *, FORCE_NULL *);
+-- Deactivated for SplendidDataTest: 4,,""
+-- Deactivated for SplendidDataTest: \.
+COMMIT;
+SELECT b, c FROM forcetest WHERE a = 4;
+-- should succeed with effect ("b" remains an empty string)
+BEGIN;
+COPY forcetest (a, b, c) FROM STDIN WITH (FORMAT csv, FORCE_NOT_NULL *);
+-- Deactivated for SplendidDataTest: 5,,""
+-- Deactivated for SplendidDataTest: \.
+COMMIT;
+SELECT b, c FROM forcetest WHERE a = 5;
+-- should succeed with effect ("c" remains NULL)
+BEGIN;
+COPY forcetest (a, b, c) FROM STDIN WITH (FORMAT csv, FORCE_NULL *);
+-- Deactivated for SplendidDataTest: 6,"b",""
+-- Deactivated for SplendidDataTest: \.
+COMMIT;
+SELECT b, c FROM forcetest WHERE a = 6;
+-- should fail with "conflicting or redundant options" error
+BEGIN;
+COPY forcetest (a, b, c) FROM STDIN WITH (FORMAT csv, FORCE_NOT_NULL *, FORCE_NOT_NULL(b));
+ROLLBACK;
+-- should fail with "conflicting or redundant options" error
+BEGIN;
+COPY forcetest (a, b, c) FROM STDIN WITH (FORMAT csv, FORCE_NULL *, FORCE_NULL(b));
+ROLLBACK;
+
+-- Deactivated for SplendidDataTest: \pset null ''
 
 -- test case with whole-row Var in a check constraint
 create table check_con_tbl (f1 int);
@@ -362,7 +398,7 @@ begin
   return $1.f1 > 0;
 end $$ language plpgsql immutable;
 alter table check_con_tbl add check (check_con_function(check_con_tbl.*));
-\d+ check_con_tbl
+-- Deactivated for SplendidDataTest: \d+ check_con_tbl
 copy check_con_tbl from stdin;
 -- Deactivated for SplendidDataTest: 1
 -- Deactivated for SplendidDataTest: \N
@@ -472,6 +508,63 @@ COPY instead_of_insert_tbl_view_2 FROM stdin;
 SELECT * FROM instead_of_insert_tbl;
 COMMIT;
 
+-- tests for on_error option
+CREATE TABLE check_ign_err (n int, m int[], k int);
+COPY check_ign_err FROM STDIN WITH (on_error stop);
+-- Deactivated for SplendidDataTest: 1	{1}	1
+-- Deactivated for SplendidDataTest: a	{2}	2
+-- Deactivated for SplendidDataTest: 3	{3}	3333333333
+-- Deactivated for SplendidDataTest: 4	{a, 4}	4
+
+-- Deactivated for SplendidDataTest: 5	{5}	5
+-- Deactivated for SplendidDataTest: \.
+
+-- want context for notices
+-- Deactivated for SplendidDataTest: \set SHOW_CONTEXT always
+
+COPY check_ign_err FROM STDIN WITH (on_error ignore, log_verbosity verbose);
+-- Deactivated for SplendidDataTest: 1	{1}	1
+-- Deactivated for SplendidDataTest: a	{2}	2
+-- Deactivated for SplendidDataTest: 3	{3}	3333333333
+-- Deactivated for SplendidDataTest: 4	{a, 4}	4
+
+-- Deactivated for SplendidDataTest: 5	{5}	5
+-- Deactivated for SplendidDataTest: 6	a
+-- Deactivated for SplendidDataTest: 7	{7}	a
+-- Deactivated for SplendidDataTest: 8	{8}	8
+-- Deactivated for SplendidDataTest: \.
+
+-- tests for on_error option with log_verbosity and null constraint via domain
+CREATE DOMAIN dcheck_ign_err2 varchar(15) NOT NULL;
+CREATE TABLE check_ign_err2 (n int, m int[], k int, l dcheck_ign_err2);
+COPY check_ign_err2 FROM STDIN WITH (on_error ignore, log_verbosity verbose);
+-- Deactivated for SplendidDataTest: 1	{1}	1	'foo'
+-- Deactivated for SplendidDataTest: 2	{2}	2	\N
+-- Deactivated for SplendidDataTest: \.
+
+-- reset context choice
+-- Deactivated for SplendidDataTest: \set SHOW_CONTEXT errors
+
+SELECT * FROM check_ign_err;
+
+SELECT * FROM check_ign_err2;
+
+-- test datatype error that can't be handled as soft: should fail
+CREATE TABLE hard_err(foo widget);
+COPY hard_err FROM STDIN WITH (on_error ignore);
+-- Deactivated for SplendidDataTest: 1
+-- Deactivated for SplendidDataTest: \.
+
+-- test missing data: should fail
+COPY check_ign_err FROM STDIN WITH (on_error ignore);
+-- Deactivated for SplendidDataTest: 1	{1}
+-- Deactivated for SplendidDataTest: \.
+
+-- test extra data: should fail
+COPY check_ign_err FROM STDIN WITH (on_error ignore);
+-- Deactivated for SplendidDataTest: 1	{1}	3	abc
+-- Deactivated for SplendidDataTest: \.
+
 -- clean up
 DROP TABLE forcetest;
 DROP TABLE vistest;
@@ -486,6 +579,10 @@ DROP TABLE instead_of_insert_tbl;
 DROP VIEW instead_of_insert_tbl_view;
 DROP VIEW instead_of_insert_tbl_view_2;
 DROP FUNCTION fun_instead_of_insert_tbl();
+DROP TABLE check_ign_err;
+DROP TABLE check_ign_err2;
+DROP DOMAIN dcheck_ign_err2;
+DROP TABLE hard_err;
 
 --
 -- COPY FROM ... DEFAULT

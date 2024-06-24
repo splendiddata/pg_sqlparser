@@ -74,6 +74,7 @@ import com.splendiddata.sqlparser.enums.JsonWrapper;
 import com.splendiddata.sqlparser.enums.LimitOption;
 import com.splendiddata.sqlparser.enums.LockClauseStrength;
 import com.splendiddata.sqlparser.enums.LockWaitPolicy;
+import com.splendiddata.sqlparser.enums.MergeMatchKind;
 import com.splendiddata.sqlparser.enums.MinMaxOp;
 import com.splendiddata.sqlparser.enums.NodeTag;
 import com.splendiddata.sqlparser.enums.NullTestType;
@@ -305,8 +306,7 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                             .replaceAll("%type <ival>\\s+OptTemp", "%type <RelPersistence> OptTemp")
                             .replaceAll("%type <ival>\\s+generated_when override_kind",
                                     "%type <AttributeIdentity> generated_when\n%type <OverridingKind> override_kind")
-                            .replace("%type <list>", "%type <List>").replace("%type <ival>", "%type <Integer>")
-                            .replace("%type <defelt>", "%type <DefElem>")
+                            .replace("%type <list>", "%type <List>").replace("%type <defelt>", "%type <DefElem>")
                             .replace("%type <dbehavior>", "%type <DropBehavior>")
                             .replace("%type <str>", "%type <String>").replace("%type <value>", "%type <Value>")
                             .replace("%type <chr>", "%type <Character>").replace("%type <range>", "%type <RangeVar>")
@@ -330,7 +330,7 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                             .replace("%type <windef>", "%type <WindowDef>")
                             .replace("%type <partspec>", "%type <PartitionSpec>")
                             .replace("%type <partelem>", "%type <PartitionElem>")
-                            .replace("%type <partboundspec>", "%type <PartitionBoundSpec>").replace("", "")
+                            .replace("%type <partboundspec>", "%type <PartitionBoundSpec>")
                             .replace("%type <keyword>", "%type <String>").replace("%token <str>", "%token <String>")
                             .replace("%token <ival>", "%token <Integer>").replace("%token <keyword>", "%token <String>")
                             .replace("%type <SubLinkType> sub_type opt_materialized",
@@ -356,8 +356,21 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                             .replaceAll("^\\s+json_wrapper_clause_opt", "%type <JsonWrapper> json_wrapper_clause_opt")
                             .replaceAll("^\\s+json_conditional_or_unconditional_opt",
                                     "%type <Integer> json_conditional_or_unconditional_opt")
-
-                    ;
+                            /* Since Postgres 17 */
+                            .replace("%type <singlepartspec>", "%type <SinglePartitionSpec>")
+                            .replace("%type <mergematch>", "%type <MergeMatchKind>")
+                            .replace("%type <singlepartspec>", "%type <SinglePartitionSpec>")
+                            .replaceAll("^\\s+json_quotes_clause_opt", "%type <JsonQuotes> json_quotes_clause_opt")
+                            .replaceAll("^\\s+json_wrapper_behavior", "%type <JsonWrapper> json_wrapper_behavior")
+                            .replace("%type<typnam>", "%type<TypeName>")
+                            .replaceAll("^%type <ival>\\s+json_behavior_type",
+                                    "%type <JsonBehaviorType>  json_behavior_type")
+                            .replaceAll("^\\s+json_predicate_type_constraint",
+                                    "%type <JsonPredicateTypeConstraint> json_predicate_type_constraint")
+                            .replaceAll("^\\s+json_wrapper_behavior", "%type <JsonWrapper> json_wrapper_behavior")
+                            .replaceAll("^%type <ival>\\s+key_match", "%type<FkConstrMatch> key_match")
+                            /* remaining ival types */
+                            .replace("%type <ival>", "%type <Integer>");
                     /*
                      * declaration lines are written unchanged
                      */
@@ -664,7 +677,12 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                         /*
                          * JsonExprOp from "enum".
                          */
-                        .replaceAll("(\\W)(" + JsonExprOp.REPLACEMENT_REGEXP_PART + ")(\\W)", "$1JsonExprOp.$2$3");
+                        .replaceAll("(\\W)(" + JsonExprOp.REPLACEMENT_REGEXP_PART + ")(\\W)", "$1JsonExprOp.$2$3")
+                        /*
+                         * MergeMatchKind from "enum".
+                         */
+                        .replaceAll("(\\W)(" + MergeMatchKind.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1MergeMatchKind.$2$3");
                 /*
                  * Replace some constants that are defined in the type that uses them
                  */
@@ -762,7 +780,7 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                      */
                     convertedLine = convertedLine.replace("->", ".")
                             /*
-                             * But i->yystack.valueAt(i) is intended to be a closure, so repair that. 
+                             * But i->yystack.valueAt(i) is intended to be a closure, so repair that.
                              */
                             .replaceAll("(\\w+)\\.yystack\\.valueAt\\(\\1\\)", "$1->yystack.valueAt($1)")
                             /*
@@ -1179,6 +1197,7 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
         out.println("  private static final boolean TRUE = true;");
         out.println("  private static final boolean FALSE = false;");
         out.println("  private static final Oid InvalidOid = null;");
+        out.println("  private static final Oid TEXTOID = null;");
         out.println();
         out.println("   /* Copied from /postgresql/src/include/nodes/parsenodes.h */");
         out.println("  /** BINARY */");

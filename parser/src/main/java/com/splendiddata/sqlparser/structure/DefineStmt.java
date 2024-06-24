@@ -190,15 +190,15 @@ public class DefineStmt extends Node {
                 result.append(" (");
                 String separator = "";
                 for (DefElem def : definition) {
-                    result.append(separator).append(def.defname.toLowerCase());
-                    switch (def.defname.toLowerCase()) {
+                                        switch (def.defname.toLowerCase()) {
                     case "delimiter":
                     case "initcond1":
                     case "initcond":
                     case "minitcond":
-                        result.append(" = ").append(ParserUtil.toSqlTextString(def.arg));
+                        result.append(separator).append(def.defname.toLowerCase()).append(" = ").append(ParserUtil.toSqlTextString(def.arg));
                         break;
                     case "basetype":
+                        result.append(separator).append(def.defname.toLowerCase());
                         if ("ANY".equals(def.arg.toString())) {
                             result.append(" = 'ANY'");
                         } else {
@@ -207,6 +207,7 @@ public class DefineStmt extends Node {
                         break;
                     case "sortop":
                     case "locale":
+                        result.append(separator).append(def.defname.toLowerCase());
                         switch (def.arg.type) {
                         case T_TypeName:
                             result.append(" = ").append(ParserUtil.nameToSql(def.arg));
@@ -222,6 +223,7 @@ public class DefineStmt extends Node {
                         break;
                     case "lc_collate":
                     case "rules":
+                        result.append(separator).append(def.defname.toLowerCase());
                         if (def.arg instanceof Value) {
                             // uc_EN is case sensitive, so take the literal string
                             result.append(" = '").append(((Value) def.arg).val.str).append('\'');
@@ -230,6 +232,7 @@ public class DefineStmt extends Node {
                         }
                         break;
                     default:
+                        result.append(separator).append('"').append(def.defname.toLowerCase()).append('"');
                         if (def.arg != null) {
                             result.append(" = ");
                             if (def.arg instanceof List) {

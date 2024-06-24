@@ -12,7 +12,7 @@
 --
 
 -- directory paths are passed to us in environment variables
-\getenv abs_srcdir PG_ABS_SRCDIR
+-- Deactivated for SplendidDataTest: \getenv abs_srcdir PG_ABS_SRCDIR
 
 --
 -- BTREE
@@ -78,8 +78,8 @@ CREATE TABLE fast_emp4000 (
 	home_base	 box
 );
 
-\set filename :abs_srcdir '/data/rect.data'
-COPY slow_emp4000 FROM :'filename';
+-- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/rect.data'
+-- Deactivated for SplendidDataTest: COPY slow_emp4000 FROM :'filename';
 
 INSERT INTO fast_emp4000 SELECT * FROM slow_emp4000;
 
@@ -276,8 +276,8 @@ CREATE TABLE array_index_op_test (
 	t			text[]
 );
 
-\set filename :abs_srcdir '/data/array.data'
-COPY array_index_op_test FROM :'filename';
+-- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/array.data'
+-- Deactivated for SplendidDataTest: COPY array_index_op_test FROM :'filename';
 ANALYZE array_index_op_test;
 
 SELECT * FROM array_index_op_test WHERE i = '{NULL}' ORDER BY seqno;
@@ -362,7 +362,7 @@ DROP TABLE array_gin_test;
 --
 CREATE INDEX gin_relopts_test ON array_index_op_test USING gin (i)
   WITH (FASTUPDATE=on, GIN_PENDING_LIST_LIMIT=128);
-\d+ gin_relopts_test
+-- Deactivated for SplendidDataTest: \d+ gin_relopts_test
 
 --
 -- HASH
@@ -412,9 +412,9 @@ DELETE FROM unique_tbl WHERE t = 'seven';
 
 CREATE UNIQUE INDEX unique_idx4 ON unique_tbl (i) NULLS NOT DISTINCT;  -- ok now
 
-\d unique_tbl
-\d unique_idx3
-\d unique_idx4
+-- Deactivated for SplendidDataTest: \d unique_tbl
+-- Deactivated for SplendidDataTest: \d unique_idx3
+-- Deactivated for SplendidDataTest: \d unique_idx4
 SELECT pg_get_indexdef('unique_idx3'::regclass);
 SELECT pg_get_indexdef('unique_idx4'::regclass);
 
@@ -436,8 +436,8 @@ INSERT INTO func_index_heap VALUES('ABCD', 'EF');
 INSERT INTO func_index_heap VALUES('QWERTY');
 
 -- while we're here, see that the metadata looks sane
-\d func_index_heap
-\d func_index_index
+-- Deactivated for SplendidDataTest: \d func_index_heap
+-- Deactivated for SplendidDataTest: \d func_index_index
 
 
 --
@@ -456,8 +456,8 @@ INSERT INTO func_index_heap VALUES('ABCD', 'EF');
 INSERT INTO func_index_heap VALUES('QWERTY');
 
 -- while we're here, see that the metadata looks sane
-\d func_index_heap
-\d func_index_index
+-- Deactivated for SplendidDataTest: \d func_index_heap
+-- Deactivated for SplendidDataTest: \d func_index_index
 
 -- this should fail because of unsafe column type (anonymous record)
 create index on func_index_heap ((f1 || f2), (row(f1, f2)));
@@ -533,9 +533,9 @@ VACUUM FULL concur_heap;
 REINDEX TABLE concur_heap;
 DELETE FROM concur_heap WHERE f1 = 'b';
 VACUUM FULL concur_heap;
-\d concur_heap
+-- Deactivated for SplendidDataTest: \d concur_heap
 REINDEX TABLE concur_heap;
-\d concur_heap
+-- Deactivated for SplendidDataTest: \d concur_heap
 
 -- Temporary tables with concurrent builds and on-commit actions
 -- CONCURRENTLY used with CREATE INDEX and DROP INDEX is ignored.
@@ -581,7 +581,7 @@ DROP INDEX CONCURRENTLY "concur_index5";
 DROP INDEX CONCURRENTLY "concur_index1";
 DROP INDEX CONCURRENTLY "concur_heap_expr_idx";
 
-\d concur_heap
+-- Deactivated for SplendidDataTest: \d concur_heap
 
 DROP TABLE concur_heap;
 
@@ -598,16 +598,16 @@ INSERT INTO cwi_test VALUES(1, 2), (3, 4), (5, 6);
 CREATE UNIQUE INDEX cwi_uniq_idx ON cwi_test(a , b);
 ALTER TABLE cwi_test ADD primary key USING INDEX cwi_uniq_idx;
 
-\d cwi_test
-\d cwi_uniq_idx
+-- Deactivated for SplendidDataTest: \d cwi_test
+-- Deactivated for SplendidDataTest: \d cwi_uniq_idx
 
 CREATE UNIQUE INDEX cwi_uniq2_idx ON cwi_test(b , a);
 ALTER TABLE cwi_test DROP CONSTRAINT cwi_uniq_idx,
 	ADD CONSTRAINT cwi_replaced_pkey PRIMARY KEY
 		USING INDEX cwi_uniq2_idx;
 
-\d cwi_test
-\d cwi_replaced_pkey
+-- Deactivated for SplendidDataTest: \d cwi_test
+-- Deactivated for SplendidDataTest: \d cwi_replaced_pkey
 
 DROP INDEX cwi_replaced_pkey;	-- Should fail; a constraint depends on it
 
@@ -676,6 +676,7 @@ SELECT count(*) FROM onek_with_null WHERE unique1 IS NOT NULL;
 SELECT count(*) FROM onek_with_null WHERE unique1 IS NULL AND unique2 IS NOT NULL;
 SELECT count(*) FROM onek_with_null WHERE unique1 IS NOT NULL AND unique1 > 500;
 SELECT count(*) FROM onek_with_null WHERE unique1 IS NULL AND unique1 > 500;
+SELECT count(*) FROM onek_with_null WHERE unique1 IS NULL AND unique2 IN (-1, 0, 1);
 
 DROP INDEX onek_nulltest;
 
@@ -761,7 +762,7 @@ SELECT count(*) FROM dupindexcols
   WHERE f1 BETWEEN 'WA' AND 'ZZZ' and id < 1000 and f1 ~<~ 'YX';
 
 --
--- Check ordering of =ANY indexqual results (bug in 9.2.0)
+-- Check that index scans with =ANY indexquals return rows in index order
 --
 
 explain (costs off)
@@ -773,6 +774,7 @@ SELECT unique1 FROM tenk1
 WHERE unique1 IN (1,42,7)
 ORDER BY unique1;
 
+-- Non-required array scan key on "tenthous":
 explain (costs off)
 SELECT thousand, tenthous FROM tenk1
 WHERE thousand < 2 AND tenthous IN (1001,3000)
@@ -782,18 +784,68 @@ SELECT thousand, tenthous FROM tenk1
 WHERE thousand < 2 AND tenthous IN (1001,3000)
 ORDER BY thousand;
 
-SET enable_indexonlyscan = OFF;
-
+-- Non-required array scan key on "tenthous", backward scan:
 explain (costs off)
 SELECT thousand, tenthous FROM tenk1
 WHERE thousand < 2 AND tenthous IN (1001,3000)
-ORDER BY thousand;
+ORDER BY thousand DESC, tenthous DESC;
 
 SELECT thousand, tenthous FROM tenk1
 WHERE thousand < 2 AND tenthous IN (1001,3000)
-ORDER BY thousand;
+ORDER BY thousand DESC, tenthous DESC;
 
-RESET enable_indexonlyscan;
+--
+-- Check elimination of redundant and contradictory index quals
+--
+explain (costs off)
+SELECT unique1 FROM tenk1 WHERE unique1 IN (1, 42, 7) and unique1 = ANY('{7, 8, 9}');
+
+SELECT unique1 FROM tenk1 WHERE unique1 IN (1, 42, 7) and unique1 = ANY('{7, 8, 9}');
+
+explain (costs off)
+SELECT unique1 FROM tenk1 WHERE unique1 = ANY('{7, 14, 22}') and unique1 = ANY('{33, 44}'::bigint[]);
+
+SELECT unique1 FROM tenk1 WHERE unique1 = ANY('{7, 14, 22}') and unique1 = ANY('{33, 44}'::bigint[]);
+
+explain (costs off)
+SELECT unique1 FROM tenk1 WHERE unique1 IN (1, 42, 7) and unique1 = 1;
+
+SELECT unique1 FROM tenk1 WHERE unique1 IN (1, 42, 7) and unique1 = 1;
+
+explain (costs off)
+SELECT unique1 FROM tenk1 WHERE unique1 IN (1, 42, 7) and unique1 = 12345;
+
+SELECT unique1 FROM tenk1 WHERE unique1 IN (1, 42, 7) and unique1 = 12345;
+
+explain (costs off)
+SELECT unique1 FROM tenk1 WHERE unique1 IN (1, 42, 7) and unique1 >= 42;
+
+SELECT unique1 FROM tenk1 WHERE unique1 IN (1, 42, 7) and unique1 >= 42;
+
+explain (costs off)
+SELECT unique1 FROM tenk1 WHERE unique1 IN (1, 42, 7) and unique1 > 42;
+
+SELECT unique1 FROM tenk1 WHERE unique1 IN (1, 42, 7) and unique1 > 42;
+
+explain (costs off)
+SELECT unique1 FROM tenk1 WHERE unique1 > 9996 and unique1 >= 9999;
+
+SELECT unique1 FROM tenk1 WHERE unique1 > 9996 and unique1 >= 9999;
+
+explain (costs off)
+SELECT unique1 FROM tenk1 WHERE unique1 < 3 and unique1 <= 3;
+
+SELECT unique1 FROM tenk1 WHERE unique1 < 3 and unique1 <= 3;
+
+explain (costs off)
+SELECT unique1 FROM tenk1 WHERE unique1 < 3 and unique1 < (-1)::bigint;
+
+SELECT unique1 FROM tenk1 WHERE unique1 < 3 and unique1 < (-1)::bigint;
+
+explain (costs off)
+SELECT unique1 FROM tenk1 WHERE unique1 IN (1, 42, 7) and unique1 < (-1)::bigint;
+
+SELECT unique1 FROM tenk1 WHERE unique1 IN (1, 42, 7) and unique1 < (-1)::bigint;
 
 --
 -- Check elimination of constant-NULL subexpressions
@@ -825,9 +877,9 @@ explain (costs off)
 -- REINDEX (VERBOSE)
 --
 CREATE TABLE reindex_verbose(id integer primary key);
-\set VERBOSITY terse \\ -- suppress machine-dependent details
+-- Deactivated for SplendidDataTest: \set VERBOSITY terse \\ -- suppress machine-dependent details
 REINDEX (VERBOSE) TABLE reindex_verbose;
-\set VERBOSITY default
+-- Deactivated for SplendidDataTest: \set VERBOSITY default
 DROP TABLE reindex_verbose;
 
 --
@@ -924,7 +976,7 @@ CREATE INDEX concur_appclass_ind on concur_appclass_tab
 CREATE INDEX concur_appclass_ind_2 on concur_appclass_tab
   USING gist (k tsvector_ops (siglen='300'), j tsvector_ops);
 REINDEX TABLE CONCURRENTLY concur_appclass_tab;
-\d concur_appclass_tab
+-- Deactivated for SplendidDataTest: \d concur_appclass_tab
 DROP TABLE concur_appclass_tab;
 
 -- Partitions
@@ -1094,7 +1146,7 @@ REINDEX SCHEMA CONCURRENTLY pg_catalog;
 REINDEX DATABASE not_current_database;
 
 -- Check the relation status, there should not be invalid indexes
-\d concur_reindex_tab
+-- Deactivated for SplendidDataTest: \d concur_reindex_tab
 DROP MATERIALIZED VIEW concur_reindex_matview;
 DROP TABLE concur_reindex_tab, concur_reindex_tab2, concur_reindex_tab3;
 
@@ -1106,16 +1158,16 @@ CREATE UNIQUE INDEX CONCURRENTLY concur_reindex_ind5 ON concur_reindex_tab4 (c1)
 -- Reindexing concurrently this index fails with the same failure.
 -- The extra index created is itself invalid, and can be dropped.
 REINDEX INDEX CONCURRENTLY concur_reindex_ind5;
-\d concur_reindex_tab4
+-- Deactivated for SplendidDataTest: \d concur_reindex_tab4
 DROP INDEX concur_reindex_ind5_ccnew;
 -- This makes the previous failure go away, so the index can become valid.
 DELETE FROM concur_reindex_tab4 WHERE c1 = 1;
 -- The invalid index is not processed when running REINDEX TABLE.
 REINDEX TABLE CONCURRENTLY concur_reindex_tab4;
-\d concur_reindex_tab4
+-- Deactivated for SplendidDataTest: \d concur_reindex_tab4
 -- But it is fixed with REINDEX INDEX.
 REINDEX INDEX CONCURRENTLY concur_reindex_ind5;
-\d concur_reindex_tab4
+-- Deactivated for SplendidDataTest: \d concur_reindex_tab4
 DROP TABLE concur_reindex_tab4;
 
 -- Check handling of indexes with expressions and predicates.  The
@@ -1198,8 +1250,8 @@ CREATE TABLE reindex_temp_before AS
 SELECT oid, relname, relfilenode, relkind, reltoastrelid
   FROM pg_class
   WHERE relname IN ('concur_temp_ind_1', 'concur_temp_ind_2');
-SELECT pg_my_temp_schema()::regnamespace as temp_schema_name \gset
-REINDEX SCHEMA CONCURRENTLY :temp_schema_name;
+-- Deactivated for SplendidDataTest: SELECT pg_my_temp_schema()::regnamespace as temp_schema_name \gset
+-- Deactivated for SplendidDataTest: REINDEX SCHEMA CONCURRENTLY :temp_schema_name;
 SELECT  b.relname,
         b.relkind,
         CASE WHEN a.relfilenode = b.relfilenode THEN 'relfilenode is unchanged'

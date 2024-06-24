@@ -78,7 +78,7 @@ public class CreateRangeStmt extends Node {
     public String toString() {
         StringBuilder result = new StringBuilder();
 
-        result.append("create type ").append(ParserUtil.nameToSql(typeName));
+        result.append("create type ").append(ParserUtil.nameToSql(typeName)).append(" as range");
 
         if (params != null) {
             result.append(" (");

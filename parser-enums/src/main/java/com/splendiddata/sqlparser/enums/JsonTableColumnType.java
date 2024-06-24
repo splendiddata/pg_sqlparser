@@ -35,6 +35,23 @@ public enum JsonTableColumnType {
      * expression.
      */
     public static final String REPLACEMENT_REGEXP_PART;
+    
+    public String toString() {
+        switch (this) {
+        case JTC_EXISTS:
+            return "exists";
+        case JTC_FORMATTED:
+            return "format json";
+        case JTC_FOR_ORDINALITY:
+            return "for ordinality";
+        case JTC_NESTED:
+            return "nested";
+        case JTC_REGULAR:
+            return "";
+        default:
+            return "????? please implement " + this.name() + " in " + this.getClass().getName() + ".toString() ?????";
+        }
+    }
 
     static {
         StringBuilder format = new StringBuilder();

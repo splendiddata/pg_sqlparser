@@ -26,6 +26,7 @@ import com.splendiddata.sqlparser.enums.BoolExprType;
 import com.splendiddata.sqlparser.enums.CoercionForm;
 import com.splendiddata.sqlparser.enums.DefElemAction;
 import com.splendiddata.sqlparser.enums.GroupingSetKind;
+import com.splendiddata.sqlparser.enums.JsonBehaviorType;
 import com.splendiddata.sqlparser.enums.JsonEncoding;
 import com.splendiddata.sqlparser.enums.JsonFormatType;
 import com.splendiddata.sqlparser.enums.JsonValueType;
@@ -50,9 +51,11 @@ import com.splendiddata.sqlparser.structure.ErrCode;
 import com.splendiddata.sqlparser.structure.Expr;
 import com.splendiddata.sqlparser.structure.FuncCall;
 import com.splendiddata.sqlparser.structure.GroupingSet;
+import com.splendiddata.sqlparser.structure.JsonBehavior;
 import com.splendiddata.sqlparser.structure.JsonFormat;
 import com.splendiddata.sqlparser.structure.JsonIsPredicate;
 import com.splendiddata.sqlparser.structure.JsonKeyValue;
+import com.splendiddata.sqlparser.structure.JsonTablePathSpec;
 import com.splendiddata.sqlparser.structure.JsonValueExpr;
 import com.splendiddata.sqlparser.structure.List;
 import com.splendiddata.sqlparser.structure.ListCell;
@@ -193,6 +196,28 @@ public class AbstractParser extends AbstractCProgram {
     }
 
     /**
+     * makeStringConst - build a A_Const node of type T_String for given string
+     * <p>
+     * Copied from postgresql-17beta1/src/backend/nodes/makefuncs.c
+     * 
+     * @param str
+     *            The new content for the A_Const
+     * @param location
+     *            The location of the node in the source file
+     * @return A_Const with the specified string
+     * @since Postgres 17
+     */
+    static A_Const makeStringConst(String str, Location location) {
+        A_Const n = new A_Const();
+
+        n.val.type = NodeTag.T_String;
+        n.val.val.str = str;
+        n.location = location;
+
+        return n;
+    }
+
+    /**
      * Instantiate an object with the specified class
      * 
      * @param<_T> The
@@ -281,6 +306,13 @@ public class AbstractParser extends AbstractCProgram {
         n.funcformat = funcformat;
         n.location = locationAt;
         return n;
+    }
+
+    /**
+     * Just invokes {@link #makeFuncCall(List, List, CoercionForm, Location)} with location null
+     */
+    static FuncCall makeFuncCall(List<Value> name, List<Node> args, CoercionForm funcformat, int locationAt) {
+        return makeFuncCall(name, args, funcformat, null);
     }
 
     /**
@@ -1420,7 +1452,7 @@ public class AbstractParser extends AbstractCProgram {
     }
 
     /**
-     * Case-independent comparison of two null-terminated strings.
+     * Case-independent comparison of two strings.
      * <p>
      * see {@link java.lang.String#compareToIgnoreCase(String)}
      * <p>
@@ -1605,9 +1637,12 @@ public class AbstractParser extends AbstractCProgram {
      * <p>
      * Copied from postgresql-16beta3/src/backend/nodes/makefuncs.c
      *
-     * @param raw_expr property for the JsonValueExpr to construct
-     * @param formatted_expr  property for the JsonValueExpr to construct
-     * @param format  property for the JsonValueExpr to construct
+     * @param raw_expr
+     *            property for the JsonValueExpr to construct
+     * @param formatted_expr
+     *            property for the JsonValueExpr to construct
+     * @param format
+     *            property for the JsonValueExpr to construct
      * @return JsonValueExpr with the specified properties
      * @since Postgres 16
      */
@@ -1619,5 +1654,86 @@ public class AbstractParser extends AbstractCProgram {
         jve.format = format;
 
         return jve;
+    }
+
+    /**
+     * makeJsonTablePathSpec - Make JsonTablePathSpec node from given path string and name (if any)
+     * <p>
+     * Copied from postgresql-17beta1/src/backend/nodes/makefuncs.c
+     *
+     * @param string
+     *            The path expression
+     * @param name
+     *            Path name
+     * @param string_location
+     *            Location of the path expression
+     * @param name_location
+     *            Location of the name
+     * @return JsonTablePathSpec Newly constructed
+     * @since Postgres 17
+     */
+    protected JsonTablePathSpec makeJsonTablePathSpec(String string, String name, Location string_location,
+            Location name_location) {
+        JsonTablePathSpec pathspec = new JsonTablePathSpec();
+
+        if (name == null) {
+            ereport(Severity.ERROR, ErrCode.ERRCODE_SYNTAX_ERROR, errmsg("Json table path needs a name"),
+                    parser_errposition(name_location));
+        } else {
+            pathspec.name = name;
+        }
+        pathspec.string = makeStringConst(string, string_location);
+        pathspec.name_location = name_location;
+        pathspec.location = string_location;
+
+        return pathspec;
+    }
+
+    /**
+     * makeJsonTablePathSpec - Make JsonTablePathSpec node from given path string and name (if any)
+     * <p>
+     * Variant with unknown name location (-1 in the {@link com.splendiddata.sqlparser.PgSqlParser}). Just returns
+     * makeJsonTablePathSpec(string, name, string_location, null);
+     * <p>
+     * Copied from postgresql-17beta1/src/backend/nodes/makefuncs.c
+     *
+     * @param string
+     *            The path expression
+     * @param name
+     *            Path name
+     * @param string_location
+     *            Location of the path expression
+     * @param -1
+     *            No location for the name
+     * @return JsonTablePathSpec Newly constructed
+     * @since Postgres 17
+     */
+    protected JsonTablePathSpec makeJsonTablePathSpec(String string, String name, Location string_location,
+            int no_name_location) {
+        return makeJsonTablePathSpec(string, name, string_location, null);
+    }
+
+    /**
+     * makeJsonBehavior - creates a JsonBehavior node
+     * <p>
+     * Copied from postgresql-17beta1/src/backend/nodes/makefuncs.c
+     * 
+     * @param btype
+     *            Behaviour type
+     * @param expr
+     *            The expression
+     * @param location
+     *            Location in the source file
+     * @return JsonBehavior just created
+     * @since Postgres 17
+     */
+    protected JsonBehavior makeJsonBehavior(JsonBehaviorType btype, Node expr, Location location) {
+        JsonBehavior behavior = new JsonBehavior();
+
+        behavior.btype = btype;
+        behavior.expr = expr;
+        behavior.location = location;
+
+        return behavior;
     }
 }
