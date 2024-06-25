@@ -145,9 +145,9 @@ CREATE TABLE partitioned (
 DROP FUNCTION const_func();
 
 -- only accept valid partitioning strategy
-CREATE TABLE partitioned (
-    a int
-) PARTITION BY MAGIC (a);
+-- Deactivated for SplendidDataTest: CREATE TABLE partitioned (
+-- Deactivated for SplendidDataTest:     a int
+-- Deactivated for SplendidDataTest: ) PARTITION BY MAGIC (a);
 
 -- specified column must be present in the table
 CREATE TABLE partitioned (

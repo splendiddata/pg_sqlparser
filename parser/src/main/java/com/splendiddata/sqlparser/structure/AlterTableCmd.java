@@ -356,8 +356,9 @@ public class AlterTableCmd extends Node {
         case AT_SetIdentity:
             result = new StringBuilder(" alter column ").append(name);
             for (DefElem elem : (List<DefElem>) def) {
-                result.append(" set ").append(elem.defname);
-                if ("generated".equals(elem.defname)) {
+                switch (elem.defname) {
+                case "generated":
+                    result.append(" set ").append(elem.defname);
                     if (((Value) elem.arg).val.ival == AttributeIdentity.ATTRIBUTE_IDENTITY_ALWAYS.VALUE) {
                         result.append(" always");
                     } else if (((Value) elem.arg).val.ival == AttributeIdentity.ATTRIBUTE_IDENTITY_BY_DEFAULT.VALUE) {
@@ -366,8 +367,16 @@ public class AlterTableCmd extends Node {
                         return ParserUtil.reportUnknownValue("arg in DefElem " + ParserUtil.stmtToXml(elem), elem.arg,
                                 getClass());
                     }
-                } else if (elem.arg != null) {
-                    result.append(' ').append(elem.arg);
+                    break;
+                case "restart":
+                    result.append(" restart");
+                    break;
+                default:
+                    result.append(" set ").append(elem.defname);
+                    if (elem.arg != null) {
+                        result.append(' ').append(elem.arg);
+                    }
+                    break;
                 }
             }
             return result.toString();

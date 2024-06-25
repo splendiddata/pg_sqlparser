@@ -29,7 +29,7 @@ create global temp table if not exists schema.table
   
 create unlogged table  schema.table
   (  col_1 schema.type default 'x'::schema.type unique references schema.another_table match full on delete cascade on update cascade deferrable initially deferred
-  ,  col_2 text not null constraint bladibla check (value like '%xyz%') no inherit references some_table(some_column) match partial
+  ,  col_2 text not null constraint bladibla check (value like '%xyz%') no inherit references some_table(some_column) -- match partial
   ,  constraint constr_1 primary key (col_1, col_2) with (a = 'a', b) using index tablespace ts 
   ,  exclude using my_index_method ((col_1 || col_2) with schema.==, col3 with &) with (a = 'b', c) where (col_2 > 'abc')
   );

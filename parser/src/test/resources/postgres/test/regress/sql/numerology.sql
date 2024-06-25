@@ -1,3 +1,11 @@
+/*
+ * This file has been altered by SplendidData.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So some statements that are expected to fail are removed.
+ * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
+ */
+
+
 --
 -- NUMEROLOGY
 -- Test various combinations of numeric types and functions.
@@ -43,27 +51,27 @@ SELECT -0x8000000000000000;
 SELECT -0x8000000000000001;
 
 -- error cases
-SELECT 123abc;
-SELECT 0x0o;
-SELECT 0.a;
-SELECT 0.0a;
-SELECT .0a;
-SELECT 0.0e1a;
-SELECT 0.0e;
-SELECT 0.0e+a;
-PREPARE p1 AS SELECT $1a;
+-- Deactivated for SplendidDataTest: SELECT 123abc;
+-- Deactivated for SplendidDataTest: SELECT 0x0o;
+-- Deactivated for SplendidDataTest: SELECT 0.a;
+-- Deactivated for SplendidDataTest: SELECT 0.0a;
+-- Deactivated for SplendidDataTest: SELECT .0a;
+-- Deactivated for SplendidDataTest: SELECT 0.0e1a;
+-- Deactivated for SplendidDataTest: SELECT 0.0e;
+-- Deactivated for SplendidDataTest: SELECT 0.0e+a;
+-- Deactivated for SplendidDataTest: PREPARE p1 AS SELECT $1a;
 
-SELECT 0b;
-SELECT 1b;
-SELECT 0b0x;
+-- Deactivated for SplendidDataTest: SELECT 0b;
+-- Deactivated for SplendidDataTest: SELECT 1b;
+-- Deactivated for SplendidDataTest: SELECT 0b0x;
 
-SELECT 0o;
-SELECT 1o;
-SELECT 0o0x;
+-- Deactivated for SplendidDataTest: SELECT 0o;
+-- Deactivated for SplendidDataTest: SELECT 1o;
+-- Deactivated for SplendidDataTest: SELECT 0o0x;
 
-SELECT 0x;
-SELECT 1x;
-SELECT 0x0y;
+-- Deactivated for SplendidDataTest: SELECT 0x;
+-- Deactivated for SplendidDataTest: SELECT 1x;
+-- Deactivated for SplendidDataTest: SELECT 0x0y;
 
 -- underscores
 SELECT 1_000_000;
@@ -79,16 +87,16 @@ SELECT 1_000.5e0_1;
 
 -- error cases
 SELECT _100;
-SELECT 100_;
-SELECT 100__000;
+-- Deactivated for SplendidDataTest: SELECT 100_;
+-- Deactivated for SplendidDataTest: SELECT 100__000;
 
-SELECT _1_000.5;
-SELECT 1_000_.5;
-SELECT 1_000._5;
-SELECT 1_000.5_;
-SELECT 1_000.5e_1;
+-- Deactivated for SplendidDataTest: SELECT _1_000.5;
+-- Deactivated for SplendidDataTest: SELECT 1_000_.5;
+-- Deactivated for SplendidDataTest: SELECT 1_000._5;
+-- Deactivated for SplendidDataTest: SELECT 1_000.5_;
+-- Deactivated for SplendidDataTest: SELECT 1_000.5e_1;
 
-PREPARE p1 AS SELECT $0_1;
+-- Deactivated for SplendidDataTest: PREPARE p1 AS SELECT $0_1;
 
 --
 -- Test implicit type conversions

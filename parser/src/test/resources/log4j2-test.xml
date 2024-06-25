@@ -17,7 +17,7 @@
         <Logger name="com.splendiddata.sqlparser.SqlFileRegressionTest" level="info" />
         <Logger name="com.splendiddata.sqlparser.SqlScanner" level="info" />
         <Logger name="com.splendiddata.sqlparser.SqlParserTest" level="info" />
-        <Logger name="com.splendiddata.sqlparser.AbstractCProgram" level="info" />
+        <Logger name="com.splendiddata.sqlparser.AbstractCProgram" level="trace" />
 
         <Root level="debug">
             <AppenderRef ref="console" />

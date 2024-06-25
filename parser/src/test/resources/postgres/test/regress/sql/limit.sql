@@ -1,3 +1,11 @@
+/*
+ * This file has been altered by SplendidData.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So some statements that are expected to fail are removed.
+ * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
+ */
+
+
 --
 -- LIMIT
 -- Check the LIMIT/OFFSET feature of SELECT
@@ -174,14 +182,14 @@ SELECT  thousand
 		ORDER BY thousand FETCH FIRST 2 ROW ONLY;
 
 -- SKIP LOCKED and WITH TIES are incompatible
-SELECT  thousand
-		FROM onek WHERE thousand < 5
-		ORDER BY thousand FETCH FIRST 1 ROW WITH TIES FOR UPDATE SKIP LOCKED;
+-- Deactivated for SplendidDataTest: SELECT  thousand
+-- Deactivated for SplendidDataTest: 		FROM onek WHERE thousand < 5
+-- Deactivated for SplendidDataTest: 		ORDER BY thousand FETCH FIRST 1 ROW WITH TIES FOR UPDATE SKIP LOCKED;
 
 -- should fail
-SELECT ''::text AS two, unique1, unique2, stringu1
-		FROM onek WHERE unique1 > 50
-		FETCH FIRST 2 ROW WITH TIES;
+-- Deactivated for SplendidDataTest: SELECT ''::text AS two, unique1, unique2, stringu1
+-- Deactivated for SplendidDataTest: 		FROM onek WHERE unique1 > 50
+-- Deactivated for SplendidDataTest: 		FETCH FIRST 2 ROW WITH TIES;
 
 -- test ruleutils
 CREATE VIEW limit_thousand_v_1 AS SELECT thousand FROM onek WHERE thousand < 995

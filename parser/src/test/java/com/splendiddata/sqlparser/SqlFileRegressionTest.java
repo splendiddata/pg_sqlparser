@@ -43,6 +43,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import com.splendiddata.sqlparser.enums.Severity;
 import com.splendiddata.sqlparser.structure.Node;
 import com.splendiddata.sqlparser.structure.Value;
 
@@ -202,6 +203,10 @@ public class SqlFileRegressionTest {
         try (Reader reader = Files.newBufferedReader(file)) {
             SqlParser parser = new SqlParser(reader, error -> parserErrors.add(error));
             Assertions.assertTrue(parser.parse(), "Parser error in: " + fileName + "\n" + parserErrors);
+            Assertions.assertTrue(
+                    parserErrors.isEmpty()
+                            || parserErrors.stream().noneMatch(err -> Severity.ERROR.equals(err.getSeverity())),
+                    "parser.parse() returned true, but parser errors exist:\n" + parserErrors);
             Assertions.assertNotNull(parser.getResult(), "Expected non-null result: " + fileName);
             for (Node originallyParsedStatement : parser.getResult()) {
                 log.debug("parsed sql = " + originallyParsedStatement);

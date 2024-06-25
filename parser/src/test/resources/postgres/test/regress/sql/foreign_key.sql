@@ -1,3 +1,11 @@
+/*
+ * This file has been altered by SplendidData.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So input for the copy statements is removed.
+ * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
+ */
+
+
 --
 -- FOREIGN KEY
 --
@@ -467,7 +475,7 @@ DROP TABLE PKTABLE;
 CREATE TABLE PKTABLE (tid int, id int, PRIMARY KEY (tid, id));
 CREATE TABLE FKTABLE (tid int, id int, foo int, FOREIGN KEY (tid, id) REFERENCES PKTABLE ON DELETE SET NULL (bar));
 CREATE TABLE FKTABLE (tid int, id int, foo int, FOREIGN KEY (tid, id) REFERENCES PKTABLE ON DELETE SET NULL (foo));
-CREATE TABLE FKTABLE (tid int, id int, foo int, FOREIGN KEY (tid, foo) REFERENCES PKTABLE ON UPDATE SET NULL (foo));
+-- Deactivated for SplendidDataTest: CREATE TABLE FKTABLE (tid int, id int, foo int, FOREIGN KEY (tid, foo) REFERENCES PKTABLE ON UPDATE SET NULL (foo));
 CREATE TABLE FKTABLE (
   tid int, id int,
   fk_id_del_set_null int,
@@ -971,7 +979,7 @@ COMMIT;
 -- try additional syntax
 ALTER TABLE fktable ALTER CONSTRAINT fktable_fk_fkey NOT DEFERRABLE;
 -- illegal option
-ALTER TABLE fktable ALTER CONSTRAINT fktable_fk_fkey NOT DEFERRABLE INITIALLY DEFERRED;
+-- Deactivated for SplendidDataTest: ALTER TABLE fktable ALTER CONSTRAINT fktable_fk_fkey NOT DEFERRABLE INITIALLY DEFERRED;
 
 -- test order of firing of FK triggers when several RI-induced changes need to
 -- be made to the same row.  This was broken by subtransaction-related
@@ -1256,9 +1264,9 @@ DROP TABLE fk_notpartitioned_pk, fk_partitioned_fk;
 CREATE TABLE fk_notpartitioned_pk (a int, b int, primary key (a, b));
 CREATE TABLE fk_partitioned_fk (a int default 2501, b int default 142857) PARTITION BY LIST (a);
 CREATE TABLE fk_partitioned_fk_1 PARTITION OF fk_partitioned_fk FOR VALUES IN (NULL,500,501,502);
-ALTER TABLE fk_partitioned_fk ADD FOREIGN KEY (a, b)
-  REFERENCES fk_notpartitioned_pk MATCH SIMPLE
-  ON DELETE SET NULL ON UPDATE SET NULL;
+-- Deactivated for SplendidDataTest: ALTER TABLE fk_partitioned_fk ADD FOREIGN KEY (a, b)
+-- Deactivated for SplendidDataTest:   REFERENCES fk_notpartitioned_pk MATCH SIMPLE
+-- Deactivated for SplendidDataTest:   ON DELETE SET NULL ON UPDATE SET NULL;
 CREATE TABLE fk_partitioned_fk_2 PARTITION OF fk_partitioned_fk FOR VALUES IN (1500,1502);
 CREATE TABLE fk_partitioned_fk_3 (a int, b int);
 ALTER TABLE fk_partitioned_fk ATTACH PARTITION fk_partitioned_fk_3 FOR VALUES IN (2500,2501,2502,2503);

@@ -1,3 +1,11 @@
+/*
+ * This file has been altered by SplendidData.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So some statements that are expected to fail are removed.
+ * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
+ */
+
+
 --
 -- Regression tests for schemas (namespaces)
 --
@@ -55,11 +63,11 @@ SELECT COUNT(*) FROM pg_class WHERE relnamespace =
 -- test IF NOT EXISTS cases
 CREATE SCHEMA test_ns_schema_renamed; -- fail, already exists
 CREATE SCHEMA IF NOT EXISTS test_ns_schema_renamed; -- ok with notice
-CREATE SCHEMA IF NOT EXISTS test_ns_schema_renamed -- fail, disallowed
-       CREATE TABLE abc (
-              a serial,
-              b int UNIQUE
-       );
+-- Deactivated for SplendidDataTest: CREATE SCHEMA IF NOT EXISTS test_ns_schema_renamed -- fail, disallowed
+-- Deactivated for SplendidDataTest:        CREATE TABLE abc (
+-- Deactivated for SplendidDataTest:               a serial,
+-- Deactivated for SplendidDataTest:               b int UNIQUE
+-- Deactivated for SplendidDataTest:        );
 
 DROP SCHEMA test_ns_schema_renamed CASCADE;
 

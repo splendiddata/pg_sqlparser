@@ -1504,6 +1504,8 @@ public class AbstractParser extends AbstractCProgram {
                     ereport(Severity.ERROR, ErrCode.ERRCODE_SYNTAX_ERROR,
                             errmsg("multiple COLLATE clauses not allowed"), parser_errposition(n.location));
                 }
+            } else if (n instanceof DefElem) {
+                log.debug(() -> "splitColQualList ignores DefElem: " + ParserUtil.stmtToXml(n));
             } else {
                 ereport(Severity.ERROR, ErrCode.ERRCODE_SYNTAX_ERROR, Severity.ERROR,
                         errmsg("unexpected node type " + n.type), parser_errposition(n.location));

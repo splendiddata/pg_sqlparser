@@ -130,18 +130,18 @@ create aggregate my_percentile_disc(float8 ORDER BY anyelement) (
   finalfunc_modify = read_write
 );
 
-create aggregate my_rank(VARIADIC "any" ORDER BY VARIADIC "any") (
-  stype = internal,
-  sfunc = ordered_set_transition_multi,
-  finalfunc = rank_final,
-  finalfunc_extra = true,
-  hypothetical
-);
+-- Deactivated for SplendidDataTest: create aggregate my_rank(VARIADIC "any" ORDER BY VARIADIC "any") (
+-- Deactivated for SplendidDataTest:   stype = internal,
+-- Deactivated for SplendidDataTest:   sfunc = ordered_set_transition_multi,
+-- Deactivated for SplendidDataTest:   finalfunc = rank_final,
+-- Deactivated for SplendidDataTest:   finalfunc_extra = true,
+-- Deactivated for SplendidDataTest:   hypothetical
+-- Deactivated for SplendidDataTest: );
 
 alter aggregate my_percentile_disc(float8 ORDER BY anyelement)
   rename to test_percentile_disc;
-alter aggregate my_rank(VARIADIC "any" ORDER BY VARIADIC "any")
-  rename to test_rank;
+-- Deactivated for SplendidDataTest: alter aggregate my_rank(VARIADIC "any" ORDER BY VARIADIC "any")
+-- Deactivated for SplendidDataTest:   rename to test_rank;
 
 -- Deactivated for SplendidDataTest: \da test_*
 

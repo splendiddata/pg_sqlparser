@@ -430,6 +430,7 @@ public abstract class AbstractScanner extends AbstractCProgram implements com.sp
         if (loc != null && loc.begin != null) {
             errorData.setErrorOffset(Long.valueOf(loc.begin.getOffset()));
         }
+        setErrorReported(true);
         getErrorReporter().reportError(errorData);
     }
 

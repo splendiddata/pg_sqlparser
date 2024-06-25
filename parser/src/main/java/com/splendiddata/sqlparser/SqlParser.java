@@ -76,7 +76,8 @@ public class SqlParser {
      * @see com.splendiddata.sqlparser.PgSqlParser#parse()
      */
     public boolean parse() throws IOException {
-        return parser.parse();
+        parser.setErrorReported(false);
+        return parser.parse() && !parser.isErrorReported();
     }
 
     /**
