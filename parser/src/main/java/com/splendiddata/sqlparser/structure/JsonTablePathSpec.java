@@ -8,6 +8,7 @@
 
 package com.splendiddata.sqlparser.structure;
 
+import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.NodeTag;
 
 import jakarta.xml.bind.annotation.XmlAttribute;
@@ -15,9 +16,9 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
- * JsonTablePathSpec<p>
- *      untransformed specification of JSON path expression with an optional
- *      name
+ * JsonTablePathSpec
+ * <p>
+ * untransformed specification of JSON path expression with an optional name
  * <p>
  * Copied from postgresql-17beta1/src/include/nodes/parsenodes.h
  *
@@ -26,15 +27,15 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(namespace = "parser")
 public class JsonTablePathSpec extends Node {
-    
-@XmlElement
-    public Node       string;
 
-@XmlAttribute
-    public String       name;
+    @XmlElement
+    public Node string;
 
-@XmlElement
-    public Location    name_location;
+    @XmlAttribute
+    public String name;
+
+    @XmlElement
+    public Location name_location;
 
     /**
      * Constructor
@@ -77,6 +78,11 @@ public class JsonTablePathSpec extends Node {
 
     @Override
     public String toString() {
-        return "????? Please implement " + this.getClass().getName() + ".toString() ?????";
+        StringBuilder result = new StringBuilder();
+        result.append(string);
+        if (name != null) {
+            result.append(" as ").append(ParserUtil.identifierToSql(name));
+        }
+        return result.toString();
     }
 }

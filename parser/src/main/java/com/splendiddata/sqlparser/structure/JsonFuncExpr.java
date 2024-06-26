@@ -14,6 +14,7 @@
 
 package com.splendiddata.sqlparser.structure;
 
+import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.JsonExprOp;
 import com.splendiddata.sqlparser.enums.JsonQuotes;
 import com.splendiddata.sqlparser.enums.JsonWrapper;
@@ -37,7 +38,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * @since Postgres 17
  */
 @XmlRootElement(namespace = "parser")
-public class JsonFuncExpr extends Node {
+public class JsonFuncExpr extends Expr {
 
     /** expression type */
     @XmlAttribute
@@ -148,11 +149,82 @@ public class JsonFuncExpr extends Node {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
+        String separator = "";
         if (op != null) {
             result.append(op);
         }
         result.append('(');
-        result.append("????? Pleas implement ").append(this.getClass().getName()).append(".toString() ?????");
+        if (column_name != null) {
+            result.append(separator).append("????? Please implement column_name ").append(ParserUtil.identifierToSql(column_name)).append(" in ")
+                    .append(this.getClass().getName()).append(".toString() ?????");
+            separator = " ";
+        }
+        if (context_item != null) {
+            result.append(separator).append(context_item);
+            separator = " ";
+        }
+        if (pathspec != null) {
+            result.append(", ").append(pathspec);
+            separator = " ";
+        }
+        if (passing != null) {
+            separator += "passing ";
+            for (Node pass : passing) {
+                result.append(separator).append(pass);
+                separator = ", ";
+            }
+            separator = " ";
+        }
+        if (output != null) {
+            result.append(separator).append(output);
+            separator = " ";
+        }
+        if (wrapper != null) {
+            switch (wrapper) {
+            case JSW_CONDITIONAL:
+                result.append(separator).append("with conditional wrapper");
+                break;
+            case JSW_NONE:
+                result.append(separator).append("without wrapper");
+                break;
+            case JSW_UNCONDITIONAL:
+                result.append(separator).append("with unconditional wrapper");
+                break;
+            case JSW_UNSPEC:
+                break;
+            default:
+                result.append(separator).append("????? Please implement wrapper ").append(wrapper).append(" in ")
+                        .append(this.getClass().getName()).append(".toString() ?????");
+                separator = " ";
+                break;
+            }
+        }
+        if (quotes != null) {
+            switch (quotes) {
+            case JS_QUOTES_KEEP:
+                result.append(separator).append("keep quotes");
+                separator = " ";
+                break;
+            case JS_QUOTES_OMIT:
+                result.append(separator).append("omit quotes");
+                separator = " ";
+                break;
+            case JS_QUOTES_UNSPEC:
+                break;
+            default:
+                result.append(separator).append("????? Please implement quotes ").append(quotes).append(" in ")
+                        .append(this.getClass().getName()).append(".toString() ?????");
+                break;
+            }
+        }
+        if (on_empty != null) {
+            result.append(separator).append(on_empty).append(" on empty");
+            separator = " ";
+        }
+        if (on_error != null) {
+            result.append(separator).append(on_error).append(" on error");
+            separator = " ";
+        }
         result.append(')');
 
         return result.toString();

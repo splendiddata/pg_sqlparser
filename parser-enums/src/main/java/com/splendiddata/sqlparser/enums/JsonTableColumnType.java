@@ -41,7 +41,7 @@ public enum JsonTableColumnType {
         case JTC_EXISTS:
             return "exists";
         case JTC_FORMATTED:
-            return "format json";
+            return "";
         case JTC_FOR_ORDINALITY:
             return "for ordinality";
         case JTC_NESTED:

@@ -83,7 +83,7 @@ public class JsonSerializeExpr extends Node {
         }
 
         if (output != null) {
-            result.append(" returning ").append(output);
+            result.append(" ").append(output);
         }
         result.append(')');
 

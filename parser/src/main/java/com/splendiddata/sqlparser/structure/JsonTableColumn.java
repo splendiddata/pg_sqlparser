@@ -14,6 +14,7 @@
 
 package com.splendiddata.sqlparser.structure;
 
+import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.JsonQuotes;
 import com.splendiddata.sqlparser.enums.JsonTableColumnType;
 import com.splendiddata.sqlparser.enums.JsonWrapper;
@@ -147,14 +148,15 @@ public class JsonTableColumn extends Node {
         StringBuilder result = new StringBuilder();
         String separator = "";
         if (name != null) {
-            result.append(name);
+            result.append(ParserUtil.identifierToSql(name));
             separator = " ";
-        }
-        if (coltype != null && !JsonTableColumnType.JTC_REGULAR.equals(coltype)) {
-            result.append(separator).append(coltype);
         }
         if (typeName != null) {
             result.append(separator).append(typeName);
+            separator = " ";
+        }
+        if (coltype != null && !JsonTableColumnType.JTC_REGULAR.equals(coltype) && !JsonTableColumnType.JTC_FORMATTED.equals(coltype)) {
+            result.append(separator).append(coltype);
             separator = " ";
         }
         if (format != null) {
@@ -162,20 +164,22 @@ public class JsonTableColumn extends Node {
             separator = " ";
         }
         if (pathspec != null) {
-            result.append(separator).append(pathspec);
+            result.append(separator).append("path ").append(pathspec);
             separator = " ";
         }
         if (wrapper != null) {
             switch (wrapper) {
             case JSW_CONDITIONAL:
-                result.append(separator).append("with conditional");
+                result.append(separator).append("with conditional wrapper");
                 separator = " ";
                 break;
             case JSW_NONE:
                 break;
             case JSW_UNCONDITIONAL:
-                result.append(separator).append("with unconditional");
+                result.append(separator).append("with wrapper");
                 separator = " ";
+                break;
+            case JSW_UNSPEC:
                 break;
             default:
                 result.append(separator).append("????? please implement ").append(wrapper.name()).append(" in ")
@@ -188,11 +192,11 @@ public class JsonTableColumn extends Node {
         if (quotes != null) {
             switch (quotes) {
             case JS_QUOTES_KEEP:
-                result.append("keep quotes on scalar string");
+                result.append(separator).append("keep quotes");
                 separator = " ";
                 break;
             case JS_QUOTES_OMIT:
-                result.append("omit quotes on scalar string");
+                result.append(separator).append("omit quotes");
                 separator = " ";
                 break;
             case JS_QUOTES_UNSPEC:

@@ -1678,13 +1678,8 @@ public class AbstractParser extends AbstractCProgram {
             Location name_location) {
         JsonTablePathSpec pathspec = new JsonTablePathSpec();
 
-        if (name == null) {
-            ereport(Severity.ERROR, ErrCode.ERRCODE_SYNTAX_ERROR, errmsg("Json table path needs a name"),
-                    parser_errposition(name_location));
-        } else {
-            pathspec.name = name;
-        }
-        pathspec.string = makeStringConst(string, string_location);
+        pathspec.name = name;
+        pathspec.string = makeStringConst(string.replaceAll("^'(.*)'$", "$1"), string_location);
         pathspec.name_location = name_location;
         pathspec.location = string_location;
 

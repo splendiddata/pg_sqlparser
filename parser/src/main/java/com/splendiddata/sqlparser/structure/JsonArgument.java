@@ -8,6 +8,7 @@
 
 package com.splendiddata.sqlparser.structure;
 
+import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.NodeTag;
 
 import jakarta.xml.bind.annotation.XmlAttribute;
@@ -73,6 +74,11 @@ public class JsonArgument extends Node {
      */
     @Override
     public String toString() {
-        return "????? Please implement " + this.getClass().getName() + ".toString() ?????";
+        StringBuilder result = new StringBuilder();
+        result.append(val);
+        if (name != null) {
+            result.append(" as ").append(ParserUtil.identifierToSql(name));
+        }
+        return result.toString();
     }
 }

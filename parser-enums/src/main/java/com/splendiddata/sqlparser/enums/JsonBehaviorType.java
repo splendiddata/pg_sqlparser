@@ -49,9 +49,9 @@ public enum JsonBehaviorType {
         case JSON_BEHAVIOR_EMPTY:
             return "empty";
         case JSON_BEHAVIOR_EMPTY_ARRAY:
-            return "????? please implement " + this.name() + " in " + this.getClass().getName() + ".toString() ?????";
+            return "empty array";
         case JSON_BEHAVIOR_EMPTY_OBJECT:
-            return "????? please implement " + this.name() + " in " + this.getClass().getName() + ".toString() ?????";
+            return "empty object";
         case JSON_BEHAVIOR_ERROR:
             return "error";
         case JSON_BEHAVIOR_FALSE:
@@ -61,7 +61,7 @@ public enum JsonBehaviorType {
         case JSON_BEHAVIOR_TRUE:
             return "true";
         case JSON_BEHAVIOR_UNKNOWN:
-            return "????? please implement " + this.name() + " in " + this.getClass().getName() + ".toString() ?????";
+            return "unknown";
         default:
             return "????? please implement " + this.name() + " in " + this.getClass().getName() + ".toString() ?????";
         }

@@ -746,8 +746,9 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
     /** @since Postgres 17 */
     json_table(new GrammarRuleSpecialProcessing() {
         public String processLine(String line) {
-            return line.replace("val.node.type", "val.type")
-                    .replace("val.sval.sval", "val.val.str");
+            return  line
+                    .replace("castNode(A_Const.class, $5)->val.sval.sval", "$5->toString()")
+                    .replace("val.node.type", "val.type");
         }
     }),
     //

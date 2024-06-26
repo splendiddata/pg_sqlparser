@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.enums;
@@ -22,13 +19,35 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Copied from /postgresql-10.0/src/include/parser/kwlist.h
+ * Initially copied from /postgresql-10.0/src/include/parser/kwlist.h
+ * <p>
+ * To update:
+ * <ul>
+ * <li>copy the PG_KEYWORD entries from src/include/parser/kwlist.h over the keywords.</li>
+ * <li>Do a regular expression replace from
+ * 
+ * <pre>
+ * PG_KEYWORD\(("[^"]+"),\s*(\w+),\s*(\w+),\s*\w+\)
+ * </pre>
+ * 
+ * to
+ * 
+ * <pre>
+ * $2($1, $3),
+ * </pre>
+ * 
+ * </li>
+ * <li>Replace the last comma in the list by a semi colon</li>
+ * <li>Compare with the head version to re-introduce the &#64;since tags and add new &#64;since tags for the new keywords.
+ * </ul>
  *
  * @author Splendid Data Product Development B.V.
- * @since 5.0.0
+ * @since Postgres 10
  */
 public enum Keyword implements ScanKeywordCategory {
     ABORT_P("abort", UNRESERVED_KEYWORD),
+    /** @since Postgres 16 */
+    ABSENT("absent", UNRESERVED_KEYWORD),
     ABSOLUTE_P("absolute", UNRESERVED_KEYWORD),
     ACCESS("access", UNRESERVED_KEYWORD),
     ACTION("action", UNRESERVED_KEYWORD),
@@ -36,21 +55,26 @@ public enum Keyword implements ScanKeywordCategory {
     ADMIN("admin", UNRESERVED_KEYWORD),
     AFTER("after", UNRESERVED_KEYWORD),
     AGGREGATE("aggregate", UNRESERVED_KEYWORD),
+    /** @since Postgres 11 */
     ALL("all", RESERVED_KEYWORD),
     ALSO("also", UNRESERVED_KEYWORD),
     ALTER("alter", UNRESERVED_KEYWORD),
     ALWAYS("always", UNRESERVED_KEYWORD),
-    ANALYSE("analyse", RESERVED_KEYWORD),        /* British spelling */
+    ANALYSE("analyse", RESERVED_KEYWORD), /* British spelling */
     ANALYZE("analyze", RESERVED_KEYWORD),
     AND("and", RESERVED_KEYWORD),
     ANY("any", RESERVED_KEYWORD),
     ARRAY("array", RESERVED_KEYWORD),
     AS("as", RESERVED_KEYWORD),
     ASC("asc", RESERVED_KEYWORD),
+    /** @since Postgres 14 */
+    ASENSITIVE("asensitive", UNRESERVED_KEYWORD),
     ASSERTION("assertion", UNRESERVED_KEYWORD),
     ASSIGNMENT("assignment", UNRESERVED_KEYWORD),
     ASYMMETRIC("asymmetric", RESERVED_KEYWORD),
     AT("at", UNRESERVED_KEYWORD),
+    /** @since Postgres 14 */
+    ATOMIC("atomic", UNRESERVED_KEYWORD),
     ATTACH("attach", UNRESERVED_KEYWORD),
     ATTRIBUTE("attribute", UNRESERVED_KEYWORD),
     AUTHORIZATION("authorization", TYPE_FUNC_NAME_KEYWORD),
@@ -63,8 +87,11 @@ public enum Keyword implements ScanKeywordCategory {
     BIT("bit", COL_NAME_KEYWORD),
     BOOLEAN_P("boolean", COL_NAME_KEYWORD),
     BOTH("both", RESERVED_KEYWORD),
+    /** @since Postgres 14 */
+    BREADTH("breadth", UNRESERVED_KEYWORD),
     BY("by", UNRESERVED_KEYWORD),
     CACHE("cache", UNRESERVED_KEYWORD),
+    CALL("call", UNRESERVED_KEYWORD),
     CALLED("called", UNRESERVED_KEYWORD),
     CASCADE("cascade", UNRESERVED_KEYWORD),
     CASCADED("cascaded", UNRESERVED_KEYWORD),
@@ -89,7 +116,11 @@ public enum Keyword implements ScanKeywordCategory {
     COMMENTS("comments", UNRESERVED_KEYWORD),
     COMMIT("commit", UNRESERVED_KEYWORD),
     COMMITTED("committed", UNRESERVED_KEYWORD),
+    /** @since Postgres 14 */
+    COMPRESSION("compression", UNRESERVED_KEYWORD),
     CONCURRENTLY("concurrently", TYPE_FUNC_NAME_KEYWORD),
+    /** @since Postgres 17 */
+    CONDITIONAL("conditional", UNRESERVED_KEYWORD),
     CONFIGURATION("configuration", UNRESERVED_KEYWORD),
     CONFLICT("conflict", UNRESERVED_KEYWORD),
     CONNECTION("connection", UNRESERVED_KEYWORD),
@@ -130,6 +161,8 @@ public enum Keyword implements ScanKeywordCategory {
     DELIMITER("delimiter", UNRESERVED_KEYWORD),
     DELIMITERS("delimiters", UNRESERVED_KEYWORD),
     DEPENDS("depends", UNRESERVED_KEYWORD),
+    /** @since Postgres 14 */
+    DEPTH("depth", UNRESERVED_KEYWORD),
     DESC("desc", RESERVED_KEYWORD),
     DETACH("detach", UNRESERVED_KEYWORD),
     DICTIONARY("dictionary", UNRESERVED_KEYWORD),
@@ -143,11 +176,15 @@ public enum Keyword implements ScanKeywordCategory {
     DROP("drop", UNRESERVED_KEYWORD),
     EACH("each", UNRESERVED_KEYWORD),
     ELSE("else", RESERVED_KEYWORD),
+    /** @since Postgres 17 */
+    EMPTY_P("empty", UNRESERVED_KEYWORD),
     ENABLE_P("enable", UNRESERVED_KEYWORD),
     ENCODING("encoding", UNRESERVED_KEYWORD),
     ENCRYPTED("encrypted", UNRESERVED_KEYWORD),
     END_P("end", RESERVED_KEYWORD),
     ENUM_P("enum", UNRESERVED_KEYWORD),
+    /** @since Postgres 17 */
+    ERROR_P("error", UNRESERVED_KEYWORD),
     ESCAPE("escape", UNRESERVED_KEYWORD),
     EVENT("event", UNRESERVED_KEYWORD),
     EXCEPT("except", RESERVED_KEYWORD),
@@ -157,6 +194,8 @@ public enum Keyword implements ScanKeywordCategory {
     EXECUTE("execute", UNRESERVED_KEYWORD),
     EXISTS("exists", COL_NAME_KEYWORD),
     EXPLAIN("explain", UNRESERVED_KEYWORD),
+    /** @since Postgres 13 */
+    EXPRESSION("expression", UNRESERVED_KEYWORD),
     EXTENSION("extension", UNRESERVED_KEYWORD),
     EXTERNAL("external", UNRESERVED_KEYWORD),
     EXTRACT("extract", COL_NAME_KEYWORD),
@@ -164,12 +203,16 @@ public enum Keyword implements ScanKeywordCategory {
     FAMILY("family", UNRESERVED_KEYWORD),
     FETCH("fetch", RESERVED_KEYWORD),
     FILTER("filter", UNRESERVED_KEYWORD),
+    /** @since Postgres 14 */
+    FINALIZE("finalize", UNRESERVED_KEYWORD),
     FIRST_P("first", UNRESERVED_KEYWORD),
     FLOAT_P("float", COL_NAME_KEYWORD),
     FOLLOWING("following", UNRESERVED_KEYWORD),
     FOR("for", RESERVED_KEYWORD),
     FORCE("force", UNRESERVED_KEYWORD),
     FOREIGN("foreign", RESERVED_KEYWORD),
+    /** @since Postgres 16 */
+    FORMAT("format", UNRESERVED_KEYWORD),
     FORWARD("forward", UNRESERVED_KEYWORD),
     FREEZE("freeze", TYPE_FUNC_NAME_KEYWORD),
     FROM("from", RESERVED_KEYWORD),
@@ -183,6 +226,8 @@ public enum Keyword implements ScanKeywordCategory {
     GREATEST("greatest", COL_NAME_KEYWORD),
     GROUP_P("group", RESERVED_KEYWORD),
     GROUPING("grouping", COL_NAME_KEYWORD),
+    /** @since Postgres 11 */
+    GROUPS("groups", UNRESERVED_KEYWORD),
     HANDLER("handler", UNRESERVED_KEYWORD),
     HAVING("having", RESERVED_KEYWORD),
     HEADER_P("header", UNRESERVED_KEYWORD),
@@ -196,8 +241,12 @@ public enum Keyword implements ScanKeywordCategory {
     IMPLICIT_P("implicit", UNRESERVED_KEYWORD),
     IMPORT_P("import", UNRESERVED_KEYWORD),
     IN_P("in", RESERVED_KEYWORD),
+    /** @since Postgres 11 */
+    INCLUDE("include", UNRESERVED_KEYWORD),
     INCLUDING("including", UNRESERVED_KEYWORD),
     INCREMENT("increment", UNRESERVED_KEYWORD),
+    /** @since Postgres 16 */
+    INDENT("indent", UNRESERVED_KEYWORD),
     INDEX("index", UNRESERVED_KEYWORD),
     INDEXES("indexes", UNRESERVED_KEYWORD),
     INHERIT("inherit", UNRESERVED_KEYWORD),
@@ -220,7 +269,33 @@ public enum Keyword implements ScanKeywordCategory {
     ISNULL("isnull", TYPE_FUNC_NAME_KEYWORD),
     ISOLATION("isolation", UNRESERVED_KEYWORD),
     JOIN("join", TYPE_FUNC_NAME_KEYWORD),
+    /** @since Postgres 16 */
+    JSON("json", COL_NAME_KEYWORD),
+    /** @since Postgres 16 */
+    JSON_ARRAY("json_array", COL_NAME_KEYWORD),
+    /** @since Postgres 16 */
+    JSON_ARRAYAGG("json_arrayagg", COL_NAME_KEYWORD),
+    /** @since Postgres 17 */
+    JSON_EXISTS("json_exists", COL_NAME_KEYWORD),
+    /** @since Postgres 16 */
+    JSON_OBJECT("json_object", COL_NAME_KEYWORD),
+    /** @since Postgres 16 */
+    JSON_OBJECTAGG("json_objectagg", COL_NAME_KEYWORD),
+    /** @since Postgres 17 */
+    JSON_QUERY("json_query", COL_NAME_KEYWORD),
+    /** @since Postgres 17 */
+    JSON_SCALAR("json_scalar", COL_NAME_KEYWORD),
+    /** @since Postgres 17 */
+    JSON_SERIALIZE("json_serialize", COL_NAME_KEYWORD),
+    /** @since Postgres 17 */
+    JSON_TABLE("json_table", COL_NAME_KEYWORD),
+    /** @since Postgres 17 */
+    JSON_VALUE("json_value", COL_NAME_KEYWORD),
+    /** @since Postgres 17 */
+    KEEP("keep", UNRESERVED_KEYWORD),
     KEY("key", UNRESERVED_KEYWORD),
+    /** @since Postgres 16 */
+    KEYS("keys", UNRESERVED_KEYWORD),
     LABEL("label", UNRESERVED_KEYWORD),
     LANGUAGE("language", UNRESERVED_KEYWORD),
     LARGE_P("large", UNRESERVED_KEYWORD),
@@ -244,8 +319,14 @@ public enum Keyword implements ScanKeywordCategory {
     LOGGED("logged", UNRESERVED_KEYWORD),
     MAPPING("mapping", UNRESERVED_KEYWORD),
     MATCH("match", UNRESERVED_KEYWORD),
+    /** @since Postgres 15 */
+    MATCHED("matched", UNRESERVED_KEYWORD),
     MATERIALIZED("materialized", UNRESERVED_KEYWORD),
     MAXVALUE("maxvalue", UNRESERVED_KEYWORD),
+    /** @since Postgres 15 */
+    MERGE("merge", UNRESERVED_KEYWORD),
+    /** @since Postgres 17 */
+    MERGE_ACTION("merge_action", COL_NAME_KEYWORD),
     METHOD("method", UNRESERVED_KEYWORD),
     MINUTE_P("minute", UNRESERVED_KEYWORD),
     MINVALUE("minvalue", UNRESERVED_KEYWORD),
@@ -257,10 +338,24 @@ public enum Keyword implements ScanKeywordCategory {
     NATIONAL("national", COL_NAME_KEYWORD),
     NATURAL("natural", TYPE_FUNC_NAME_KEYWORD),
     NCHAR("nchar", COL_NAME_KEYWORD),
+    /** @since Postgres 17 */
+    NESTED("nested", UNRESERVED_KEYWORD),
     NEW("new", UNRESERVED_KEYWORD),
     NEXT("next", UNRESERVED_KEYWORD),
+    /** @since Postgres 13 */
+    NFC("nfc", UNRESERVED_KEYWORD),
+    /** @since Postgres 13 */
+    NFD("nfd", UNRESERVED_KEYWORD),
+    /** @since Postgres 13 */
+    NFKC("nfkc", UNRESERVED_KEYWORD),
+    /** @since Postgres 13 */
+    NFKD("nfkd", UNRESERVED_KEYWORD),
     NO("no", UNRESERVED_KEYWORD),
     NONE("none", COL_NAME_KEYWORD),
+    /** @since Postgres 13 */
+    NORMALIZE("normalize", COL_NAME_KEYWORD),
+    /** @since Postgres 13 */
+    NORMALIZED("normalized", UNRESERVED_KEYWORD),
     NOT("not", RESERVED_KEYWORD),
     NOTHING("nothing", UNRESERVED_KEYWORD),
     NOTIFY("notify", UNRESERVED_KEYWORD),
@@ -276,14 +371,18 @@ public enum Keyword implements ScanKeywordCategory {
     OFFSET("offset", RESERVED_KEYWORD),
     OIDS("oids", UNRESERVED_KEYWORD),
     OLD("old", UNRESERVED_KEYWORD),
+    /** @since Postgres 17 */
+    OMIT("omit", UNRESERVED_KEYWORD),
     ON("on", RESERVED_KEYWORD),
     ONLY("only", RESERVED_KEYWORD),
     OPERATOR("operator", UNRESERVED_KEYWORD),
     OPTION("option", UNRESERVED_KEYWORD),
     OPTIONS("options", UNRESERVED_KEYWORD),
     OR("or", RESERVED_KEYWORD),
+    /** @since Postgres 11 */
     ORDER("order", RESERVED_KEYWORD),
     ORDINALITY("ordinality", UNRESERVED_KEYWORD),
+    OTHERS("others", UNRESERVED_KEYWORD),
     OUT_P("out", COL_NAME_KEYWORD),
     OUTER_P("outer", TYPE_FUNC_NAME_KEYWORD),
     OVER("over", UNRESERVED_KEYWORD),
@@ -293,12 +392,20 @@ public enum Keyword implements ScanKeywordCategory {
     OWNED("owned", UNRESERVED_KEYWORD),
     OWNER("owner", UNRESERVED_KEYWORD),
     PARALLEL("parallel", UNRESERVED_KEYWORD),
+    /** @since Postgres 15 */
+    PARAMETER("parameter", UNRESERVED_KEYWORD),
     PARSER("parser", UNRESERVED_KEYWORD),
     PARTIAL("partial", UNRESERVED_KEYWORD),
     PARTITION("partition", UNRESERVED_KEYWORD),
+    /** @since Postgres 17 */
+    PARTITIONS("partitions", UNRESERVED_KEYWORD),
     PASSING("passing", UNRESERVED_KEYWORD),
     PASSWORD("password", UNRESERVED_KEYWORD),
+    /** @since Postgres 17 */
+    PATH("path", UNRESERVED_KEYWORD),
     PLACING("placing", RESERVED_KEYWORD),
+    /** @since Postgres 17 */
+    PLAN("plan", UNRESERVED_KEYWORD),
     PLANS("plans", UNRESERVED_KEYWORD),
     POLICY("policy", UNRESERVED_KEYWORD),
     POSITION("position", COL_NAME_KEYWORD),
@@ -312,16 +419,20 @@ public enum Keyword implements ScanKeywordCategory {
     PRIVILEGES("privileges", UNRESERVED_KEYWORD),
     PROCEDURAL("procedural", UNRESERVED_KEYWORD),
     PROCEDURE("procedure", UNRESERVED_KEYWORD),
+    /** @since Postgres 11 */
+    PROCEDURES("procedures", UNRESERVED_KEYWORD),
     PROGRAM("program", UNRESERVED_KEYWORD),
     PUBLICATION("publication", UNRESERVED_KEYWORD),
     QUOTE("quote", UNRESERVED_KEYWORD),
+    /** @since Postgres 17 */
+    QUOTES("quotes", UNRESERVED_KEYWORD),
     RANGE("range", UNRESERVED_KEYWORD),
     READ("read", UNRESERVED_KEYWORD),
     REAL("real", COL_NAME_KEYWORD),
     REASSIGN("reassign", UNRESERVED_KEYWORD),
     RECHECK("recheck", UNRESERVED_KEYWORD),
     RECURSIVE("recursive", UNRESERVED_KEYWORD),
-    REF("ref", UNRESERVED_KEYWORD),
+    REF_P("ref", UNRESERVED_KEYWORD),
     REFERENCES("references", RESERVED_KEYWORD),
     REFERENCING("referencing", UNRESERVED_KEYWORD),
     REFRESH("refresh", UNRESERVED_KEYWORD),
@@ -335,6 +446,8 @@ public enum Keyword implements ScanKeywordCategory {
     RESET("reset", UNRESERVED_KEYWORD),
     RESTART("restart", UNRESERVED_KEYWORD),
     RESTRICT("restrict", UNRESERVED_KEYWORD),
+    /** @since Postgres 14 */
+    RETURN("return", UNRESERVED_KEYWORD),
     RETURNING("returning", RESERVED_KEYWORD),
     RETURNS("returns", UNRESERVED_KEYWORD),
     REVOKE("revoke", UNRESERVED_KEYWORD),
@@ -342,10 +455,16 @@ public enum Keyword implements ScanKeywordCategory {
     ROLE("role", UNRESERVED_KEYWORD),
     ROLLBACK("rollback", UNRESERVED_KEYWORD),
     ROLLUP("rollup", UNRESERVED_KEYWORD),
+    /** @since Postgres 11 */
+    ROUTINE("routine", UNRESERVED_KEYWORD),
+    /** @since Postgres 11 */
+    ROUTINES("routines", UNRESERVED_KEYWORD),
     ROW("row", COL_NAME_KEYWORD),
     ROWS("rows", UNRESERVED_KEYWORD),
     RULE("rule", UNRESERVED_KEYWORD),
     SAVEPOINT("savepoint", UNRESERVED_KEYWORD),
+    /** @since Postgres 16 */
+    SCALAR("scalar", UNRESERVED_KEYWORD),
     SCHEMA("schema", UNRESERVED_KEYWORD),
     SCHEMAS("schemas", UNRESERVED_KEYWORD),
     SCROLL("scroll", UNRESERVED_KEYWORD),
@@ -370,6 +489,10 @@ public enum Keyword implements ScanKeywordCategory {
     SMALLINT("smallint", COL_NAME_KEYWORD),
     SNAPSHOT("snapshot", UNRESERVED_KEYWORD),
     SOME("some", RESERVED_KEYWORD),
+    /** @since Postgres 17 */
+    SOURCE("source", UNRESERVED_KEYWORD),
+    /** @since Postgres 17 */
+    SPLIT("split", UNRESERVED_KEYWORD),
     SQL_P("sql", UNRESERVED_KEYWORD),
     STABLE("stable", UNRESERVED_KEYWORD),
     STANDALONE_P("standalone", UNRESERVED_KEYWORD),
@@ -379,22 +502,34 @@ public enum Keyword implements ScanKeywordCategory {
     STDIN("stdin", UNRESERVED_KEYWORD),
     STDOUT("stdout", UNRESERVED_KEYWORD),
     STORAGE("storage", UNRESERVED_KEYWORD),
+    /** @since Postgres 12 */
+    STORED("stored", UNRESERVED_KEYWORD),
     STRICT_P("strict", UNRESERVED_KEYWORD),
+    /** @since Postgres 17 */
+    STRING_P("string", UNRESERVED_KEYWORD),
     STRIP_P("strip", UNRESERVED_KEYWORD),
     SUBSCRIPTION("subscription", UNRESERVED_KEYWORD),
     SUBSTRING("substring", COL_NAME_KEYWORD),
+    /** @since Postgres 12 */
+    SUPPORT("support", UNRESERVED_KEYWORD),
     SYMMETRIC("symmetric", RESERVED_KEYWORD),
     SYSID("sysid", UNRESERVED_KEYWORD),
     SYSTEM_P("system", UNRESERVED_KEYWORD),
+    /** @since Postgres 16 */
+    SYSTEM_USER("system_user", RESERVED_KEYWORD),
     TABLE("table", RESERVED_KEYWORD),
     TABLES("tables", UNRESERVED_KEYWORD),
     TABLESAMPLE("tablesample", TYPE_FUNC_NAME_KEYWORD),
     TABLESPACE("tablespace", UNRESERVED_KEYWORD),
+    /** @since Postgres 17 */
+    TARGET("target", UNRESERVED_KEYWORD),
     TEMP("temp", UNRESERVED_KEYWORD),
     TEMPLATE("template", UNRESERVED_KEYWORD),
     TEMPORARY("temporary", UNRESERVED_KEYWORD),
     TEXT_P("text", UNRESERVED_KEYWORD),
     THEN("then", RESERVED_KEYWORD),
+    /** @since Postgres 11 */
+    TIES("ties", UNRESERVED_KEYWORD),
     TIME("time", COL_NAME_KEYWORD),
     TIMESTAMP("timestamp", COL_NAME_KEYWORD),
     TO("to", RESERVED_KEYWORD),
@@ -409,8 +544,12 @@ public enum Keyword implements ScanKeywordCategory {
     TRUSTED("trusted", UNRESERVED_KEYWORD),
     TYPE_P("type", UNRESERVED_KEYWORD),
     TYPES_P("types", UNRESERVED_KEYWORD),
+    /** @since Postgres 13 */
+    UESCAPE("uescape", UNRESERVED_KEYWORD),
     UNBOUNDED("unbounded", UNRESERVED_KEYWORD),
     UNCOMMITTED("uncommitted", UNRESERVED_KEYWORD),
+    /** @since Postgres 17 */
+    UNCONDITIONAL("unconditional", UNRESERVED_KEYWORD),
     UNENCRYPTED("unencrypted", UNRESERVED_KEYWORD),
     UNION("union", RESERVED_KEYWORD),
     UNIQUE("unique", RESERVED_KEYWORD),

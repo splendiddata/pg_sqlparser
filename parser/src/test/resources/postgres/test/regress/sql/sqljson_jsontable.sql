@@ -1,24 +1,32 @@
+/*
+ * This file has been altered by SplendidData.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So some statements that are expected to fail are removed.
+ * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
+ */
+
+
 -- JSON_TABLE
 
 -- Should fail (JSON_TABLE can be used only in FROM clause)
-SELECT JSON_TABLE('[]', '$');
+-- Deactivated for SplendidDataTest: SELECT JSON_TABLE('[]', '$');
 
 -- Only allow EMPTY and ERROR for ON ERROR
-SELECT * FROM JSON_TABLE('[]', 'strict $.a' COLUMNS (js2 int PATH '$') DEFAULT 1 ON ERROR);
-SELECT * FROM JSON_TABLE('[]', 'strict $.a' COLUMNS (js2 int PATH '$') NULL ON ERROR);
+-- Deactivated for SplendidDataTest: SELECT * FROM JSON_TABLE('[]', 'strict $.a' COLUMNS (js2 int PATH '$') DEFAULT 1 ON ERROR);
+-- Deactivated for SplendidDataTest: SELECT * FROM JSON_TABLE('[]', 'strict $.a' COLUMNS (js2 int PATH '$') NULL ON ERROR);
 SELECT * FROM JSON_TABLE('[]', 'strict $.a' COLUMNS (js2 int PATH '$') EMPTY ON ERROR);
 SELECT * FROM JSON_TABLE('[]', 'strict $.a' COLUMNS (js2 int PATH '$') ERROR ON ERROR);
 
 -- Column and path names must be distinct
-SELECT * FROM JSON_TABLE(jsonb'"1.23"', '$.a' as js2 COLUMNS (js2 int path '$'));
+-- Deactivated for SplendidDataTest: SELECT * FROM JSON_TABLE(jsonb'"1.23"', '$.a' as js2 COLUMNS (js2 int path '$'));
 
 -- Should fail (no columns)
-SELECT * FROM JSON_TABLE(NULL, '$' COLUMNS ());
+-- Deactivated for SplendidDataTest: SELECT * FROM JSON_TABLE(NULL, '$' COLUMNS ());
 
-SELECT * FROM JSON_TABLE (NULL::jsonb, '$' COLUMNS (v1 timestamp)) AS f (v1, v2);
+-- Deactivated for SplendidDataTest: SELECT * FROM JSON_TABLE (NULL::jsonb, '$' COLUMNS (v1 timestamp)) AS f (v1, v2);
 
 --duplicated column name
-SELECT * FROM JSON_TABLE(jsonb'"1.23"', '$.a' COLUMNS (js2 int path '$', js2 int path '$'));
+-- Deactivated for SplendidDataTest: SELECT * FROM JSON_TABLE(jsonb'"1.23"', '$.a' COLUMNS (js2 int path '$', js2 int path '$'));
 
 --return composite data type.
 create type comp as (a int, b int);
@@ -304,7 +312,7 @@ FROM JSON_TABLE(
 	) jt;
 
 -- Should fail (not supported)
-SELECT * FROM JSON_TABLE(jsonb '{"a": 123}', '$' || '.' || 'a' COLUMNS (foo int));
+-- Deactivated for SplendidDataTest: SELECT * FROM JSON_TABLE(jsonb '{"a": 123}', '$' || '.' || 'a' COLUMNS (foo int));
 
 -- JsonPathQuery() error message mentioning column name
 SELECT * FROM JSON_TABLE('{"a": [{"b": "1"}, {"b": "2"}]}', '$' COLUMNS (b json path '$.a[*].b' ERROR ON ERROR));

@@ -77,6 +77,16 @@ public class JsonScalarExpr extends Node {
      */
     @Override
     public String toString() {
-        return "????? Please implement " + this.getClass().getName() + ".toString() ?????";
+        StringBuilder result = new StringBuilder();
+        String separator = "";
+        if (expr != null) {
+            result.append(expr);
+            separator = " ";
+        }
+        if (output != null) {
+            result.append(separator).append(output);
+            separator = " ";
+        }
+        return result.toString();
     }
 }

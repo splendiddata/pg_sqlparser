@@ -75,7 +75,7 @@ public class SinglePartitionSpec extends Node {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        result.append(name);
+        result.append("partition ").append(name);
         if (bound == null) {
             result.append(" default");
         } else {

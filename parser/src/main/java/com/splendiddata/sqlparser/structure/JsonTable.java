@@ -141,7 +141,7 @@ public class JsonTable extends Node {
             separator = " ";
         }
         if (passing != null) {
-            separator += "passing";
+            separator += "passing ";
             for (Node node : passing) {
                 result.append(separator).append(node);
                 separator = ", ";

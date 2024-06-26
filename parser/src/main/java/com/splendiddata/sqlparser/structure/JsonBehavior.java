@@ -87,8 +87,7 @@ public class JsonBehavior extends Node {
             separator = " ";
         }
         if (expr != null) {
-            result.append(separator).append("????? please implement in ").append(this.getClass().getName())
-                    .append(".toString() expr ").append(expr).append(" ?????");
+            result.append(separator).append(expr);
             separator = " ";
         }
         if (coerce) {

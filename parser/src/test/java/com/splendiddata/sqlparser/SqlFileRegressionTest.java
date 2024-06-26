@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
@@ -150,8 +151,8 @@ public class SqlFileRegressionTest {
                         } catch (IOException e1) {
                             log.error(e, e);
                         }
-                    } catch (IOException e) {
-                        log.error(e, e);
+                    } catch (UncheckedIOException | IOException e) {
+                        log.warn(e, e);
                     }
                 }
                 return FileVisitResult.CONTINUE;
