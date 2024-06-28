@@ -14265,7 +14265,7 @@ json_table_column_definition:
 				}
 			| ColId Typename
 				EXISTS json_table_column_path_clause_opt
-				json_behavior_clause_opt
+				json_on_error_clause_opt
 				{
 					JsonTableColumn *n = makeNode(JsonTableColumn);
 
@@ -14276,8 +14276,8 @@ json_table_column_definition:
 					n->wrapper = JSW_NONE;
 					n->quotes = JS_QUOTES_UNSPEC;
 					n->pathspec = (JsonTablePathSpec *) $4;
-					n->on_empty = (JsonBehavior *) linitial($5);
-					n->on_error = (JsonBehavior *) lsecond($5);
+					n->on_empty = NULL;
+					n->on_error = (JsonBehavior *) $5;
 					n->location = @1;
 					$$ = (Node *) n;
 				}
@@ -15667,7 +15667,7 @@ func_expr: func_application within_group_clause filter_clause over_clause
 		;
 
 /*
- * As func_expr but does not accept WINDOW functions directly
+ * Like func_expr but does not accept WINDOW functions directly
  * (but they can still be contained in arguments for functions etc).
  * Use this when window expressions are not allowed, where needed to
  * disambiguate the grammar (e.g. in CREATE INDEX).
