@@ -53,7 +53,9 @@ SELECT JSON_VALUE(jsonb '"1.23"', '$' RETURNING int ERROR ON ERROR);
 SELECT JSON_VALUE(jsonb '"aaa"', '$');
 SELECT JSON_VALUE(jsonb '"aaa"', '$' RETURNING text);
 SELECT JSON_VALUE(jsonb '"aaa"', '$' RETURNING char(5));
+SELECT JSON_VALUE(jsonb '"aaa"', '$' RETURNING char(2) ERROR ON ERROR);
 SELECT JSON_VALUE(jsonb '"aaa"', '$' RETURNING char(2));
+SELECT JSON_VALUE(jsonb '"aaa"', '$' RETURNING char(3) ERROR ON ERROR);
 SELECT JSON_VALUE(jsonb '"aaa"', '$' RETURNING json);
 SELECT JSON_VALUE(jsonb '"aaa"', '$' RETURNING jsonb);
 SELECT JSON_VALUE(jsonb '"aaa"', '$' RETURNING json ERROR ON ERROR);
@@ -188,10 +190,11 @@ SELECT JSON_QUERY(jsonb '"aaa"', '$' RETURNING json OMIT QUOTES ERROR ON ERROR);
 SELECT JSON_QUERY(jsonb '"aaa"', '$' RETURNING bytea FORMAT JSON OMIT QUOTES ERROR ON ERROR);
 
 -- Behavior when a RETURNING type has typmod != -1
-SELECT JSON_QUERY(jsonb '"aaa"', '$' RETURNING char(2));
-SELECT JSON_QUERY(jsonb '"aaa"', '$' RETURNING char(2) OMIT QUOTES);
-SELECT JSON_QUERY(jsonb '"aaa"', '$.a' RETURNING char(2) OMIT QUOTES DEFAULT 'bbb' ON EMPTY);
-SELECT JSON_QUERY(jsonb '"aaa"', '$.a' RETURNING char(2) OMIT QUOTES DEFAULT '"bbb"'::jsonb ON EMPTY);
+SELECT JSON_QUERY(jsonb '"aaa"', '$' RETURNING char(3) ERROR ON ERROR);
+SELECT JSON_QUERY(jsonb '"aaa"', '$' RETURNING char(3));
+SELECT JSON_QUERY(jsonb '"aaa"', '$' RETURNING char(3) OMIT QUOTES ERROR ON ERROR);
+SELECT JSON_QUERY(jsonb '"aaa"', '$.a' RETURNING char(2) OMIT QUOTES DEFAULT 'bb' ON EMPTY);
+SELECT JSON_QUERY(jsonb '"aaa"', '$.a' RETURNING char(2) OMIT QUOTES DEFAULT '"bb"'::jsonb ON EMPTY);
 
 -- OMIT QUOTES behavior should not be specified when WITH WRAPPER used:
 -- Should fail
@@ -211,6 +214,11 @@ SELECT JSON_QUERY(jsonb'{"rec": "{1,2,3}"}', '$.rec' returning int[] keep quotes
 SELECT JSON_QUERY(jsonb'{"rec": "[1,2]"}', '$.rec' returning int4range omit quotes);
 SELECT JSON_QUERY(jsonb'{"rec": "[1,2]"}', '$.rec' returning int4range keep quotes);
 SELECT JSON_QUERY(jsonb'{"rec": "[1,2]"}', '$.rec' 	returning int4range keep quotes error on error);
+CREATE DOMAIN qf_char_domain AS char(1);
+CREATE DOMAIN qf_jsonb_domain AS jsonb;
+SELECT JSON_QUERY(jsonb '"1"', '$' RETURNING qf_char_domain OMIT QUOTES ERROR ON ERROR);
+SELECT JSON_QUERY(jsonb '"1"', '$' RETURNING qf_jsonb_domain OMIT QUOTES ERROR ON ERROR);
+DROP DOMAIN qf_char_domain, qf_jsonb_domain;
 
 SELECT JSON_QUERY(jsonb '[]', '$[*]');
 SELECT JSON_QUERY(jsonb '[]', '$[*]' NULL ON EMPTY);
@@ -235,7 +243,6 @@ SELECT JSON_QUERY(jsonb '[1,2]', '$' RETURNING jsonb);
 SELECT JSON_QUERY(jsonb '[1,2]', '$' RETURNING jsonb FORMAT JSON);
 SELECT JSON_QUERY(jsonb '[1,2]', '$' RETURNING text);
 SELECT JSON_QUERY(jsonb '[1,2]', '$' RETURNING char(10));
-SELECT JSON_QUERY(jsonb '[1,2]', '$' RETURNING char(3));
 SELECT JSON_QUERY(jsonb '[1,2]', '$' RETURNING text FORMAT JSON);
 SELECT JSON_QUERY(jsonb '[1,2]', '$' RETURNING bytea);
 SELECT JSON_QUERY(jsonb '[1,2]', '$' RETURNING bytea FORMAT JSON);
@@ -464,3 +471,30 @@ SELECT JSON_QUERY(jsonb 'null', '$xyz' PASSING 1 AS xyz);
 SELECT JSON_EXISTS(jsonb '1', '$' DEFAULT 1 ON ERROR);
 SELECT JSON_VALUE(jsonb '1', '$' EMPTY ON ERROR);
 SELECT JSON_QUERY(jsonb '1', '$' TRUE ON ERROR);
+
+-- Test implicit coercion to a domain over fixed-length type specified in
+-- RETURNING
+CREATE DOMAIN queryfuncs_char2 AS char(2);
+CREATE DOMAIN queryfuncs_char2_chk AS char(2) CHECK (VALUE NOT IN ('12'));
+SELECT JSON_QUERY(jsonb '123', '$' RETURNING queryfuncs_char2 ERROR ON ERROR);
+SELECT JSON_QUERY(jsonb '123', '$' RETURNING queryfuncs_char2 DEFAULT '1' ON ERROR);
+SELECT JSON_QUERY(jsonb '123', '$' RETURNING queryfuncs_char2_chk ERROR ON ERROR);
+SELECT JSON_QUERY(jsonb '123', '$' RETURNING queryfuncs_char2_chk DEFAULT '1' ON ERROR);
+SELECT JSON_VALUE(jsonb '123', '$' RETURNING queryfuncs_char2 ERROR ON ERROR);
+SELECT JSON_VALUE(jsonb '123', '$' RETURNING queryfuncs_char2 DEFAULT 1 ON ERROR);
+SELECT JSON_VALUE(jsonb '123', '$' RETURNING queryfuncs_char2_chk ERROR ON ERROR);
+SELECT JSON_VALUE(jsonb '123', '$' RETURNING queryfuncs_char2_chk DEFAULT 1 ON ERROR);
+DROP DOMAIN queryfuncs_char2, queryfuncs_char2_chk;
+
+-- Test coercion to domain over another fixed-length type of the ON ERROR /
+-- EMPTY expressions.  Ask user to cast the DEFAULT expression explicitly if
+-- automatic casting cannot be done, for example, from int to bit(2).
+CREATE DOMAIN queryfuncs_d_varbit3 AS varbit(3) CHECK (VALUE <> '01');
+SELECT JSON_VALUE(jsonb '1234', '$' RETURNING queryfuncs_d_varbit3  DEFAULT '111111' ON ERROR);
+SELECT JSON_VALUE(jsonb '1234', '$' RETURNING queryfuncs_d_varbit3  DEFAULT '010' ON ERROR);
+SELECT JSON_VALUE(jsonb '1234', '$' RETURNING queryfuncs_d_varbit3  DEFAULT '01' ON ERROR);
+SELECT JSON_VALUE(jsonb '"111"', '$'  RETURNING bit(2) ERROR ON ERROR);
+SELECT JSON_VALUE(jsonb '1234', '$' RETURNING bit(3)  DEFAULT 1 ON ERROR);
+SELECT JSON_VALUE(jsonb '1234', '$' RETURNING bit(3)  DEFAULT 1::bit(3) ON ERROR);
+SELECT JSON_VALUE(jsonb '"111"', '$.a'  RETURNING bit(3) DEFAULT '1111' ON EMPTY);
+DROP DOMAIN queryfuncs_d_varbit3;
