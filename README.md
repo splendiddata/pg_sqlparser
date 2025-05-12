@@ -59,4 +59,5 @@ The Postgres_13 branch contains a parser based on the PostgreSQL 13 parser.<br>
 The Postgres_14 branch contains a parser based on the PostgreSQL 14 parser.<br>
 The Postgres_15 branch contains a parser based on the PostgreSQL 15 parser.<br>
 The Postgres_16 branch contains a parser based on the PostgreSQL 16 parser.<br>
-The main branch is based on the PostgreSQL 17 parser.
+The Postgres_17 branch contains a parser based on the PostgreSQL 17 parser.<br>
+The main branch is based on the PostgreSQL 18 parser.
