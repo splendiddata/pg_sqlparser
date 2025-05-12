@@ -5,7 +5,7 @@
 
 	<groupId>com.splendiddata</groupId>
 	<artifactId>pg_sqlparser</artifactId>
-	<version>17.0</version>
+	<version>17.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>pg_sqlparser</name>
 	<description>Java implementation of the Postgres sql parser. This version of
