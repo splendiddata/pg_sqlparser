@@ -55,10 +55,14 @@
 -- Deactivated for SplendidDataTest: \g
 
 -- \bind (extended query protocol)
-
 -- Deactivated for SplendidDataTest: SELECT 1 \bind \g
 -- Deactivated for SplendidDataTest: SELECT $1 \bind 'foo' \g
 -- Deactivated for SplendidDataTest: SELECT $1, $2 \bind 'foo' 'bar' \g
+
+-- last \bind wins
+-- Deactivated for SplendidDataTest: select $1::int as col \bind 'foo' \bind 2 \g
+-- Multiple \g calls mean multiple executions
+-- Deactivated for SplendidDataTest: select $1::int as col \bind 1 \g \bind 2 \g
 
 -- errors
 -- parse error
@@ -67,6 +71,9 @@
 -- Deactivated for SplendidDataTest: SELECT 1 \; SELECT 2 \bind \g
 -- bind error
 -- Deactivated for SplendidDataTest: SELECT $1, $2 \bind 'foo' \g
+-- bind_named error
+-- Deactivated for SplendidDataTest: \bind_named stmt2 'baz' \g
+-- Deactivated for SplendidDataTest: \bind_named stmt3 'baz' \g
 
 -- \gset
 
@@ -470,6 +477,7 @@ create table psql_serial_tab (id serial);
 \d psql_serial_tab_id_seq
 \pset tuples_only true
 \df exp
+\dfx exp
 \pset tuples_only false
 \pset expanded on
 \d psql_serial_tab_id_seq
@@ -532,6 +540,9 @@ CREATE MATERIALIZED VIEW mat_view_heap_psql USING heap_psql AS SELECT f1 from tb
 \dv+
 \set HIDE_TABLEAM on
 \d+
+-- \d with 'x' enables expanded mode, but only without a pattern
+\d+x tbl_heap
+\d+x
 RESET ROLE;
 RESET search_path;
 DROP SCHEMA tableam_display CASCADE;
@@ -1274,9 +1285,10 @@ drop role regress_partitioning_role;
 \dAc brin pg*.oid*
 \dAf spgist
 \dAf btree int4
-\dAo+ btree float_ops
+\dAo+ btree array_ops|float_ops
 \dAo * pg_catalog.jsonb_path_ops
 \dAp+ btree float_ops
+\dApx+ btree time_ops
 \dAp * pg_catalog.uuid_ops
 
 -- check \dconfig
@@ -1895,5 +1907,6 @@ ROLLBACK;
 CREATE TABLE defprivs (a int);
 \pset null '(default)'
 \z defprivs
+\zx defprivs
 \pset null ''
 DROP TABLE defprivs;

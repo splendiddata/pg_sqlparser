@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -79,7 +79,7 @@ public class A_Const extends Expr {
         case T_BitString:
             return "x'" + val.toString().substring(1) + '\'';
         default:
-            return "??????? Unknown A_Const type: " + val.type + ", value = " + val.toString();
+            return ParserUtil.reportUnknownValue("val.type", val.type, getClass());
         }
     }
 

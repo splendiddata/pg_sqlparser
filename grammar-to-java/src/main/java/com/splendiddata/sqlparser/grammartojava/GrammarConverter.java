@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -57,6 +57,7 @@ import com.splendiddata.sqlparser.enums.DropBehavior;
 import com.splendiddata.sqlparser.enums.FetchDirection;
 import com.splendiddata.sqlparser.enums.FkConstrMatch;
 import com.splendiddata.sqlparser.enums.FrameOption;
+import com.splendiddata.sqlparser.enums.GeneratedKind;
 import com.splendiddata.sqlparser.enums.GrantTargetType;
 import com.splendiddata.sqlparser.enums.GroupingSetKind;
 import com.splendiddata.sqlparser.enums.ImportForeignSchemaType;
@@ -88,6 +89,7 @@ import com.splendiddata.sqlparser.enums.PublicationObjSpecType;
 import com.splendiddata.sqlparser.enums.ReindexObjectType;
 import com.splendiddata.sqlparser.enums.RelPersistence;
 import com.splendiddata.sqlparser.enums.ReplicaIdentityType;
+import com.splendiddata.sqlparser.enums.ReturningOptionKind;
 import com.splendiddata.sqlparser.enums.RoleSpecType;
 import com.splendiddata.sqlparser.enums.RoleStmtType;
 import com.splendiddata.sqlparser.enums.SQLValueFunctionOp;
@@ -304,8 +306,6 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                                     "%type <CmdType> event"
                                             + "\n%type <Integer>  opt_column cursor_options opt_hold opt_set_data")
                             .replaceAll("%type <ival>\\s+OptTemp", "%type <RelPersistence> OptTemp")
-                            .replaceAll("%type <ival>\\s+generated_when override_kind",
-                                    "%type <AttributeIdentity> generated_when\n%type <OverridingKind> override_kind")
                             .replace("%type <list>", "%type <List>").replace("%type <defelt>", "%type <DefElem>")
                             .replace("%type <dbehavior>", "%type <DropBehavior>")
                             .replace("%type <str>", "%type <String>").replace("%type <value>", "%type <Value>")
@@ -369,6 +369,14 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                                     "%type <JsonPredicateTypeConstraint> json_predicate_type_constraint")
                             .replaceAll("^\\s+json_wrapper_behavior", "%type <JsonWrapper> json_wrapper_behavior")
                             .replaceAll("^%type <ival>\\s+key_match", "%type<FkConstrMatch> key_match")
+                            /* Since Postgres 18 */
+                            .replaceAll("%type <ival>\\s+generated_when override_kind opt_virtual_or_stored", """
+                                    %type <AttributeIdentity> generated_when\n%type <OverridingKind> override_kind
+                                    %type <GeneratedKind> opt_virtual_or_stored
+                                    """)
+                            .replace("%type <retclause> returning_clause", "%type <ReturningClause> returning_clause")
+                            .replace("%type <retoptionkind> returning_option_kind",
+                                    "%type <ReturningOptionKind> returning_option_kind")
                             /* remaining ival types */
                             .replace("%type <ival>", "%type <Integer>");
                     /*
@@ -682,7 +690,16 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                          * MergeMatchKind from "enum".
                          */
                         .replaceAll("(\\W)(" + MergeMatchKind.REPLACEMENT_REGEXP_PART + ")(\\W)",
-                                "$1MergeMatchKind.$2$3");
+                                "$1MergeMatchKind.$2$3")
+                        /*
+                         * GeneratedKind from "enum".
+                         */
+                        .replaceAll("(\\W)(" + GeneratedKind.REPLACEMENT_REGEXP_PART + ")(\\W)", "$1GeneratedKind.$2$3")
+                        /*
+                         * ReturningOptionKind from "enum".
+                         */
+                        .replaceAll("(\\W)(" + ReturningOptionKind.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1ReturningOptionKind.$2$3");
                 /*
                  * Replace some constants that are defined in the type that uses them
                  */
@@ -1073,6 +1090,13 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                 break;
             case "preprocess_pubobj_list":
                 convertedLine = input.replaceAll("!(\\w[\\w\\.\\->]*)", "$1 == null");
+                break;
+            case "updatePreparableStmtEnd":
+                convertedLine = input
+                        .replace("end_location - stmt->stmt_location",
+                                "end_location.getOffset() - stmt.stmt_location.getOffset()")
+                        .replace("elog(Severity.ERROR, \"unexpected node type %d\", (int) n->type);",
+                                "ereport(Severity.ERROR, errmsg(\"unexpected node type %d\", n.type));");
                 break;
             default:
                 convertedLine = input;

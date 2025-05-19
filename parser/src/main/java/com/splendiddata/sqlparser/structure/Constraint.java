@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -19,11 +19,14 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+import java.util.Iterator;
+
 import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.A_Expr_Kind;
 import com.splendiddata.sqlparser.enums.AttributeIdentity;
 import com.splendiddata.sqlparser.enums.ConstrType;
 import com.splendiddata.sqlparser.enums.FkConstrMatch;
+import com.splendiddata.sqlparser.enums.GeneratedKind;
 import com.splendiddata.sqlparser.enums.NodeTag;
 
 /**
@@ -71,6 +74,14 @@ public class Constraint extends Node {
     @XmlAttribute
     public boolean initdeferred;
 
+    /**
+     * enforced constraint?
+     * 
+     * @since Postgres 18
+     */
+    @XmlAttribute
+    public Boolean is_enforced;
+
     /** is constraint non-inheritable? */
     @XmlAttribute
     public boolean is_no_inherit;
@@ -83,9 +94,21 @@ public class Constraint extends Node {
     @XmlAttribute
     public String cooked_expr;
 
-    /** @since 5.0 */
+    /**
+     * ALWAYS or BY DEFAULT
+     * 
+     * @since 5.0
+     */
     @XmlAttribute
     public AttributeIdentity generated_when;
+
+    /**
+     * STORED or VIRTUAL
+     * 
+     * @since Postgres 18
+     */
+    @XmlAttribute
+    public GeneratedKind generated_kind;
 
     /* Fields used for unique constraints (UNIQUE and PRIMARY KEY): */
     /**
@@ -96,10 +119,19 @@ public class Constraint extends Node {
     @XmlAttribute
     public boolean nulls_not_distinct;
 
-    /** String nodes naming referenced column(s) */
+    /**
+     * String nodes naming referenced key column(s); for UNIQUE/PK/NOT NULL
+     */
     @XmlElementWrapper(name = "keys")
     @XmlElement(name = "key")
     public List<Value> keys;
+
+    /**
+     * WITHOUT OVERLAPS specified @since 1
+     * 
+     * @since Postgres 18
+     */
+    public boolean without_overlaps;
 
     /**
      * String nodes naming referenced nonkey column(s)
@@ -149,6 +181,22 @@ public class Constraint extends Node {
     @XmlElementWrapper(name = "pk_attrs")
     @XmlElement(name = "pk_attr")
     public List<Value> pk_attrs;
+
+    /**
+     * Last attribute of FK uses PERIOD
+     * 
+     * @since Postgres 18
+     */
+    @XmlAttribute
+    public boolean fk_with_period;
+
+    /**
+     * Last attribute of PK uses PERIOD
+     * 
+     * @since Postgres 18
+     */
+    @XmlAttribute
+    public boolean pk_with_period;
 
     /** FULL, PARTIAL, SIMPLE */
     @XmlAttribute
@@ -210,16 +258,19 @@ public class Constraint extends Node {
         this.conname = original.conname;
         this.deferrable = original.deferrable;
         this.initdeferred = original.initdeferred;
+        this.is_enforced = original.is_enforced;
         this.is_no_inherit = original.is_no_inherit;
         if (original.raw_expr != null) {
             this.raw_expr = original.raw_expr.clone();
         }
         this.cooked_expr = original.cooked_expr;
         this.generated_when = original.generated_when;
+        this.generated_kind = original.generated_kind;
         this.nulls_not_distinct = original.nulls_not_distinct;
         if (original.keys != null) {
             this.keys = original.keys.clone();
         }
+        this.without_overlaps = original.without_overlaps;
         if (original.including != null) {
             this.including = original.including.clone();
         }
@@ -244,6 +295,8 @@ public class Constraint extends Node {
         if (original.pk_attrs != null) {
             this.pk_attrs = original.pk_attrs.clone();
         }
+        this.fk_with_period = original.fk_with_period;
+        this.pk_with_period = original.pk_with_period;
         this.fk_matchtype = original.fk_matchtype;
         this.fk_upd_action = original.fk_upd_action;
         this.fk_del_action = original.fk_del_action;
@@ -367,9 +420,15 @@ public class Constraint extends Node {
                 if (fk_attrs != null) {
                     result.append(" (");
                     String sep = "";
-                    for (Value key : fk_attrs) {
-                        result.append(sep).append(ParserUtil.identifierToSql(key.toString()));
+                    Iterator<Value> it = fk_attrs.iterator();
+                    while (it.hasNext()) {
+                        Value key = it.next();
+                        result.append(sep);
                         sep = ", ";
+                        if (fk_with_period && !it.hasNext()) { // Only the last attribute may be preceded by "period"
+                            result.append("period ");
+                        }
+                        result.append(ParserUtil.identifierToSql(key.toString()));
                     }
                     result.append(')');
                 }
@@ -388,10 +447,17 @@ public class Constraint extends Node {
                 if (pk_attrs != null) {
                     result.append(" (");
                     String sep = "";
-                    for (Value key : pk_attrs) {
-                        result.append(sep).append(ParserUtil.identifierToSql(key.toString()));
+                    Iterator<Value> it = pk_attrs.iterator();
+                    while (it.hasNext()) {
+                        Value key = it.next();
+                        result.append(sep);
                         sep = ", ";
+                        if (pk_with_period && !it.hasNext()) { // Only the last attribute may be preceded by "period"
+                            result.append("period ");
+                        }
+                        result.append(ParserUtil.identifierToSql(key.toString()));
                     }
+
                     result.append(')');
                 }
             }
@@ -446,6 +512,11 @@ public class Constraint extends Node {
             break;
         case CONSTR_NOTNULL:
             result.append("not null");
+            if (keys != null && !(keys.size() == 1 && "value".equals(keys.get(0).val.toString()))) {
+                for (Value key : keys) {
+                    result.append(' ').append(ParserUtil.identifierToSql(key.toString()));
+                }
+            }
             break;
         case CONSTR_NULL:
             result.append("null");
@@ -459,6 +530,9 @@ public class Constraint extends Node {
                 for (Value key : keys) {
                     result.append(sep).append(ParserUtil.identifierToSql(key.toString()));
                     sep = ", ";
+                }
+                if (without_overlaps) {
+                    result.append(" without overlaps");
                 }
                 result.append(')');
             }
@@ -479,6 +553,9 @@ public class Constraint extends Node {
                 for (Value key : keys) {
                     result.append(sep).append(ParserUtil.identifierToSql(key.toString()));
                     sep = ", ";
+                }
+                if (without_overlaps) {
+                    result.append(" without overlaps");
                 }
                 result.append(')');
             }
@@ -544,12 +621,20 @@ public class Constraint extends Node {
                 return ParserUtil.reportUnknownValue(AttributeIdentity.class.getName(), generated_when, getClass());
             }
             if (raw_expr != null) {
-                result.append(" as (").append(raw_expr).append(") stored");
+                result.append(" as (").append(raw_expr).append(")");
+            }
+            if (generated_kind.equals(GeneratedKind.ATTRIBUTE_GENERATED_STORED)) {
+                result.append(" stored");
             }
             return result.toString();
+        /** @since Postgres 18 */
+        case CONSTR_ATTR_ENFORCED:
+            return " enforced";
+        /** @since Postgres 18 */
+        case CONSTR_ATTR_NOT_ENFORCED:
+            return " not enforced";
         default:
-            result.append(" ??? enum value ").append(contype.getClass().getName()).append('.').append(contype)
-                    .append(" is unknown to ").append(this.getClass().getName()).append(".toString() ???");
+            result.append(ParserUtil.reportUnknownValue("contype", contype.name(), getClass()));
             return result.toString();
         }
 
@@ -583,7 +668,9 @@ public class Constraint extends Node {
         if (initdeferred) {
             result.append(" initially deferred");
         }
-
+        if (is_enforced != null && !is_enforced.booleanValue()) {
+            result.append(" not enforced");
+        }
         if (skip_validation) {
             result.append(" not valid");
         }

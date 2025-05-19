@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -29,7 +29,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * @since Postgres 15
  */
 @XmlRootElement(namespace = "parser")
-public class MergeStmt extends Node {
+public class MergeStmt extends Stmt {
 
     /** target relation to merge into */
     @XmlElement
@@ -52,10 +52,21 @@ public class MergeStmt extends Node {
      * list of expressions to return
      * 
      * @since Postgres 17
+     * 
+     * @deprecated since Postgres 18: Use {@link #returningClause} instead
      */
+    @Deprecated(since = "Postgres 18", forRemoval = true)
     @XmlElementWrapper(name = "returningList")
     @XmlElement(name = "returningNode")
     public List<Expr> returningList;
+
+    /**
+     * RETURNING clause
+     * 
+     * @since Postgres 18
+     */
+    @XmlElement
+    public ReturningClause returningClause;
 
     /** WITH clause */
     @XmlElement
@@ -91,6 +102,9 @@ public class MergeStmt extends Node {
         if (original.returningList != null) {
             this.returningList = original.returningList.clone();
         }
+        if (original.returningClause != null) {
+            this.returningClause = original.returningClause.clone();
+        }
         if (original.withClause != null) {
             this.withClause = original.withClause.clone();
         }
@@ -113,6 +127,9 @@ public class MergeStmt extends Node {
         }
         if (returningList != null) {
             clone.returningList = returningList.clone();
+        }
+        if (returningClause != null) {
+            clone.returningClause = returningClause.clone();
         }
         if (withClause != null) {
             clone.withClause = withClause.clone();
@@ -139,6 +156,9 @@ public class MergeStmt extends Node {
                 result.append(separator).append(returningNode);
                 separator = ", ";
             }
+        }
+        if (returningClause != null) {
+            result.append(' ').append(returningClause);
         }
 
         return result.toString();

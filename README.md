@@ -12,7 +12,7 @@ The parser is generated directly from the actual PostgreSQL parser sources, so t
 * Comes with a test GUI to visualise the three features above
 
 ## Prerequisites
-* Java 11 or higher
+* Java **21** or higher
 * Maven 3.5.2 or higher
 * Bison 3.0 or higher
 

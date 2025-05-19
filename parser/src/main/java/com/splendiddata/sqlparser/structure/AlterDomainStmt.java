@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -144,8 +144,7 @@ public class AlterDomainStmt extends Node {
                     result.append(" restrict");
                     break;
                 default:
-                    result.append("??????? unknown DropBehavior: ").append(behavior).append(" in ")
-                            .append(getClass().getName()).append(" ???????");
+                    result.append(ParserUtil.reportUnknownValue("behavior", behavior, getClass()));
                     break;
                 }
             }
@@ -154,8 +153,7 @@ public class AlterDomainStmt extends Node {
             result.append(" validate constraint ").append(ParserUtil.identifierToSql(name));
             break;
         default:
-            result.append("??????? unknown subtype: ").append(subtype).append(" in ").append(getClass().getName())
-                    .append(" ???????");
+            result.append(ParserUtil.reportUnknownValue("subtype", subtype, getClass()));
             break;
         }
 

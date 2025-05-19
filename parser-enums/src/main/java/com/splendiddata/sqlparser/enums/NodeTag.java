@@ -748,7 +748,19 @@ public enum NodeTag {
      * 
      * @since 6.0 - Postgres version 11
      */
-    T_CallContext;
+    T_CallContext,
+    /**
+     * @since Postgres 18
+     */
+    T_ErrorSaveContext,
+    /**
+     * @since Postgres 18
+     */
+    T_ReturningClause,
+    /**
+     * @since Postgres 18
+     */
+    T_ReturningOption;
 
     /**
      * String containing all values with "|" characters between them, that can be used as argument in a regular

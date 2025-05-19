@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -155,8 +155,7 @@ public class JsonFuncExpr extends Expr {
         }
         result.append('(');
         if (column_name != null) {
-            result.append(separator).append("????? Please implement column_name ").append(ParserUtil.identifierToSql(column_name)).append(" in ")
-                    .append(this.getClass().getName()).append(".toString() ?????");
+            result.append(separator).append(ParserUtil.reportUnknownValue("column_name", column_name, getClass()));
             separator = " ";
         }
         if (context_item != null) {
@@ -193,8 +192,7 @@ public class JsonFuncExpr extends Expr {
             case JSW_UNSPEC:
                 break;
             default:
-                result.append(separator).append("????? Please implement wrapper ").append(wrapper).append(" in ")
-                        .append(this.getClass().getName()).append(".toString() ?????");
+                result.append(separator).append(ParserUtil.reportUnknownValue("wrapper", wrapper, getClass()));
                 separator = " ";
                 break;
             }
@@ -212,8 +210,7 @@ public class JsonFuncExpr extends Expr {
             case JS_QUOTES_UNSPEC:
                 break;
             default:
-                result.append(separator).append("????? Please implement quotes ").append(quotes).append(" in ")
-                        .append(this.getClass().getName()).append(".toString() ?????");
+                result.append(separator).append(ParserUtil.reportUnknownValue("quotes", quotes, getClass()));
                 break;
             }
         }

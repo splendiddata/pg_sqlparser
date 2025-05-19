@@ -1,3 +1,10 @@
+/*
+ * This file has been altered by SplendidData.
+ * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
+ * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
+ */
+
+
 --
 -- TEST_SETUP --- prepare environment expected by regression test scripts
 --
@@ -135,7 +142,7 @@ CREATE TABLE onek (
 );
 
 \set filename :abs_srcdir '/data/onek.data'
-COPY onek FROM :'filename';
+-- Deactivated for SplendidDataTest: COPY onek FROM :'filename';
 VACUUM ANALYZE onek;
 
 CREATE TABLE onek2 AS SELECT * FROM onek;
@@ -161,7 +168,7 @@ CREATE TABLE tenk1 (
 );
 
 \set filename :abs_srcdir '/data/tenk.data'
-COPY tenk1 FROM :'filename';
+-- Deactivated for SplendidDataTest: COPY tenk1 FROM :'filename';
 VACUUM ANALYZE tenk1;
 
 CREATE TABLE tenk2 AS SELECT * FROM tenk1;
@@ -174,7 +181,7 @@ CREATE TABLE person (
 );
 
 \set filename :abs_srcdir '/data/person.data'
-COPY person FROM :'filename';
+-- Deactivated for SplendidDataTest: COPY person FROM :'filename';
 VACUUM ANALYZE person;
 
 CREATE TABLE emp (
@@ -183,7 +190,7 @@ CREATE TABLE emp (
 ) INHERITS (person);
 
 \set filename :abs_srcdir '/data/emp.data'
-COPY emp FROM :'filename';
+-- Deactivated for SplendidDataTest: COPY emp FROM :'filename';
 VACUUM ANALYZE emp;
 
 CREATE TABLE student (
@@ -191,7 +198,7 @@ CREATE TABLE student (
 ) INHERITS (person);
 
 \set filename :abs_srcdir '/data/student.data'
-COPY student FROM :'filename';
+-- Deactivated for SplendidDataTest: COPY student FROM :'filename';
 VACUUM ANALYZE student;
 
 CREATE TABLE stud_emp (
@@ -199,7 +206,7 @@ CREATE TABLE stud_emp (
 ) INHERITS (emp, student);
 
 \set filename :abs_srcdir '/data/stud_emp.data'
-COPY stud_emp FROM :'filename';
+-- Deactivated for SplendidDataTest: COPY stud_emp FROM :'filename';
 VACUUM ANALYZE stud_emp;
 
 CREATE TABLE road (
@@ -208,7 +215,7 @@ CREATE TABLE road (
 );
 
 \set filename :abs_srcdir '/data/streets.data'
-COPY road FROM :'filename';
+-- Deactivated for SplendidDataTest: COPY road FROM :'filename';
 VACUUM ANALYZE road;
 
 CREATE TABLE ihighway () INHERITS (road);
@@ -247,15 +254,10 @@ create type textrange as range (subtype = text, collation = "C");
 -- Create some C functions that will be used by various tests.
 --
 
-CREATE FUNCTION binary_coercible(oid, oid)
-    RETURNS bool
-    AS :'regresslib', 'binary_coercible'
-    LANGUAGE C STRICT STABLE PARALLEL SAFE;
-
-CREATE FUNCTION ttdummy ()
-    RETURNS trigger
-    AS :'regresslib'
-    LANGUAGE C;
+-- Deactivated for SplendidDataTest: CREATE FUNCTION binary_coercible(oid, oid)
+-- Deactivated for SplendidDataTest:     RETURNS bool
+-- Deactivated for SplendidDataTest:     AS :'regresslib', 'binary_coercible'
+-- Deactivated for SplendidDataTest:     LANGUAGE C STRICT STABLE PARALLEL SAFE;
 
 -- Use hand-rolled hash functions and operator classes to get predictable
 -- result on different machines.  The hash function for int4 simply returns

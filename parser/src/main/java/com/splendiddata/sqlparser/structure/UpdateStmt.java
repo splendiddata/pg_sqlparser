@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -31,7 +28,7 @@ import com.splendiddata.sqlparser.enums.NodeTag;
  * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
-public class UpdateStmt extends Node {
+public class UpdateStmt extends Stmt {
 
     /** relation to update */
     @XmlElement
@@ -51,10 +48,23 @@ public class UpdateStmt extends Node {
     @XmlElement(name = "from")
     public List<Node> fromClause;
 
-    /** list of expressions to return */
-    @XmlElementWrapper(name = "returningList")
+    /**
+     * list of expressions to return
+     * 
+     * @deprecated since Postgres 18: Use {@link #returningClause} instead
+     */
+    @Deprecated(since = "Postgres 18", forRemoval = true)
+    @XmlElementWrapper(name = "returninglist")
     @XmlElement(name = "returning")
     public List<ResTarget> returningList;
+
+    /**
+     * RETURNING clause
+     * 
+     * @since Postgres 18
+     */
+    @XmlElement
+    public ReturningClause returningClause;
 
     /** WITH clause */
     @XmlElement
@@ -90,6 +100,9 @@ public class UpdateStmt extends Node {
         if (orig.returningList != null) {
             this.returningList = orig.returningList.clone();
         }
+        if (orig.returningClause != null) {
+            this.returningClause = orig.returningClause.clone();
+        }
         if (orig.withClause != null) {
             this.withClause = orig.withClause.clone();
         }
@@ -112,6 +125,9 @@ public class UpdateStmt extends Node {
         }
         if (returningList != null) {
             clone.returningList = returningList.clone();
+        }
+        if (returningClause != null) {
+            clone.returningClause = returningClause.clone();
         }
         if (withClause != null) {
             clone.withClause = withClause.clone();
@@ -191,6 +207,10 @@ public class UpdateStmt extends Node {
                 result.append(separator).append(returning);
                 separator = ", ";
             }
+        }
+
+        if (returningClause != null) {
+            result.append(' ').append(returningClause);
         }
 
         return result.toString();

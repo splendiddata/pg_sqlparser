@@ -90,7 +90,7 @@ public class Node implements Cloneable {
      * @return long the start offset of this node or -1 if unknown
      */
     @XmlTransient
-    public final long getStartOffset() {
+    public long getStartOffset() {
         if (location == null || location.begin == null) {
             return -1;
         }

@@ -14,6 +14,8 @@
 
 package com.splendiddata.sqlparser.structure;
 
+import jakarta.xml.bind.annotation.XmlTransient;
+
 /**
  * A class defining a pair of positions. Positions, defined by the <code>Position</code> class, denote a point in the
  * input. Locations represent a part of the input through the beginning and ending positions.
@@ -96,5 +98,18 @@ public class Location implements Cloneable, Comparable<Location> {
             return 1;
         }
         return begin.compareTo(o.begin);
+    }
+    
+    /**
+     * returns the start position in bytes of this location
+     *
+     * @return long the offset from the start of the file
+     */
+    @XmlTransient
+    public long getOffset() {
+        if (begin == null) {
+            return 0;
+        }
+        return begin.getOffset();
     }
 }

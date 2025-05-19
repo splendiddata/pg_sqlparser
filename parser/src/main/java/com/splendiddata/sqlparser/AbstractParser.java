@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -35,6 +35,7 @@ import com.splendiddata.sqlparser.enums.RoleSpecType;
 import com.splendiddata.sqlparser.enums.Severity;
 import com.splendiddata.sqlparser.enums.TemporalWord;
 import com.splendiddata.sqlparser.plumbing.base_yy_extra_type;
+import com.splendiddata.sqlparser.structure.ATAlterConstraint;
 import com.splendiddata.sqlparser.structure.A_Const;
 import com.splendiddata.sqlparser.structure.A_Expr;
 import com.splendiddata.sqlparser.structure.A_Indirection;
@@ -86,6 +87,10 @@ public class AbstractParser extends AbstractCProgram {
     static final int CAS_INITIALLY_DEFERRED = 0x08;
     static final int CAS_NOT_VALID = 0x10;
     static final int CAS_NO_INHERIT = 0x20;
+    /** @since Postgres 18 */
+    static final int CAS_NOT_ENFORCED = 0x40;
+    /** @since Postgres 18 */
+    static final int CAS_ENFORCED = 0x80;
 
     private static final Logger log = LogManager.getLogger(AbstractParser.class);
     private base_yy_extra_type yyExtraType = new base_yy_extra_type();
@@ -697,6 +702,8 @@ public class AbstractParser extends AbstractCProgram {
      *            Not used - leftover from a C implementation
      * @param initdeferred
      *            Not used - leftover from a C implementation
+     * @param is_enforced
+     *            Not used - leftover from a C implementation
      * @param not_valid
      *            Not used - leftover from a C implementation
      * @param no_inherit
@@ -705,7 +712,8 @@ public class AbstractParser extends AbstractCProgram {
      *            Not used - leftover from a C implementation
      */
     static void processCASbits(Constraint constraint, int cas_bits, Location location, String constrType,
-            Boolean deferrable, Boolean initdeferred, Boolean not_valid, Boolean no_inherit, core_yyscan_t yyscanner) {
+            Boolean deferrable, Boolean initdeferred, Boolean is_enforced, Boolean not_valid, Boolean no_inherit,
+            core_yyscan_t yyscanner) {
         if (log.isTraceEnabled()) {
             log.trace(new StringBuilder("@>processCASbits(constraint=").append(constraint).append(", cas_bits=")
                     .append(cas_bits).append(", location=").append(location).append(", constrType=").append(constrType)
@@ -716,6 +724,21 @@ public class AbstractParser extends AbstractCProgram {
         constraint.initdeferred = ((cas_bits & PgSqlParser.CAS_INITIALLY_DEFERRED) != 0);
         constraint.skip_validation = ((cas_bits & PgSqlParser.CAS_NOT_VALID) != 0);
         constraint.is_no_inherit = ((cas_bits & PgSqlParser.CAS_NO_INHERIT) != 0);
+        
+        if ((cas_bits & CAS_NOT_ENFORCED) != 0) {
+            constraint.is_enforced = Boolean.FALSE;
+            /*
+             * NB: The validated status is irrelevant when the constraint is set to
+             * NOT ENFORCED, but for consistency, it should be set accordingly.
+             * This ensures that if the constraint is later changed to ENFORCED, it
+             * will automatically be in the correct NOT VALIDATED state.
+             */
+            constraint.skip_validation = true;
+        }
+
+        if ((cas_bits & CAS_ENFORCED) != 0) {
+            constraint.is_enforced = Boolean.TRUE;
+        }
     }
 
     /**
@@ -734,6 +757,8 @@ public class AbstractParser extends AbstractCProgram {
      *            Not used - leftover from a C implementation
      * @param initdeferred
      *            Not used - leftover from a C implementation
+     * @param is_enforced
+     *            Not used - leftover from a C implementation
      * @param not_valid
      *            Not used - leftover from a C implementation
      * @param no_inherit
@@ -742,16 +767,63 @@ public class AbstractParser extends AbstractCProgram {
      *            Not used - leftover from a C implementation
      */
     static void processCASbits(CreateTrigStmt createTriggerStmt, int cas_bits, Location location, String constrType,
-            Boolean deferrable, Boolean initdeferred, Boolean not_valid, Boolean no_inherit, core_yyscan_t yyscanner) {
+            Boolean deferrable, Boolean initdeferred, Boolean is_enforced, Boolean not_valid, Boolean no_inherit, core_yyscan_t yyscanner) {
         if (log.isTraceEnabled()) {
             log.trace(new StringBuilder("@>processCASbits(createTriggerStmt=").append(createTriggerStmt)
                     .append(", cas_bits=").append(cas_bits).append(", location=").append(location)
-                    .append(", constrType=").append(")").toString());
+                    .append(", createTriggerStmt=").append(")").toString());
         }
 
         createTriggerStmt.deferrable = ((cas_bits
-                & (PgSqlParser.CAS_DEFERRABLE | PgSqlParser.CAS_INITIALLY_DEFERRED)) != 0);
-        createTriggerStmt.initdeferred = ((cas_bits & PgSqlParser.CAS_INITIALLY_DEFERRED) != 0);
+                & (AbstractParser.CAS_DEFERRABLE | AbstractParser.CAS_INITIALLY_DEFERRED)) != 0);
+        createTriggerStmt.initdeferred = ((cas_bits & AbstractParser.CAS_INITIALLY_DEFERRED) != 0);
+    }
+
+    /**
+     * Process result of ConstraintAttributeSpec, and set appropriate bool flags in the output command node. Pass NULL
+     * for any flags the particular command doesn't support.
+     * <p>
+     * Copied from /postgresql-9.3.4/src/backend/parser/gram.c
+     * </p>
+     *
+     * @param createTriggerStmt
+     * @param cas_bits
+     * @param location
+     * @param constrType
+     *            Not used - leftover from a C implementation
+     * @param deferrable
+     *            Not used - leftover from a C implementation
+     * @param initdeferred
+     *            Not used - leftover from a C implementation
+     * @param is_enforced
+     *            Not used - leftover from a C implementation
+     * @param not_valid
+     *            Not used - leftover from a C implementation
+     * @param no_inherit
+     *            Not used - leftover from a C implementation
+     * @param yyscanner
+     *            Not used - leftover from a C implementation
+     */
+    static void processCASbits(ATAlterConstraint atAlterConstraint, int cas_bits, Location location, String constrType,
+            Boolean deferrable, Boolean initdeferred, Boolean is_enforced, Boolean not_valid, Boolean no_inherit, core_yyscan_t yyscanner) {
+        if (log.isTraceEnabled()) {
+            log.trace(new StringBuilder("@>processCASbits(atAlterConstraint=").append(atAlterConstraint)
+                    .append(", cas_bits=").append(cas_bits).append(", location=").append(location)
+                    .append(", createTriggerStmt=").append(")").toString());
+        }
+
+        atAlterConstraint.deferrable = ((cas_bits
+                & (AbstractParser.CAS_DEFERRABLE | AbstractParser.CAS_INITIALLY_DEFERRED)) != 0);
+        atAlterConstraint.initdeferred = ((cas_bits & AbstractParser.CAS_INITIALLY_DEFERRED) != 0);
+        atAlterConstraint.noinherit = ((cas_bits & PgSqlParser.CAS_NO_INHERIT) != 0);
+        
+        if ((cas_bits & CAS_NOT_ENFORCED) != 0) {
+            atAlterConstraint.is_enforced = Boolean.FALSE;
+        }
+
+        if ((cas_bits & CAS_ENFORCED) != 0) {
+            atAlterConstraint.is_enforced = Boolean.TRUE;
+        }
     }
 
     /**
@@ -1229,7 +1301,6 @@ public class AbstractParser extends AbstractCProgram {
         if (qualList == null) {
             return;
         }
-
         for (Node n : qualList) {
             if (NodeTag.T_Constraint.equals(n.type)) {
                 if (columnDef.constraints == null) {
@@ -1472,46 +1543,6 @@ public class AbstractParser extends AbstractCProgram {
      */
     protected static int pg_strcasecmp(String s1, String s2) {
         return s1.compareToIgnoreCase(s2);
-    }
-
-    /**
-     * Separate Constraint nodes from COLLATE clauses in a ColQualList
-     * <p>
-     * Inspired upon postgresql-16beta1/src/backend/parser/gram.c
-     *
-     * @param qualList
-     *            A list that may contain Constraints and a CollateClause
-     * @param constraintList
-     *            The Constraints from the qualList
-     * @param yyscanner2
-     * @return CollateClause The CollateClause from the qualList or null if there isn't any
-     * @since Postgres 16
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected CollateClause splitColQualList(List qualList, List<Constraint> constraintList, core_yyscan_t yyscanner) {
-        if (qualList == null) {
-            return null;
-        }
-        CollateClause collClause = null;
-        for (Node n : (List<Node>) qualList) {
-            if (n instanceof Constraint) {
-                constraintList.add((Constraint) n);
-            } else if (n instanceof CollateClause) {
-                if (collClause == null) {
-                    collClause = (CollateClause) n;
-                } else {
-
-                    ereport(Severity.ERROR, ErrCode.ERRCODE_SYNTAX_ERROR,
-                            errmsg("multiple COLLATE clauses not allowed"), parser_errposition(n.location));
-                }
-            } else if (n instanceof DefElem) {
-                log.debug(() -> "splitColQualList ignores DefElem: " + ParserUtil.stmtToXml(n));
-            } else {
-                ereport(Severity.ERROR, ErrCode.ERRCODE_SYNTAX_ERROR, Severity.ERROR,
-                        errmsg("unexpected node type " + n.type), parser_errposition(n.location));
-            }
-        }
-        return collClause;
     }
 
     /**

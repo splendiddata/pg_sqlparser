@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -47,15 +47,15 @@ public class DropOwnedStmt extends Node {
     /**
      * Copy constructor
      *
-     * @param orignial
+     * @param original
      *            The DropOwnedStmt to copy
      */
-    public DropOwnedStmt(DropOwnedStmt orignial) {
-        super(orignial);
-        if (orignial.roles != null) {
-            this.roles = orignial.roles.clone();
+    public DropOwnedStmt(DropOwnedStmt original) {
+        super(original);
+        if (original.roles != null) {
+            this.roles = original.roles.clone();
         }
-        this.behavior = orignial.behavior;
+        this.behavior = original.behavior;
     }
 
     @Override

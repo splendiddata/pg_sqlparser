@@ -78,18 +78,26 @@ COPY x from stdin (on_error ignore, on_error ignore);
 COPY x from stdin (log_verbosity default, log_verbosity verbose);
 
 -- incorrect options
-COPY x to stdin (format BINARY, delimiter ',');
-COPY x to stdin (format BINARY, null 'x');
+COPY x from stdin (format BINARY, delimiter ',');
+COPY x from stdin (format BINARY, null 'x');
 COPY x from stdin (format BINARY, on_error ignore);
 COPY x from stdin (on_error unsupported);
-COPY x to stdin (format TEXT, force_quote(a));
+COPY x from stdin (format TEXT, force_quote(a));
+COPY x from stdin (format TEXT, force_quote *);
 COPY x from stdin (format CSV, force_quote(a));
-COPY x to stdout (format TEXT, force_not_null(a));
-COPY x to stdin (format CSV, force_not_null(a));
-COPY x to stdout (format TEXT, force_null(a));
-COPY x to stdin (format CSV, force_null(a));
-COPY x to stdin (format BINARY, on_error unsupported);
-COPY x to stdout (log_verbosity unsupported);
+COPY x from stdin (format CSV, force_quote *);
+COPY x from stdin (format TEXT, force_not_null(a));
+COPY x from stdin (format TEXT, force_not_null *);
+COPY x to stdout (format CSV, force_not_null(a));
+COPY x to stdout (format CSV, force_not_null *);
+COPY x from stdin (format TEXT, force_null(a));
+COPY x from stdin (format TEXT, force_null *);
+COPY x to stdout (format CSV, force_null(a));
+COPY x to stdout (format CSV, force_null *);
+COPY x to stdout (format BINARY, on_error unsupported);
+COPY x from stdin (log_verbosity unsupported);
+COPY x from stdin with (reject_limit 1);
+COPY x from stdin with (on_error ignore, reject_limit 0);
 
 -- too many columns in column list: should fail
 COPY x (a, b, c, d, e, d, c) from stdin;
@@ -541,6 +549,10 @@ COPY check_ign_err2 FROM STDIN WITH (on_error ignore, log_verbosity verbose);
 -- Deactivated for SplendidDataTest: 1	{1}	1	'foo'
 -- Deactivated for SplendidDataTest: 2	{2}	2	\N
 -- Deactivated for SplendidDataTest: \.
+COPY check_ign_err2 FROM STDIN WITH (on_error ignore, log_verbosity silent);
+-- Deactivated for SplendidDataTest: 3	{3}	3	'bar'
+-- Deactivated for SplendidDataTest: 4	{4}	4	\N
+-- Deactivated for SplendidDataTest: \.
 
 -- reset context choice
 -- Deactivated for SplendidDataTest: \set SHOW_CONTEXT errors
@@ -563,6 +575,25 @@ COPY check_ign_err FROM STDIN WITH (on_error ignore);
 -- test extra data: should fail
 COPY check_ign_err FROM STDIN WITH (on_error ignore);
 -- Deactivated for SplendidDataTest: 1	{1}	3	abc
+-- Deactivated for SplendidDataTest: \.
+
+-- tests for reject_limit option
+COPY check_ign_err FROM STDIN WITH (on_error ignore, reject_limit 3);
+-- Deactivated for SplendidDataTest: 6	{6}	6
+-- Deactivated for SplendidDataTest: a	{7}	7
+-- Deactivated for SplendidDataTest: 8	{8}	8888888888
+-- Deactivated for SplendidDataTest: 9	{a, 9}	9
+
+-- Deactivated for SplendidDataTest: 10	{10}	10
+-- Deactivated for SplendidDataTest: \.
+
+COPY check_ign_err FROM STDIN WITH (on_error ignore, reject_limit 4);
+-- Deactivated for SplendidDataTest: 6	{6}	6
+-- Deactivated for SplendidDataTest: a	{7}	7
+-- Deactivated for SplendidDataTest: 8	{8}	8888888888
+-- Deactivated for SplendidDataTest: 9	{a, 9}	9
+
+-- Deactivated for SplendidDataTest: 10	{10}	10
 -- Deactivated for SplendidDataTest: \.
 
 -- clean up

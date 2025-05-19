@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -14,6 +14,7 @@
 
 package com.splendiddata.sqlparser.structure;
 
+import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.JsonBehaviorType;
 import com.splendiddata.sqlparser.enums.NodeTag;
 
@@ -91,8 +92,7 @@ public class JsonBehavior extends Node {
             separator = " ";
         }
         if (coerce) {
-            result.append(separator).append("????? please implement coerce in ").append(this.getClass().getName())
-                    .append(".toString() ?????");
+            result.append(separator).append(ParserUtil.reportUnknownValue("coerce", coerce, getClass()));
             separator = " ";
         }
 

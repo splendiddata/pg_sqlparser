@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -20,6 +17,7 @@ package com.splendiddata.sqlparser.structure;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 import org.apache.logging.log4j.LogManager;
 
@@ -39,11 +37,32 @@ public class SelectLimit {
     @XmlElement
     public Node limitOffset;
 
+    /** indicates presence of WITH TIES */
     @XmlElement
     public Node limitCount;
 
     @XmlAttribute
     public LimitOption limitOption;
+
+    /**
+     * location of OFFSET token, if present
+     * 
+     * @since Postgres 18
+     */
+    @XmlTransient
+    public Location offsetLoc;
+
+    /** location of LIMIT/FETCH token, if present */
+    @XmlTransient
+    public Location countLoc;
+
+    /**
+     * location of WITH TIES, if present
+     * 
+     * @since Postgres 18
+     */
+    @XmlTransient
+    public Location optionLoc;
 
     /**
      * Constructor
@@ -142,4 +161,27 @@ public class SelectLimit {
         return result.toString();
     }
 
+    /**
+     * @return String returns the offsetLoc as String to be represented in an XML structure for debugging purposes
+     */
+    @XmlAttribute(name = "offsetLoc")
+    private String getOffsetLocString() {
+        return offsetLoc == null ? null : offsetLoc.toString();
+    }
+
+    /**
+     * @return String returns the countLoc as String to be represented in an XML structure for debugging purposes
+     */
+    @XmlAttribute(name = "countLoc")
+    private String getCountLocString() {
+        return countLoc == null ? null : countLoc.toString();
+    }
+
+    /**
+     * @return String returns the optionLoc as String to be represented in an XML structure for debugging purposes
+     */
+    @XmlAttribute(name = "optionLoc")
+    private String getOptionLocString() {
+        return optionLoc == null ? null : optionLoc.toString();
+    }
 }

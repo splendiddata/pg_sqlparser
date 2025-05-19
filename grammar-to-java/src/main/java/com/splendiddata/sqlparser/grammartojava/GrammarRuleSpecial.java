@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -24,148 +24,111 @@ package com.splendiddata.sqlparser.grammartojava;
 public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
     DEFAULT(),
 
-    parse_toplevel(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            switch (GrammarConverter.bisonVersion) {
-            case BISON_VERSION_2:
-            case BISON_VERSION_3:
-            case BISON_VERSION_3_3:
-            case BISON_VERSION_3_5:
-                return line.replace("(void) yynerrs;", "// yynerrs = 0;");
-            default:
-                return line.replace("(void) yynerrs;", "yynerrs = 0;");
-            }
+    parse_toplevel(line -> {
+        switch (GrammarConverter.bisonVersion) {
+        case BISON_VERSION_2:
+        case BISON_VERSION_3:
+        case BISON_VERSION_3_3:
+        case BISON_VERSION_3_5:
+            return line.replace("(void) yynerrs;", "// yynerrs = 0;");
+        default:
+            return line.replace("(void) yynerrs;", "yynerrs = 0;");
         }
     }),
 
     /**
      * Replaces "if ($n)" constructs with "if ($n != null)".
      */
-    CopyStmt(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    CopyStmt(
+            line -> line
                     /*
                      * group 1 = (if\\s*\\(\\s*) group 2 = (\\$\\d+) group 3 = (\\s*\\))
                      */
-                    .replaceAll("(if\\s*\\(\\s*)(\\$\\d+)(\\s*\\))", "if ($2 != null)");
-        }
-    }),
+                    .replaceAll("(if\\s*\\(\\s*)(\\$\\d+)(\\s*\\))", "if ($2 != null)")),
 
-    ConstraintElem(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    ConstraintElem(
+            line -> line
                     /*
                      * replaces "processCASbits(" with "processCASbits(n, ".
                      */
-                    .replace("processCASbits(", "processCASbits(n, ");
-        }
-    }),
+                    .replace("processCASbits(", "processCASbits(n, ").replace("if ($5)", "if ($5 != null)")
+                    .replace("if (lsecond($9))", "if (lsecond($9) != null)").replace(
+                            "n->fk_attrs = lappend(n->fk_attrs, $5);", "n.fk_attrs = lappend(n.fk_attrs, (Value)$5);")),
 
-    CreateAssertStmt(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    CreateAssertStmt(
+            line -> line
                     /*
                      * Adds the CreateTrigStmt to the processCASbits() method to avoid C-style indirections
                      */
-                    .replace("processCASbits(", "processCASbits(n, ").replace("list_make1(", "list_make1((Value)");
-        }
-    }),
+                    .replace("processCASbits(", "processCASbits(n, ").replace("list_make1(", "list_make1((Value)")),
 
-    CreateTrigStmt(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    CreateTrigStmt(
+            line -> line
                     /*
                      * Adds the CreateTrigStmt to the processCASbits() method to avoid C-style indirections
                      */
-                    .replace("processCASbits(", "processCASbits(n, ");
-        }
-    }),
+                    .replace("processCASbits(", "processCASbits(n, ")),
 
-    alter_generic_option_elem(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    alter_generic_option_elem(
+            line -> line
                     /*
                      * $$->field replaced by ((defelt)$).field
                      */
-                    .replace("$$->", "((defelt)$$).");
-        }
-    }),
+                    .replace("$$->", "((defelt)$$).")),
 
-    TriggerEvents(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    TriggerEvents(
+            line -> line
                     /*
                      * replace "if (events1 & events2)" by "if ((events1 & events2) != 0)"
                      */
-                    .replace("if (events1 & events2)", "if ((events1 & events2) != 0)");
-        }
-    }),
+                    .replace("if (events1 & events2)", "if ((events1 & events2) != 0)")),
 
-    privilege_target(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    privilege_target(
+            line -> line
                     /*
                      * replace "PrivTarget *n = (PrivTarget *) palloc(sizeof(PrivTarget))" by "PrivTarget n =
                      * makeNode(PrivTarget.class)"
                      */
                     .replace("PrivTarget *n = (PrivTarget *) palloc(sizeof(PrivTarget))",
-                            "PrivTarget n = new PrivTarget()");
-        }
-    }),
+                            "PrivTarget n = new PrivTarget()")),
 
-    VacuumStmt(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    VacuumStmt(
+            line -> line
                     /*
                      * replace "if (n->options & VACOPT_FREEZE)" by "if ((n.options & VACOPT_FREEZE) != 0)"
                      */
-                    .replace("if (n->options & VACOPT_FREEZE)", "if ((n.options & VACOPT_FREEZE) != 0)");
-        }
-    }),
+                    .replace("if (n->options & VACOPT_FREEZE)", "if ((n.options & VACOPT_FREEZE) != 0)")),
 
-    func_arg_with_default(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    func_arg_with_default(
+            line -> line
                     /*
                      * replace "$$->" by "((fun_param)$$)."
                      */
-                    .replace("$$->", "((fun_param)$$).");
-        }
-    }),
+                    .replace("$$->", "((fun_param)$$).")),
 
-    func_type(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    func_type(
+            line -> line
                     /*
                      * replace "$$->" by "((TypeName)$$)."
                      */
-                    .replace("$$->", "((TypeName)$$).");
-        }
-    }),
+                    .replace("$$->", "((TypeName)$$).")),
 
-    func_expr(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    func_expr(
+            line -> line
                     /*
                      * replace -1 to null (-1 stands for "location unknown")
                      */
-                    .replace("-1", "null");
-        }
-    }),
+                    .replace("-1", "null")),
 
-    single_set_clause(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    single_set_clause(
+            line -> line
                     /*
                      * replace "$$->" by "((target)$$)."
                      */
-                    .replace("$$->", "((target)$$).");
-        }
-    }),
+                    .replace("$$->", "((target)$$).")),
 
-    table_ref(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    table_ref(
+            line -> line
                     /*
                      * replace "$n)-&gt;valuesLists" by "$n).valuesLists != null"
                      */
@@ -173,83 +136,59 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
                     /*
                      * replace very lsecond will return a List
                      */
-                    .replace("lsecond", "(List)lsecond");
-        }
-    }),
+                    .replace("lsecond", "(List)lsecond")),
 
-    OptTempTableName(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    OptTempTableName(
+            line -> line
                     /*
                      * replace "$$->" by "((range)$$)."
                      */
-                    .replace("$$->", "((range)$$).");
-        }
-    }),
+                    .replace("$$->", "((range)$$).")),
 
-    relation_expr(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    relation_expr(
+            line -> line
                     /*
                      * replace "$$->" by "((range)$$)."
                      */
-                    .replace("$$->", "((range)$$).");
-        }
-    }),
+                    .replace("$$->", "((range)$$).")),
 
-    GenericType(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    GenericType(
+            line -> line
                     /*
                      * replace "$$->" by "((TypeName)$$)."
                      */
-                    .replace("$$->", "((TypeName)$$).");
-        }
-    }),
+                    .replace("$$->", "((TypeName)$$).")),
 
-    Typename(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    Typename(
+            line -> line
                     /*
                      * replace "$$->;" by "((TypeName)$$)."
                      */
-                    .replace("$$->", "((TypeName)$$).");
-        }
-    }),
+                    .replace("$$->", "((TypeName)$$).")),
 
-    SimpleTypename(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    SimpleTypename(
+            line -> line
                     /*
                      * replace "$$->" by "((TypeName)$$)."
                      */
-                    .replace("$$->", "((TypeName)$$).");
-        }
-    }),
+                    .replace("$$->", "((TypeName)$$).")),
 
-    Numeric(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    Numeric(
+            line -> line
                     /*
                      * replace "$$->" by "((TypeName)$$)."
                      */
-                    .replace("$$->", "((TypeName)$$).");
-        }
-    }),
+                    .replace("$$->", "((TypeName)$$).")),
 
-    ConstBit(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    ConstBit(
+            line -> line
                     /*
                      * replace "$$->" by "((TypeName)$$)."
                      */
-                    .replace("$$->", "((TypeName)$$).");
-        }
-    }),
+                    .replace("$$->", "((TypeName)$$).")),
 
-    BitWithLength(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    BitWithLength(
+            line -> line
                     /*
                      * replace "$$-&gt;" by "((typeName)$$)."
                      */
@@ -257,301 +196,216 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
                     /*
                      * replace "char * typname" by "String typname"
                      */
-                    .replace("$$->", "((TypeName)$$).");
-        }
-    }),
+                    .replace("$$->", "((TypeName)$$).")),
 
-    BitWithoutLength(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    BitWithoutLength(
+            line -> line
                     /*
                      * replace "$$-&gt;" by "((TypeName)$$)."
                      */
-                    .replace("$$->", "((TypeName)$$).");
-        }
-    }),
+                    .replace("$$->", "((TypeName)$$).")),
 
-    ConstCharacter(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    ConstCharacter(
+            line -> line
                     /*
                      * replace "$$->" by "((TypeName)$$)."
                      */
-                    .replace("$$->", "((TypeName)$$).");
-        }
-    }),
+                    .replace("$$->", "((TypeName)$$).")),
 
-    CharacterWithLength(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    CharacterWithLength(
+            line -> line
                     /*
                      * Type-cast the result
                      */
-                    .replace("char *type", "String type").replace("$$->", "((TypeName)$$).");
-        }
-    }),
+                    .replace("char *type", "String type").replace("$$->", "((TypeName)$$).")),
 
-    CharacterWithoutLength(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    CharacterWithoutLength(
+            line -> line
                     /*
                      * Type-cast the result
                      */
-                    .replace("char *type", "String type").replace("$$->", "((TypeName)$$).");
-        }
-    }),
+                    .replace("char *type", "String type").replace("$$->", "((TypeName)$$).")),
 
-    ConstDatetime(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    ConstDatetime(
+            line -> line
                     /*
                      * replace "$$-&gt;" by "((Iconst)$$)."
                      */
-                    .replace("$$->", "((Iconst)$$).");
-        }
-    }),
+                    .replace("$$->", "((Iconst)$$).")),
 
-    ConstInterval(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    ConstInterval(
+            line -> line
                     /*
                      * replace "$$-&gt;" by "((target)$$)."
                      */
-                    .replace("$$->", "((TypeName)$$).");
-        }
-    }),
+                    .replace("$$->", "((TypeName)$$).")),
 
-    opt_interval(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    opt_interval(
+            line -> line
                     /*
                      * "linitial" means something like replace the first element of the list
                      */
-                    .replaceAll("linitial\\(\\$\\$\\) = (.*)", "((List)\\$\\$).set(0, $1").replace(", @1);", ", @1));");
-        }
-    }),
+                    .replaceAll("linitial\\(\\$\\$\\) = (.*)", "((List)\\$\\$).set(0, $1")
+                    .replace(", @1);", ", @1));")),
 
-    a_expr(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    a_expr(
+            line -> line
                     /*
                      * replace "if ($3 == ANY_SUBLINK)" by "if (ANY_SUBLINK.equals($3))"
                      */
-                    .replace("if ($3 == ANY_SUBLINK)", "if (ANY_SUBLINK.equals($3))");
-        }
-    }),
+                    .replace("if ($3 == ANY_SUBLINK)", "if (ANY_SUBLINK.equals($3))")),
 
-    c_expr(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    c_expr(
+            line -> line
                     /*
                      * group 1 = (if\\s*\\(\\s*) group 2 = (\\$\\d+) group 3 = (\\s*\\))
                      */
-                    .replaceAll("(if\\s*\\(\\s*)(\\$\\d+)(\\s*\\))", "if ($2 != null)");
-        }
-    }),
+                    .replaceAll("(if\\s*\\(\\s*)(\\$\\d+)(\\s*\\))", "if ($2 != null)")),
 
-    opt_frame_clause(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    opt_frame_clause(
+            line -> line
                     /*
                      * Replace C's boolean interpretation of an int by a Java != 0 operator
                      */
-                    .replace("ING))", "ING)))").replaceAll("(\\()(.*?frameOptions)([^)]*)(\\)?)", "(0 != ($2$3$4$4");
-        }
-    }),
+                    .replace("ING))", "ING)))").replaceAll("(\\()(.*?frameOptions)([^)]*)(\\)?)", "(0 != ($2$3$4$4")),
 
-    frame_extent(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    frame_extent(
+            line -> line
                     /*
                      * Replace C's boolean interpretation of an int by a Java != 0 operator
                      */
                     .replace("_ROW)))", "_ROW))))")
-                    .replaceAll("(\\()(.*?frameOptions)([^)]*)(\\)?)", "(0 != ($2$3$4$4");
-        }
-    }),
+                    .replaceAll("(\\()(.*?frameOptions)([^)]*)(\\)?)", "(0 != ($2$3$4$4")),
 
-    qualified_name(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    qualified_name(
+            line -> line
                     /*
                      * replace "$$-&gt;" by "((RangeVar)$$)."
                      */
-                    .replace("$$->", "((RangeVar)$$).");
-        }
-    }),
+                    .replace("$$->", "((RangeVar)$$).")),
 
-    set_rest_more(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    set_rest_more(
+            line -> line
                     /*
                      * replace "$3 == XMLOPTION_DOCUMENT" by "$3.intValue() == XMLOPTION_DOCUMENT"
                      */
-                    .replace("$3 == XMLOPTION_DOCUMENT", "$3.intValue() == XMLOPTION_DOCUMENT");
-        }
-    }),
-    SignedIconst(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+                    .replace("$3 == XMLOPTION_DOCUMENT", "$3.intValue() == XMLOPTION_DOCUMENT")),
+    SignedIconst(
+            line -> line
 
                     /*
                      * replace "$2" by "$2.intValue()"
                      */
-                    .replace("$2", "$2.intValue()");
-        }
-    }),
+                    .replace("$2", "$2.intValue()")),
 
-    select_no_parens(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    select_no_parens(
+            line -> line
                     /*
                      * The result of every list_nth() invocation needs a cast to Node
                      */
-                    .replace("list_nth", "(Node)list_nth");
-        }
-    }),
+                    .replace("list_nth", "(Node)list_nth")),
 
-    TableLikeOptionList(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    TableLikeOptionList(
+            line -> line
                     /*
                      * Ands and ors are for integer values
                      */
-                    .replace("$1", "$1.intValue()").replace("$3", "$3.intValue()");
-        }
-    }),
+                    .replace("$1", "$1.intValue()").replace("$3", "$3.intValue()")),
 
-    vacuum_option_list(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    vacuum_option_list(
+            line -> line
                     /*
                      * Ands and ors are for integer values
                      */
-                    .replace("$1 | $3", "$1.intValue() | $3.intValue()");
-        }
-    }),
+                    .replace("$1 | $3", "$1.intValue() | $3.intValue()")),
 
-    cursor_options(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    cursor_options(
+            line -> line
                     /*
                      * Ands and ors are for integer values
                      */
-                    .replace("$1", "$1.intValue()");
-        }
-    }),
+                    .replace("$1", "$1.intValue()")),
 
-    alter_table_cmd(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    alter_table_cmd(
+            line -> line
                     /*
                      * In Java null is not the same as boolean false. So lets make proper booleans for the
                      * processCASbits method. Also provide the processCASBits method with the constraint in which the
                      * CASBits should be stored.
                      */
                     .replace("processCASbits(", "processCASbits(c, ")
-                    .replace("NULL, NULL, yyscanner);", "false, false, yyscanner);");
-        }
-    }),
+                    .replace("NULL, NULL, yyscanner);", "false, false, yyscanner);")
+                    .replace("if ($4 & ", "if (0 != ($4.intValue() & ").replaceAll(("(\\bCAS_.*\\))$"), "$1)")),
 
-    columnDef(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    columnDef(
+            line -> line
                     /*
                      * The SplitColQualList method needs replacement
                      */
-                    .replace("SplitColQualList($6, &n->constraints, &n->collClause,",
-                            "n.collClause = splitColQualList($5, n.constraints,");
-        }
-    }),
+                    .replace("SplitColQualList($6, &n->constraints, &n->collClause,", "splitColQualList($6, n,")),
 
-    columnOptions(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    columnOptions(
+            line -> line
                     /*
                      * The SplitColQualList method needs replacement
                      */
                     .replace("SplitColQualList($2, &n->constraints, &n->collClause,", "splitColQualList($2, n,")
-                    .replace("SplitColQualList($4, &n->constraints, &n->collClause,", "splitColQualList($4, n,");
-        }
-    }),
+                    .replace("SplitColQualList($4, &n->constraints, &n->collClause,", "splitColQualList($4, n,")),
 
-    CreateDomainStmt(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    CreateDomainStmt(
+            line -> line
                     /*
                      * The SplitColQualList method needs replacement
                      */
-                    .replace("SplitColQualList($6, &n->constraints, &n->collClause,", "splitColQualList($6, n,");
-        }
-    }),
+                    .replace("SplitColQualList($6, &n->constraints, &n->collClause,", "splitColQualList($6, n,")),
 
-    RoleSpec(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    RoleSpec(
+            line -> line
                     /*
                      * The RoleSpec might not be initialised
                      */
-                    .replaceAll("RoleSpec\\s+\\*n;", "RoleSpec n = null;");
-        }
-    }),
+                    .replaceAll("RoleSpec\\s+\\*n;", "RoleSpec n = null;")),
 
-    for_locking_item(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    for_locking_item(
+            line -> line
                     /*
                      * Repair the type cast to LockWaitpolicy
                      */
-                    .replace("n->waitPolicy = $3;", "n.waitPolicy = (LockWaitPolicy)$3;");
-        }
-    }),
+                    .replace("n->waitPolicy = $3;", "n.waitPolicy = (LockWaitPolicy)$3;")),
 
-    import_qualification(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    import_qualification(
+            line -> line
                     /*
                      * Repair the type cast to ImportForeignSchemaType
                      */
-                    .replace("n->type = $1;", "n.type = (ImportForeignSchemaType)$1;");
-        }
-    }),
+                    .replace("n->type = $1;", "n.type = (ImportForeignSchemaType)$1;")),
 
-    ReindexStmt(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    ReindexStmt(
+            line -> line
                     /*
                      * Repair the type cast to ReindexObjectType
                      */
-                    .replace("kind = $", "kind = (ReindexObjectType)$");
-        }
-    }),
+                    .replace("kind = $", "kind = (ReindexObjectType)$")),
 
-    reindex_option_list(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    reindex_option_list(
+            line -> line
                     /*
                      * Repair the type cast to ReindexObjectType
                      */
-                    .replace("$$ = $1 | $3", "$$ = (Integer)$1 | $3");
+                    .replace("$$ = $1 | $3", "$$ = (Integer)$1 | $3")),
+
+    opt_column(line -> {
+        /*
+         * The COLUMN keyword is Lexer qualified in Bison version 3 upward
+         */
+        if (!BisonVersion.BISON_VERSION_2.equals(GrammarConverter.bisonVersion)) {
+            return line.replace("COLUMN;", "Lexer.COLUMN;");
         }
+        return line;
     }),
 
-    opt_column(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            /*
-             * The COLUMN keyword is Lexer qualified in Bison version 3 upward
-             */
-            if (!BisonVersion.BISON_VERSION_2.equals(GrammarConverter.bisonVersion)) {
-                return line.replace("COLUMN;", "Lexer.COLUMN;");
-            }
-            return line;
-        }
-    }),
-
-    stmtmulti(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    stmtmulti(
+            line -> line
                     /*
                      * Just a simple type cast will do fine
                      */
@@ -565,192 +419,121 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
                     /*
                      * the 0 stands for "no location", so let's make it null
                      */
-                    .replace(", 0)", ", null)");
-        }
-    }),
+                    .replace(", 0)", ", null)")),
 
-    AlterTableStmt(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    AlterTableStmt(
+            line -> line
                     /*
                      * A typecast to AlterTableCmd is necessary
                      */
-                    .replace("list_make1(", "list_make1((AlterTableCmd)");
-        }
-    }),
-    xmltable_column_el(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+                    .replace("list_make1(", "list_make1((AlterTableCmd)")),
+    xmltable_column_el(
+            line -> line
                     /*
                      * int and boolean are not the same in Java
                      */
-                    .replace("intVal(defel->arg)", "((Value)defel.arg).val.ival != 0");
-        }
-    }),
-    RowSecurityDefaultPermissive(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+                    .replace("intVal(defel->arg)", "((Value)defel.arg).val.ival != 0")),
+    RowSecurityDefaultPermissive(
+            line -> line
                     /*
                      * Avoid a class cast exception from String to Boolean
                      */
                     .replaceAll("else$", "else {\n                        \\$\\$ = Boolean.TRUE;")
-                    .replaceAll("^(\\s*)}\\s*$", "                    }\n$1}");
-        }
-    }),
-    AlterOptRoleElem(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+                    .replaceAll("^(\\s*)}\\s*$", "                    }\n$1}")),
+    AlterOptRoleElem(
+            line -> line
                     /*
                      * When the phrase "unencrypted password" is used, an error is reported, but the password is left in
                      * the stack as a String. But when the statement is put together, the password is blindly cast to
                      * DefElem - so a ClassCastException occurs. Better try to cast null than a String.
                      */
-                    .replaceAll("(\\s*)\\{", "$1{\n$1    \\$\\$ = null;").replace("\\$\\$", "$$");
-        }
-    }),
+                    .replaceAll("(\\s*)\\{", "$1{\n$1    \\$\\$ = null;").replace("\\$\\$", "$$")),
     /** @since 6.0 - Postgres version 11 */
-    analyze_option_list(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    analyze_option_list(
+            line -> line
                     /*
                      * The OR operation must be done on an integer scalar, not on the object
                      */
-                    .replace("$3", "$3.intValue()");
-        }
-    }),
+                    .replace("$3", "$3.intValue()")),
     /** @since 6.0 - Postgres version 11 */
-    PartitionBoundSpec(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    PartitionBoundSpec(
+            line -> line
                     /*
                      * Let's not over-complicate a simple type cast
                      */
-                    .replace("lfirst_node(DefElem, lc)", "(DefElem)lc.data");
-        }
-    }),
+                    .replace("lfirst_node(DefElem, lc)", "(DefElem)lc.data")),
     /** @since 8.0 - Postgres version 13 */
-    index_elem(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    index_elem(
+            line -> line
                     /*
                      * Type cast
                      */
-                    .replace("$$->", "((IndexElem)$$).");
-        }
-    }),
+                    .replace("$$->", "((IndexElem)$$).")),
     /** @since 8.0 - Postgres version 13 */
-    select_limit(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
-                    /*
-                     * Type cast
-                     */
-                    .replace("($$)->", "((SelectLimit)$$).");
-        }
-    }),
+    select_limit(
+            line -> line
+                    /* Type cast */
+                    .replace("($$)->", "((SelectLimit)$$).")
+                    /* since Postgres 18 */
+                    .replace("Loc = -1", "Loc = null")),
     /** @since 13 */
-    create_extension_opt_list(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    create_extension_opt_list(
+            line -> line
                     /*
                      * Temporary work around as the "from version" in the create extension statement is still known as
                      * an option but is not supported any more. A syntax error will be given, but the grammar now
                      * attempts to add a String to a List<DefElem>, which will not succeed of course.
                      */
                     .replace("{ $$ = lappend($1, $2); }",
-                            "{ if (yystack.valueAt (0) instanceof DefElem) { $$ = lappend($1, $2); } }");
-        }
-    }),
+                            "{ if (yystack.valueAt (0) instanceof DefElem) { $$ = lappend($1, $2); } }")),
     /** @since 14 */
-    joined_table(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line
+    joined_table(
+            line -> line
                     /*
                      * Repair some odd casts
                      */
                     .replaceAll("linitial_node\\(List, castNode\\(List\\.class, (\\$\\d)\\)\\)",
                             "(List)((List)$1).get(0)")
                     .replaceAll("lsecond_node\\(Alias, castNode\\(List\\.class, (\\$\\d)\\)\\)",
-                            "(Alias)((List)$1).get(1)");
-        }
-    }),
+                            "(Alias)((List)$1).get(1)")),
     /** @since 14 */
-    PLpgSQL_Expr(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line.replace("if ($9)", "if ($9 != null)").replace("if (!n->sortClause", "if (n.sortClause == null");
-        }
-    }),
+    PLpgSQL_Expr(
+            line -> line.replace("if ($9)", "if ($9 != null)").replace("if (!n->sortClause",
+                    "if (n.sortClause == null")),
     /** @since Postgres 15 */
-    key_actions(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line.replaceAll("n->(\\w+)\\s*=\\s*palloc\\(sizeof\\((\\w+)\\)\\);", "n.$1 = new $2();");
-        }
-    }),
+    key_actions(line -> line.replaceAll("n->(\\w+)\\s*=\\s*palloc\\(sizeof\\((\\w+)\\)\\);", "n.$1 = new $2();")),
     /** @since Postgres 15 */
-    NumericOnly(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line.replaceAll("(\\s+)Float(\\s+)", "$1Value$2");
-        }
-    }),
+    NumericOnly(line -> line.replaceAll("(\\s+)Float(\\s+)", "$1Value$2")),
     /** @since Postgres 15 */
-    key_update(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line.replace("->cols", "->cols != null");
-        }
-    }),
+    key_update(line -> line.replace("->cols", "->cols != null")),
     /** @since Postgres 15 */
-    PublicationObjSpec(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line.replace("if ($2 || $3)", "if ($2 != null || $3 != null)")
+    PublicationObjSpec(
+            line -> line.replace("if ($2 || $3)", "if ($2 != null || $3 != null)")
                     .replace("$$->name", "((PublicationObjSpec)$$).name")
-                    .replace("$$->location", "((PublicationObjSpec)$$).location");
-        }
-    }),
+                    .replace("$$->location", "((PublicationObjSpec)$$).location")),
     /** @since Postgres 15 */
-    extended_relation_expr(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line.replace("$$->inh", "((RangeVar)$$).inh").replace("$$->alias", "((RangeVar)$$).alias");
-        }
-    }),
+    extended_relation_expr(
+            line -> line.replace("$$->inh", "((RangeVar)$$).inh").replace("$$->alias", "((RangeVar)$$).alias")),
     /** @since Postgres 15 */
-    zone_value(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line.replace(".ival.ival", ".val.ival");
-        }
-    }),
+    zone_value(line -> line.replace(".ival.ival", ".val.ival")),
     /** @since Postgres 16 */
-    NonReservedWord(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line.replace("pstrdup($1)", "$1.toString()");
-        }
-    }),
+    NonReservedWord(line -> line.replace("pstrdup($1)", "$1.toString()")),
     /** @since Postgres 17 */
-    DomainConstraintElem(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line.replace("processCASbits(", "processCASbits(n, ");
-        }
-    }),
+    DomainConstraintElem(line -> line.replace("processCASbits(", "processCASbits(n, ")),
     /** @since Postgres 17 */
-    JsonType(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line.replace("$$->location", "((TypeName)$$).location");
-        }
-    }),
+    JsonType(line -> line.replace("$$->location", "((TypeName)$$).location")),
     /** @since Postgres 17 */
-    json_format_clause(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return line.replaceAll("int\\s+encoding;", "JsonEncoding encoding = JsonEncoding.JS_ENC_DEFAULT;")
-                    .replace("!pg_strcasecmp", "0 == pg_strcasecmp");
-        }
-    }),
+    json_format_clause(
+            line -> line.replaceAll("int\\s+encoding;", "JsonEncoding encoding = JsonEncoding.JS_ENC_DEFAULT;")
+                    .replace("!pg_strcasecmp", "0 == pg_strcasecmp")),
     /** @since Postgres 17 */
-    json_table(new GrammarRuleSpecialProcessing() {
-        public String processLine(String line) {
-            return  line
-                    .replace("castNode(A_Const.class, $5)->val.sval.sval", "$5->toString()")
-                    .replace("val.node.type", "val.type");
-        }
-    }),
+    json_table(
+            line -> line.replace("castNode(A_Const.class, $5)->val.sval.sval", "$5->toString()")
+                    .replace("val.node.type", "val.type")),
+    /** @since Postgres 18 */
+    select_with_parens(line -> line.replace("@3 - @2", "@3.getOffset() - @2.getOffset()")),
+    /** @since Postgres 18 */
+    limit_clause(line -> line.replace("Loc = -1", "Loc = null")),
     //
     // Example of injecting dumpYystack
     //    /**

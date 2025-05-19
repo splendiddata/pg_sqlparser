@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -17,6 +17,7 @@
 
 package com.splendiddata.sqlparser.structure;
 
+import jakarta.xml.bind.annotation.XmlAnyElement;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -30,7 +31,7 @@ import com.splendiddata.sqlparser.enums.NodeTag;
  * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
-public class DeleteStmt extends Node {
+public class DeleteStmt extends Stmt {
     /** relation to delete from */
     @XmlElement
     public RangeVar relation;
@@ -44,11 +45,23 @@ public class DeleteStmt extends Node {
     @XmlElement
     public Node whereClause;
 
-    /** list of expressions to return */
-    @XmlElementWrapper(name = "returninglist")
-    @XmlElement(name = "returning")
-    public List<ResTarget> returningList;
+    /** list of expressions to return 
+    * 
+    * @deprecated since Postgres 18: Use {@link #returningClause} instead
+    */
+   @Deprecated(since = "Postgres 18", forRemoval = true)
+   @XmlElementWrapper(name = "returninglist")
+   @XmlElement(name = "returning")
+   public List<ResTarget> returningList;
 
+   /**
+    * RETURNING clause
+    * @since Postgres 18
+    */
+   @XmlElement
+   public ReturningClause returningClause;
+   
+   
     /** WITH clause */
     @XmlElement
     public WithClause withClause;
@@ -80,6 +93,9 @@ public class DeleteStmt extends Node {
         if (orig.returningList != null) {
             this.returningList = orig.returningList.clone();
         }
+        if (orig.returningClause != null) {
+            this.returningClause = orig.returningClause.clone();
+        }
         if (orig.withClause != null) {
             this.withClause = orig.withClause.clone();
         }
@@ -99,6 +115,9 @@ public class DeleteStmt extends Node {
         }
         if (returningList != null) {
             clone.returningList = returningList.clone();
+        }
+        if (returningClause != null) {
+            clone.returningClause = returningClause.clone();
         }
         if (withClause != null) {
             clone.withClause = withClause.clone();
@@ -134,6 +153,10 @@ public class DeleteStmt extends Node {
                 result.append(separator).append(returning);
                 separator = ", ";
             }
+        }
+
+        if (returningClause != null) {
+            result.append(' ').append(returningClause);
         }
 
         return result.toString();

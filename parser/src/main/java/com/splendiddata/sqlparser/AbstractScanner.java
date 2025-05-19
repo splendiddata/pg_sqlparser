@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser;
@@ -28,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import com.splendiddata.sqlparser.enums.Severity;
 import com.splendiddata.sqlparser.structure.ErrCode;
 import com.splendiddata.sqlparser.structure.ErrDetail;
+import com.splendiddata.sqlparser.structure.ErrorSaveContext;
 import com.splendiddata.sqlparser.structure.Location;
 import com.splendiddata.sqlparser.structure.Position;
 import com.splendiddata.sqlparser.structure.core_yy_extra_type;
@@ -67,6 +65,8 @@ public abstract class AbstractScanner extends AbstractCProgram implements com.sp
      */
     private static final Pattern PATTERN_ESCAPE_CHAR = Pattern
             .compile("[\\\\\\\"\\(\\)\\+\\-\\$\\^\\?\\!\\<\\>\\|\\,\\{\\}\\*]");
+
+    private static final Pattern INTEGER_PATTERN = Pattern.compile("(?i)^(\\+|\\-)?(0[xob])?(\\w+)$");
 
     public core_yy_extra_type yyextra = new core_yy_extra_type();
     public int yyloc = 0;
@@ -544,16 +544,23 @@ public abstract class AbstractScanner extends AbstractCProgram implements com.sp
     }
 
     /**
- * Process {decinteger}, {hexinteger}, etc.  Note this will also do the right
- * thing with {numeric}, ie digits and a decimal point.
+     * Process {decinteger}, {hexinteger}, etc. Note this will also do the right thing with {numeric}, ie digits and a
+     * decimal point.
      * <p>
      * copied from /postgresql-9.3.4/src/backend/parser/scan.c
      * </p>
      *
-     * @param token 
+     * @param token
      *            Numeric text
      * @param lval
-     * @param base The numbering system. Can be <ul><li>2<li>8<li>10<li>16</ul> 
+     * @param base
+     *            The numbering system. Can be
+     *            <ul>
+     *            <li>2
+     *            <li>8
+     *            <li>10
+     *            <li>16
+     *            </ul>
      * @return int ScanKeyword.ICONST.value or ScanKeyword.FCONST.value depending on the actual numeric value of text
      */
     int process_integer_literal(String token, Object lval, int base) {
@@ -944,10 +951,9 @@ public abstract class AbstractScanner extends AbstractCProgram implements com.sp
      */
     int yyterminate() {
         // return ScanKeyword.EOF.getValue();
-        /* 
-         * Since Bison 3.6.0 ScanKeyword.EOF is called ScanKeyword.YYEOF,
-         * so returning the actual value zero now as conditional compilation
-         * is not supported in Java 
+        /*
+         * Since Bison 3.6.0 ScanKeyword.EOF is called ScanKeyword.YYEOF, so returning the actual value zero now as
+         * conditional compilation is not supported in Java
          */
         return 0;
     }
@@ -992,5 +998,129 @@ public abstract class AbstractScanner extends AbstractCProgram implements com.sp
      */
     void addlit(String text) {
         yyextra.literalbuf.append(text);
+    }
+
+    /**
+     * Inspired upon /postgresql-18beta1/src/backend/utils/adt/numutils.c
+     * <p>
+     * Convert input string to a signed 32 bit integer. Input strings may be expressed in base-10, hexadecimal, octal,
+     * or binary format, all of which can be prefixed by an optional sign character, either '+' (the default) or '-' for
+     * negative numbers. Hex strings are recognized by the digits being prefixed by 0x or 0X while octal strings are
+     * recognized by the 0o or 0O prefix. The binary representation is recognized by the 0b or 0B prefix.
+     * <p>
+     *
+     * Allows any number of leading or trailing whitespace characters. Digits may optionally be separated by a single
+     * underscore character. These can only come between digits and not before or after the digits. Underscores have no
+     * effect on the return value and are supported only to assist in improving the human readability of the input
+     * strings.
+     * <p>
+     *
+     * pg_strtoint32() will throw ereport() upon bad input format or overflow; while pg_strtoint32_safe() instead
+     * returns such complaints in *escontext, if it's an ErrorSaveContext.
+     * <p>
+     *
+     * NB: Accumulate input as an unsigned number, to deal with two's complement representation of the most negative
+     * number, which can't be represented as a signed positive number.
+     * <p>
+     *
+     * @param s
+     *            input
+     * @param escontext
+     *            for error logging
+     * @return int
+     * @since Postgres 18
+     */
+    int pg_strtoint_safe(String s, ErrorSaveContext escontext) {
+        String str = s.trim();
+        Matcher matcher = INTEGER_PATTERN.matcher(str.replaceAll("(?<=\\d)_(?=\\d)", ""));
+        int result = 0;
+        if (matcher.matches()) {
+            log.trace(() -> new StringBuilder().append("pg_strtoint_safe s = ").append(s).append(", group 0 = ")
+                    .append(matcher.group(0)).append(", group 1 = ").append(matcher.group(1)).append(", group 2 = ")
+                    .append(matcher.group(2)).append(", group 3 = ").append(matcher.group(3)).toString());
+            if (matcher.group(2) == null) {
+                try {
+                    result = Integer.parseInt(matcher.group(0));
+                } catch (NumberFormatException e) {
+                    if (matcher.group(0).matches("^(\\+|\\-)?\\d+$")) {
+                        ereport(Severity.ERROR, ErrCode.ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE,
+                                errmsg("value \"%s\" is out of range for type %s", str, "integer"));
+                    } else {
+                        ereport(Severity.ERROR, ErrCode.ERRCODE_INVALID_TEXT_REPRESENTATION,
+                                errmsg("invalid input syntax for type %s: \"%s\"", "integer", str));
+                    }
+                    escontext.error_occurred = true;
+                }
+            } else {
+                switch (matcher.group(2).toLowerCase()) {
+                case "0x" -> {
+                    try {
+                        result = Integer.parseInt(matcher.group(3), 16);
+                    } catch (NumberFormatException e) {
+                        if (matcher.group(3).matches("^[0-9A-Fa-f]+$")) {
+                            ereport(Severity.ERROR, ErrCode.ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE,
+                                    errmsg("value \"%s\" is out of range for type %s", str, "integer"));
+                        } else {
+                            ereport(Severity.ERROR, ErrCode.ERRCODE_INVALID_TEXT_REPRESENTATION,
+                                    errmsg("invalid input syntax for type %s: \"%s\"", "integer", str));
+                        }
+                        escontext.error_occurred = true;
+                    }
+                }
+                case "0o" -> {
+                    try {
+                        result = Integer.parseInt(matcher.group(3), 8);
+                    } catch (NumberFormatException e) {
+                        if (matcher.group(3).matches("^[0-7]+$")) {
+                            ereport(Severity.ERROR, ErrCode.ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE,
+                                    errmsg("value \"%s\" is out of range for type %s", str, "integer"));
+                        } else {
+                            ereport(Severity.ERROR, ErrCode.ERRCODE_INVALID_TEXT_REPRESENTATION,
+                                    errmsg("invalid input syntax for type %s: \"%s\"", "integer", str));
+                        }
+                        escontext.error_occurred = true;
+                    }
+                }
+                case "0b" -> {
+                    try {
+                        result = Integer.parseInt(matcher.group(3), 2);
+                    } catch (NumberFormatException e) {
+                        if (matcher.group(3).matches("^[01]+$")) {
+                            ereport(Severity.ERROR, ErrCode.ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE,
+                                    errmsg("value \"%s\" is out of range for type %s", str, "integer"));
+                        } else {
+                            ereport(Severity.ERROR, ErrCode.ERRCODE_INVALID_TEXT_REPRESENTATION,
+                                    errmsg("invalid input syntax for type %s: \"%s\"", "integer", str));
+                        }
+                        escontext.error_occurred = true;
+                    }
+                }
+                }
+                ;
+                if (matcher.group(1) != null && matcher.group(1).equals("-")) {
+                    result = -result;
+                }
+            }
+        } else {
+            ereport(Severity.ERROR, ErrCode.ERRCODE_INVALID_TEXT_REPRESENTATION,
+                    errmsg("invalid input syntax for type %s: \"%s\"", "integer", s));
+            escontext.error_occurred = true;
+        }
+
+        return result;
+    }
+
+    /**
+     * Just executes {@link #pg_strtoint_safe(String, ErrorSaveContext)}.
+     *
+     * @param s
+     *            input
+     * @param escontext
+     *            for error logging
+     * @return int
+     * @since Postgres 18
+     */
+    int pg_strtoint32_safe(String s, ErrorSaveContext escontext) {
+        return pg_strtoint_safe(s, escontext);
     }
 }

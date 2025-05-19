@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -18,6 +18,7 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.LimitOption;
@@ -144,6 +145,22 @@ public class SelectStmt extends Expr {
     public SelectStmt rarg;
 
     /**
+     * The offset of this Stmt relative to the start of the sql stream
+     * <p>
+     * 
+     * @since Postgres 18
+     */
+    public Location stmt_location;
+
+    /**
+     * length in bytes; 0 means "rest of string"
+     * 
+     * @since Postgres 18
+     */
+    @XmlTransient
+    public long stmt_len;
+
+    /**
      * Constructor
      */
     public SelectStmt() {
@@ -151,32 +168,68 @@ public class SelectStmt extends Expr {
     }
 
     /**
-     * Shallow copy constructor
+     * Copy constructor
      *
      * @param other
      *            The SelectStmt to copy
      */
     public SelectStmt(SelectStmt other) {
         super(other);
-        this.distinctClause = other.distinctClause;
-        this.intoClause = other.intoClause;
-        this.targetList = other.targetList;
-        this.fromClause = other.fromClause;
-        this.whereClause = other.whereClause;
-        this.groupClause = other.groupClause;
-        this.havingClause = other.havingClause;
-        this.windowClause = other.windowClause;
-        this.valuesLists = other.valuesLists;
-        this.sortClause = other.sortClause;
-        this.limitOffset = other.limitOffset;
-        this.limitCount = other.limitCount;
+        if (other.distinctClause != null) {
+            this.distinctClause = other.distinctClause.clone();
+        }
+        if (other.intoClause != null) {
+            this.intoClause = other.intoClause.clone();
+        }
+        if (other.targetList != null) {
+            this.targetList = other.targetList.clone();
+        }
+        if (other.fromClause != null) {
+            this.fromClause = other.fromClause.clone();
+        }
+        if (other.whereClause != null) {
+            this.whereClause = other.whereClause.clone();
+        }
+        if (other.groupClause != null) {
+            this.groupClause = other.groupClause.clone();
+        }
+        if (other.havingClause != null) {
+            this.havingClause = other.havingClause.clone();
+        }
+        if (other.windowClause != null) {
+            this.windowClause = other.windowClause.clone();
+        }
+        if (other.valuesLists != null) {
+            this.valuesLists = other.valuesLists.clone();
+        }
+        if (other.sortClause != null) {
+            this.sortClause = other.sortClause.clone();
+        }
+        if (other.limitOffset != null) {
+            this.limitOffset = other.limitOffset.clone();
+        }
+        if (other.limitCount != null) {
+            this.limitCount = other.limitCount.clone();
+        }
         this.limitOption = other.limitOption;
-        this.lockingClause = other.lockingClause;
-        this.withClause = other.withClause;
+        if (other.lockingClause != null) {
+            this.lockingClause = other.lockingClause.clone();
+        }
+        if (other.withClause != null) {
+            this.withClause = other.withClause.clone();
+        }
         this.op = other.op;
         this.all = other.all;
-        this.larg = other.larg;
-        this.rarg = other.rarg;
+        if (other.larg != null) {
+            this.larg = other.larg.clone();
+        }
+        if (other.rarg != null) {
+            this.rarg = other.rarg.clone();
+        }
+        if (other.stmt_location != null) {
+            this.stmt_location = other.stmt_location.clone();
+        }
+        this.stmt_len = other.stmt_len;
         this.groupDistinct = other.groupDistinct;
     }
 
@@ -406,6 +459,53 @@ public class SelectStmt extends Expr {
         if (rarg != null) {
             clone.rarg = rarg.clone();
         }
+        if (stmt_location != null) {
+            clone.stmt_location = stmt_location.clone();
+        }
         return clone;
+    }
+
+    /**
+     * Returns the start offset of the node in the sql statement
+     *
+     * @return long the start offset of this node or -1 if unknown
+     * @since Postgres 18
+     */
+    @Override
+    @XmlTransient
+    public final long getStartOffset() {
+        if (stmt_location == null || stmt_location.begin == null) {
+            return super.getStartOffset();
+        }
+        return stmt_location.begin.getOffset();
+    }
+
+    /**
+     * Returns the stmt_len if non zero as String to be represented in an XML structure for debugging purposes
+     *
+     * @return String
+     * @since Postgres 18
+     */
+    @XmlAttribute(name = "stmtlen")
+    public final String getStmtLenString() {
+        if (stmt_len == 0) {
+            return null;
+        }
+        return Long.toString(stmt_len);
+    }
+
+    /**
+     * @return String returns the stmt_location as String to be represented in an XML structure for debugging purposes
+     * @since Postgres 18
+     */
+    @XmlAttribute(name = "stmt_location")
+    private String getLocationString() {
+        if (stmt_location == null) {
+            if (location == null) { // For backward compatibility since Postgres 18
+                return null;
+            }
+            return location.toString();
+        }
+        return stmt_location.toString();
     }
 }

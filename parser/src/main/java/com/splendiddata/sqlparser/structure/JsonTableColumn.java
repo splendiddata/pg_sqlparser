@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -155,7 +155,8 @@ public class JsonTableColumn extends Node {
             result.append(separator).append(typeName);
             separator = " ";
         }
-        if (coltype != null && !JsonTableColumnType.JTC_REGULAR.equals(coltype) && !JsonTableColumnType.JTC_FORMATTED.equals(coltype)) {
+        if (coltype != null && !JsonTableColumnType.JTC_REGULAR.equals(coltype)
+                && !JsonTableColumnType.JTC_FORMATTED.equals(coltype)) {
             result.append(separator).append(coltype);
             separator = " ";
         }
@@ -182,8 +183,7 @@ public class JsonTableColumn extends Node {
             case JSW_UNSPEC:
                 break;
             default:
-                result.append(separator).append("????? please implement ").append(wrapper.name()).append(" in ")
-                        .append(this.getClass().getName()).append(".toString() ?????");
+                result.append(separator).append(ParserUtil.reportUnknownValue("wrapper", wrapper.name(), getClass()));
                 separator = " ";
                 break;
             }
@@ -202,8 +202,7 @@ public class JsonTableColumn extends Node {
             case JS_QUOTES_UNSPEC:
                 break;
             default:
-                result.append(separator).append("????? please implement ").append(wrapper.name()).append(" in ")
-                        .append(this.getClass().getName()).append(".toString() ?????");
+                result.append(separator).append(ParserUtil.reportUnknownValue("quotes", quotes.name(), getClass()));
                 separator = " ";
                 break;
             }

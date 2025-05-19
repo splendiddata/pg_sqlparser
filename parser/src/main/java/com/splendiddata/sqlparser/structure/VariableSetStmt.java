@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -44,6 +44,16 @@ public class VariableSetStmt extends Node {
     @XmlElement(name = "arg")
     public List<Node> args;
 
+    /**
+     * True if arguments should be accounted for in query jumbling. We use a separate flag rather than
+     * query_jumble_ignore on "args" as several grammar flavors of SET rely on a list of values that are parsed directly
+     * from the grammar's keywords.
+     * 
+     * @since Postgres 18
+     */
+    @XmlAttribute
+    public boolean jumble_args = true;
+
     /** SET LOCAL? */
     @XmlAttribute
     public boolean is_local;
@@ -68,6 +78,7 @@ public class VariableSetStmt extends Node {
         if (original.args != null) {
             this.args = original.args.clone();
         }
+        this.jumble_args = original.jumble_args;
         this.is_local = original.is_local;
     }
 
@@ -179,6 +190,10 @@ public class VariableSetStmt extends Node {
                 break;
             }
             break;
+        }
+
+        if (!jumble_args) {
+            result.append(ParserUtil.reportUnknownValue("jumble_args", jumble_args, getClass()));
         }
 
         return result.toString();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -112,8 +112,7 @@ public class ImportForeignSchemaStmt extends Node {
             sep = " limit to";
             break;
         default:
-            result.append("????? Please implement ").append(list_type.getClass().getName()).append(list_type)
-                    .append(" in ").append(getClass().getName()).append(".toString() ?????");
+            result.append(ParserUtil.reportUnknownValue("list_tyope", list_type.name(), getClass()));
             break;
         }
         if (table_list != null && !table_list.isEmpty()) {

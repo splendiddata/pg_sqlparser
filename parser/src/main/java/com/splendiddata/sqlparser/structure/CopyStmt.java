@@ -93,7 +93,7 @@ public class CopyStmt extends Node {
     /**
      * Copy constructor
      *
-     * @param toCopy
+     * @param toCopyCOPY x from stdin with (reject_limit 1);
      *            The CopyStmt to copy
      */
     public CopyStmt(CopyStmt toCopy) {
@@ -222,6 +222,9 @@ public class CopyStmt extends Node {
                 case "encoding":
                 case "escape":
                     result.append(' ').append(ParserUtil.toSqlTextString(option.arg.toString()));
+                    break;
+                case "reject_limit":
+                    result.append(' ').append(option.arg);
                     break;
                 default:
                     result.append(ParserUtil.reportUnknownValue("option.defname", option.defname, getClass()));

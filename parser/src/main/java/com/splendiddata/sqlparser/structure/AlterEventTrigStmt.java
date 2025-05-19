@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -46,7 +46,7 @@ public class AlterEventTrigStmt extends Node {
      */
     @XmlAttribute
     public char tgenabled;
-    
+
     /**
      * Constructor
      */
@@ -57,7 +57,8 @@ public class AlterEventTrigStmt extends Node {
     /**
      * Copy constructor
      *
-     * @param original The AlterEventTrigStmt to copy
+     * @param original
+     *            The AlterEventTrigStmt to copy
      */
     public AlterEventTrigStmt(AlterEventTrigStmt original) {
         super(original);
@@ -89,8 +90,7 @@ public class AlterEventTrigStmt extends Node {
             result.append(" enable");
             break;
         default:
-            result.append("??????? unknown tgenabled: ").append(tgenabled).append(" in ").append(getClass().getName())
-                    .append(" ???????");
+            result.append(ParserUtil.reportUnknownValue("tgenabled", tgenabled, getClass()));
             break;
         }
 

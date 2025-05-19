@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -146,8 +146,7 @@ public class MergeWhenClause extends Node {
                 result.append(" overriding user value");
                 break;
             default:
-                result.append("????? please implement ").append(override.getClass().getName()).append('.')
-                        .append(override).append(" in ").append(getClass().getName()).append(".toString() ?????");
+                result.append(ParserUtil.reportUnknownValue("ovverride", override.name(), getClass()));
                 break;
             }
             if (values == null) {
@@ -174,8 +173,7 @@ public class MergeWhenClause extends Node {
         case CMD_UNKNOWN:
         case CMD_UTILITY:
         default:
-            result.append("????? please implement ").append(commandType.getClass().getName()).append('.')
-                    .append(commandType.name()).append(" in ").append(getClass().getName()).append(".toString() ?????");
+            result.append(ParserUtil.reportUnknownValue("commandType", commandType.name(), getClass()));
             break;
         }
 

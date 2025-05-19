@@ -46,6 +46,34 @@ truncate copytest2;
 
 select * from copytest except select * from copytest2;
 
+--- test unquoted \. as data inside CSV
+-- do not use copy out to export the data, as it would quote \.
+\o :filename
+\qecho line1
+\qecho '\\.'
+\qecho line2
+\o
+-- get the data back in with copy
+truncate copytest2;
+copy copytest2(test) from :'filename' csv;
+select test from copytest2 order by test collate "C";
+
+-- in text mode, \. must be alone on its line
+truncate copytest2;
+copy copytest2(test) from stdin;
+-- Deactivated for SplendidDataTest: line1
+-- Deactivated for SplendidDataTest: line2
+-- Deactivated for SplendidDataTest: foo\.
+-- Deactivated for SplendidDataTest: line3
+-- Deactivated for SplendidDataTest: \.
+copy copytest2(test) from stdin;
+-- Deactivated for SplendidDataTest: line4
+-- Deactivated for SplendidDataTest: line5
+-- Deactivated for SplendidDataTest: \.foo
+-- Deactivated for SplendidDataTest: line6
+-- Deactivated for SplendidDataTest: \.
+select test from copytest2;
+
 
 -- test header line feature
 
@@ -173,7 +201,8 @@ begin
        bytes_processed > 0 as has_bytes_processed,
        bytes_total > 0 as has_bytes_total,
        tuples_processed,
-       tuples_excluded
+       tuples_excluded,
+       tuples_skipped
       from pg_stat_progress_copy
       where pid = pg_backend_pid())
   select into report (to_jsonb(r)) as value
@@ -201,6 +230,13 @@ truncate tab_progress_reporting;
 -- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/emp.data'
 -- Deactivated for SplendidDataTest: copy tab_progress_reporting from :'filename'
 -- Deactivated for SplendidDataTest: 	where (salary < 2000);
+
+-- Generate COPY FROM report with PIPE, with some skipped tuples.
+copy tab_progress_reporting from stdin(on_error ignore);
+-- Deactivated for SplendidDataTest: sharon	x	(15,12)	x	sam
+-- Deactivated for SplendidDataTest: sharon	25	(15,12)	1000	sam
+-- Deactivated for SplendidDataTest: sharon	y	(15,12)	x	sam
+-- Deactivated for SplendidDataTest: \.
 
 drop trigger check_after_tab_progress_reporting on tab_progress_reporting;
 drop function notice_after_tab_progress_reporting();
@@ -328,3 +364,22 @@ CREATE TABLE parted_si_p_odd PARTITION OF parted_si FOR VALUES IN (1);
 SELECT tableoid::regclass, id % 2 = 0 is_even, count(*) from parted_si GROUP BY 1, 2 ORDER BY 1;
 
 DROP TABLE parted_si;
+
+-- ensure COPY FREEZE errors for foreign tables
+begin;
+create foreign data wrapper copytest_wrapper;
+create server copytest_server foreign data wrapper copytest_wrapper;
+create foreign table copytest_foreign_table (a int) server copytest_server;
+copy copytest_foreign_table from stdin (freeze);
+-- Deactivated for SplendidDataTest: 1
+-- Deactivated for SplendidDataTest: \.
+rollback;
+
+-- Tests for COPY TO with materialized views.
+-- COPY TO should fail for an unpopulated materialized view
+-- but succeed for a populated one.
+CREATE MATERIALIZED VIEW copytest_mv AS SELECT 1 AS id WITH NO DATA;
+COPY copytest_mv(id) TO stdout WITH (header);
+REFRESH MATERIALIZED VIEW copytest_mv;
+COPY copytest_mv(id) TO stdout WITH (header);
+DROP MATERIALIZED VIEW copytest_mv;

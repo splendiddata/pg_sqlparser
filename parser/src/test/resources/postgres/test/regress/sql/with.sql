@@ -224,6 +224,20 @@ WITH RECURSIVE subdepartment AS
 )
 SELECT * FROM subdepartment ORDER BY name;
 
+-- exercise the deduplication code of a UNION with mixed input slot types
+WITH RECURSIVE subdepartment AS
+(
+	-- select all columns to prevent projection
+	SELECT id, parent_department, name FROM department WHERE name = 'A'
+
+	UNION
+
+	-- joins do projection
+	SELECT d.id, d.parent_department, d.name FROM department AS d
+	INNER JOIN subdepartment AS sd ON d.parent_department = sd.id
+)
+SELECT * FROM subdepartment ORDER BY name;
+
 -- inside subqueries
 SELECT count(*) FROM (
     WITH RECURSIVE t(n) AS (
@@ -354,6 +368,18 @@ UNION ALL
 )
 SELECT t1.id, t2.path, t2 FROM t AS t1 JOIN t AS t2 ON
 (t1.id=t2.id);
+
+CREATE TEMP TABLE duplicates (a INT NOT NULL);
+INSERT INTO duplicates VALUES(1), (1);
+
+-- Try out a recursive UNION case where the non-recursive part's table slot
+-- uses TTSOpsBufferHeapTuple and contains duplicate rows.
+WITH RECURSIVE cte (a) as (
+	SELECT a FROM duplicates
+	UNION
+	SELECT a FROM cte
+)
+SELECT a FROM cte;
 
 -- test that column statistics from a materialized CTE are available
 -- to upper planner (otherwise, we'd get a stupider plan)
@@ -944,6 +970,13 @@ WITH RECURSIVE x(n) AS (
   SELECT 0 UNION SELECT 1
   ORDER BY (SELECT n FROM x))
 	SELECT * FROM x;
+
+-- and this
+WITH RECURSIVE x(n) AS (
+  WITH sub_cte AS (SELECT * FROM x)
+  DELETE FROM graph RETURNING f)
+	SELECT * FROM x;
+
 
 CREATE TEMPORARY TABLE y (a INTEGER);
 INSERT INTO y SELECT generate_series(1, 10);

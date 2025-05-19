@@ -199,6 +199,10 @@ public class LexConverter extends AbstractMojo implements FileVisitor<Path> {
                             .replaceAll("(\\s+)truncate_identifier\\s*\\(\\s*(\\w*)[^)]*\\)",
                                     "$1$2 = truncate_identifier($2)")
                             /*
+                             * since Postgres 18
+                             */
+                            .replace("pg_strtoint32_safe(yytext + 1", "pg_strtoint32_safe(yytext.substring(1)")
+                            /*
                              * The length of a literal is in the literalbuf StringBuilder. So literallen is obsolete
                              * (and removed from yyextra).
                              */

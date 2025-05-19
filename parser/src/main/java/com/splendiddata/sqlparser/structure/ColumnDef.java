@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -73,10 +73,7 @@ public class ColumnDef extends Node {
 
     /**
      * attstorage setting, or 0 for default
-     * 
-     * @deprecated since Postgres 16. Please use storage_name instead
      */
-    @Deprecated(since = "Postgres 15", forRemoval = true)
     public char storage;
 
     /**
@@ -139,7 +136,11 @@ public class ColumnDef extends Node {
         this.is_not_null = original.is_not_null;
         this.is_from_type = original.is_from_type;
         this.is_from_parent = original.is_from_parent;
+        this.storage = original.storage;
         this.storage_name = original.storage_name;
+        if (original.raw_default != null) {
+            this.raw_default = original.raw_default.clone();
+        }
         if (original.collClause != null) {
             this.collClause = original.collClause.clone();
         }
@@ -169,7 +170,7 @@ public class ColumnDef extends Node {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-
+        String separator = "";
         String space = "";
         if (colname != null) {
             result.append(ParserUtil.identifierToSql(colname));
@@ -192,7 +193,7 @@ public class ColumnDef extends Node {
         }
 
         if (inhcount != 0) {
-            result.append(space).append("??????? inhcount=").append(inhcount).append(" ???????");
+            result.append(space).append(ParserUtil.reportUnknownValue("inhcount", inhcount, getClass()));
             space = " ";
         }
 
@@ -202,17 +203,17 @@ public class ColumnDef extends Node {
         }
 
         if (is_from_type) {
-            result.append(space).append("??????? is_from_type ???????");
+            result.append(space).append(ParserUtil.reportUnknownValue("is_from_type", is_from_type, getClass()));
             space = " ";
         }
 
         if (is_from_parent) {
-            result.append(space).append("??????? is_from_parent ???????");
+            result.append(space).append(ParserUtil.reportUnknownValue("is_from_parent", is_from_parent, getClass()));
             space = " ";
         }
 
         if (storage != 0) {
-            result.append(space).append("??????? storage=").append(storage).append(" ???????");
+            result.append(space).append(ParserUtil.reportUnknownValue("storage", storage, getClass()));
             space = " ";
         }
 
@@ -222,19 +223,19 @@ public class ColumnDef extends Node {
         }
 
         if (cooked_default != null) {
-            result.append(space).append("??????? cooked_default=").append(cooked_default).append(" ???????");
+            result.append(space).append(ParserUtil.reportUnknownValue("cooked_default", cooked_default, getClass()));
             space = " ";
         }
 
         if (collOid != null) {
-            result.append(space).append("??????? collOid=").append(collOid).append(" ???????");
+            result.append(space).append(ParserUtil.reportUnknownValue("collOid", collOid, getClass()));
             space = " ";
         }
 
         if (fdwoptions != null) {
             result.append(space).append("options (");
             space = " ";
-            String separator = "";
+            separator = "";
             for (DefElem option : fdwoptions) {
                 result.append(separator).append(ParserUtil.identifierToSql(option.defname)).append(' ')
                         .append(ParserUtil.toSqlTextString(option.arg));
@@ -248,11 +249,10 @@ public class ColumnDef extends Node {
         }
 
         if (constraints != null) {
-            if (typeName == null) {
-                result.append(space);
-            }
+            separator = " ";
             for (Constraint constraint : constraints) {
-                result.append(' ').append(constraint);
+                result.append(separator).append(constraint);
+                separator = " ";
             }
         }
 

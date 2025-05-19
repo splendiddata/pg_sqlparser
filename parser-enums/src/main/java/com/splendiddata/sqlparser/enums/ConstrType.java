@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -73,7 +73,11 @@ public enum ConstrType {
     CONSTR_ATTR_DEFERRABLE,
     CONSTR_ATTR_NOT_DEFERRABLE,
     CONSTR_ATTR_DEFERRED,
-    CONSTR_ATTR_IMMEDIATE;
+    CONSTR_ATTR_IMMEDIATE,
+    /** @since Postgres 18 */
+    CONSTR_ATTR_ENFORCED,
+    /** @since Postgres 18 */
+    CONSTR_ATTR_NOT_ENFORCED;
 
     /**
      * String containing all values with "|" characters between them, that can be used as argument in a regular

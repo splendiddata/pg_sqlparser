@@ -150,8 +150,7 @@ public class GrantRoleStmt extends Node {
                         separator = ", ";
                         break;
                     default:
-                        result.append("????? " + getClass().getName() + ".toString(): What to do with opt "
-                                + ParserUtil.stmtToXml(opt) + "??????");
+                        result.append(ParserUtil.reportUnknownValue("opt", opt , getClass()));
                     }
                 }
                 separator = " ";
@@ -168,8 +167,7 @@ public class GrantRoleStmt extends Node {
                         separator = " ";
                         break;
                     default:
-                        result.append("????? " + getClass().getName() + ".toString(): What to do with opt "
-                                + ParserUtil.stmtToXml(opt) + "??????");
+                        result.append(ParserUtil.reportUnknownValue("opt", opt, getClass()));
                     }
                 }
                 separator = " for ";
