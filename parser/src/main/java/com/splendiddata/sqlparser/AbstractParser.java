@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -1472,46 +1472,6 @@ public class AbstractParser extends AbstractCProgram {
      */
     protected static int pg_strcasecmp(String s1, String s2) {
         return s1.compareToIgnoreCase(s2);
-    }
-
-    /**
-     * Separate Constraint nodes from COLLATE clauses in a ColQualList
-     * <p>
-     * Inspired upon postgresql-16beta1/src/backend/parser/gram.c
-     *
-     * @param qualList
-     *            A list that may contain Constraints and a CollateClause
-     * @param constraintList
-     *            The Constraints from the qualList
-     * @param yyscanner2
-     * @return CollateClause The CollateClause from the qualList or null if there isn't any
-     * @since Postgres 16
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected CollateClause splitColQualList(List qualList, List<Constraint> constraintList, core_yyscan_t yyscanner) {
-        if (qualList == null) {
-            return null;
-        }
-        CollateClause collClause = null;
-        for (Node n : (List<Node>) qualList) {
-            if (n instanceof Constraint) {
-                constraintList.add((Constraint) n);
-            } else if (n instanceof CollateClause) {
-                if (collClause == null) {
-                    collClause = (CollateClause) n;
-                } else {
-
-                    ereport(Severity.ERROR, ErrCode.ERRCODE_SYNTAX_ERROR,
-                            errmsg("multiple COLLATE clauses not allowed"), parser_errposition(n.location));
-                }
-            } else if (n instanceof DefElem) {
-                log.debug(() -> "splitColQualList ignores DefElem: " + ParserUtil.stmtToXml(n));
-            } else {
-                ereport(Severity.ERROR, ErrCode.ERRCODE_SYNTAX_ERROR, Severity.ERROR,
-                        errmsg("unexpected node type " + n.type), parser_errposition(n.location));
-            }
-        }
-        return collClause;
     }
 
     /**
