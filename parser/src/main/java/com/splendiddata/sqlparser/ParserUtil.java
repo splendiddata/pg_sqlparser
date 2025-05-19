@@ -20,6 +20,7 @@ import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.URL;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -384,5 +385,15 @@ public final class ParserUtil {
             separator = '.';
         }
         return result.toString();
+    }
+
+    /**
+     * Checks if the coll is null or empty
+     *
+     * @param coll The {@link Collection} to check
+     * @return boolean true if null or empty
+     */
+    public static boolean isEmpty(Collection<?> coll) {
+        return coll == null || coll.isEmpty();
     }
 }

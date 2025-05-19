@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -323,13 +323,12 @@ public class SelectStmt extends Expr {
         }
 
         if (windowClause != null) {
-            result.append(" window (");
+            result.append(" window ");
             String separator = "";
             for (WindowDef window : windowClause) {
-                result.append(separator).append(window.name).append(" as ").append(window);
+                result.append(separator).append(window.name).append(" as (").append(window).append(')');
                 separator = ", ";
             }
-            result.append(')');
         }
 
         if (sortClause != null) {
