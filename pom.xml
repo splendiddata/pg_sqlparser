@@ -43,7 +43,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<sonar.exclusions>file:**/generated-sources/**</sonar.exclusions>
 		<log4j.version>2.24.3</log4j.version>
-		<javafx.version>21.0.7</javafx.version>
+		<javafx.version>11.0.2</javafx.version>
 		<jupiter.version>5.12.2</jupiter.version>
 		<p6spy.version>3.9.1</p6spy.version>
 		<jvx.version>2.8</jvx.version>
