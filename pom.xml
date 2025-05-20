@@ -5,7 +5,7 @@
 
 	<groupId>com.splendiddata</groupId>
 	<artifactId>pg_sqlparser</artifactId>
-	<version>18.0-SNAPSHOT</version>
+	<version>18.0</version>
 	<packaging>pom</packaging>
 	<name>pg_sqlparser</name>
 	<description>Java implementation of the Postgres sql parser. This version of
@@ -421,7 +421,7 @@
 						</reports>
 					</reportSet>
 					<reportSet>
-						<id>aggreagte</id>
+						<id>aggregate</id>
 						<reports>
 							<report>report-aggregate</report>
 						</reports>
@@ -432,9 +432,10 @@
 	</reporting>
 
 	<distributionManagement>
-		<site>
-			<id>www.splendiddata.com</id>
-			<url>scp://www.splediddata.com/www/docs/pg_sqlparser/</url>
-		</site>
+		<repository>
+			<id>github</id>
+			<name>GitHub Splendid Data Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com//splendiddata/pg_sqlparser</url>
+		</repository>
 	</distributionManagement>
 </project>

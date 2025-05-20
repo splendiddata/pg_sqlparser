@@ -5,27 +5,28 @@
 	<parent>
 		<groupId>com.splendiddata</groupId>
 		<artifactId>pg_sqlparser</artifactId>
-		<version>18.0-SNAPSHOT</version>
+		<version>18.0</version>
 	</parent>
 	<groupId>com.splendiddata.pg_sqlparser</groupId>
 	<artifactId>parser-enums</artifactId>
 	<name>parser-enums</name>
-	<description>This module contains a bunch of enums that will be used by the sql scanner and that are needed already in the grammar.to.java plugin.</description>
+	<description>This module contains a bunch of enums that will be used by the
+		sql scanner and that are needed already in the grammar.to.java plugin.</description>
 	<build>
 		<plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <License>https://www.gnu.org/licenses/gpl-3.0.en.html</License>
-                            <Vendor>https://www.splendiddata.com</Vendor>
-                            <Copyright>Copyright (c) Splendid Data Product Development B.V. 2013 - 2025</Copyright>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<License>https://www.gnu.org/licenses/gpl-3.0.en.html</License>
+							<Vendor>https://www.splendiddata.com</Vendor>
+							<Copyright>Copyright (c) Splendid Data Product Development B.V. 2013 - 2025</Copyright>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>
