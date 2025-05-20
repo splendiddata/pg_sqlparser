@@ -203,13 +203,12 @@ public class FuncCall extends Expr {
         }
 
         if (over != null) {
-            result.append(" over (");
+            result.append(" over ");
             if (over.name == null) {
-                result.append(over);
+                result.append('(').append(over).append(')');
             } else {
                 result.append(over.name);
             }
-            result.append(')');
         }
 
         return result.toString();
