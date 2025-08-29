@@ -112,106 +112,6 @@ SELECT 2;
 -- Deactivated for SplendidDataTest: COMMIT \bind \sendpipeline
 \endpipeline
 
--- COPY FROM STDIN
--- with \sendpipeline and \bind
-\startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 'val1' \sendpipeline
--- Deactivated for SplendidDataTest: COPY psql_pipeline FROM STDIN \bind \sendpipeline
-\endpipeline
--- Deactivated for SplendidDataTest: 2	test2
-\.
--- with semicolon
-\startpipeline
-SELECT 'val1';
-COPY psql_pipeline FROM STDIN;
-\endpipeline
--- Deactivated for SplendidDataTest: 20	test2
-\.
-
--- COPY FROM STDIN with \flushrequest + \getresults
--- with \sendpipeline and \bind
-\startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 'val1' \sendpipeline
--- Deactivated for SplendidDataTest: COPY psql_pipeline FROM STDIN \bind \sendpipeline
-\flushrequest
-\getresults
--- Deactivated for SplendidDataTest: 3	test3
-\.
-\endpipeline
--- with semicolon
-\startpipeline
-SELECT 'val1';
-COPY psql_pipeline FROM STDIN;
-\flushrequest
-\getresults
--- Deactivated for SplendidDataTest: 30	test3
-\.
-\endpipeline
-
--- COPY FROM STDIN with \syncpipeline + \getresults
--- with \bind and \sendpipeline
-\startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 'val1' \sendpipeline
--- Deactivated for SplendidDataTest: COPY psql_pipeline FROM STDIN \bind \sendpipeline
-\syncpipeline
-\getresults
--- Deactivated for SplendidDataTest: 4	test4
-\.
-\endpipeline
--- with semicolon
-\startpipeline
-SELECT 'val1';
-COPY psql_pipeline FROM STDIN;
-\syncpipeline
-\getresults
--- Deactivated for SplendidDataTest: 40	test4
-\.
-\endpipeline
-
--- COPY TO STDOUT
--- with \bind and \sendpipeline
-\startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 'val1' \sendpipeline
--- Deactivated for SplendidDataTest: copy psql_pipeline TO STDOUT \bind \sendpipeline
-\endpipeline
--- with semicolon
-\startpipeline
-SELECT 'val1';
-copy psql_pipeline TO STDOUT;
-\endpipeline
-
--- COPY TO STDOUT with \flushrequest + \getresults
--- with \bind and \sendpipeline
-\startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 'val1' \sendpipeline
--- Deactivated for SplendidDataTest: copy psql_pipeline TO STDOUT \bind \sendpipeline
-\flushrequest
-\getresults
-\endpipeline
--- with semicolon
-\startpipeline
-SELECT 'val1';
-copy psql_pipeline TO STDOUT;
-\flushrequest
-\getresults
-\endpipeline
-
--- COPY TO STDOUT with \syncpipeline + \getresults
--- with \bind and \sendpipeline
-\startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 'val1' \sendpipeline
--- Deactivated for SplendidDataTest: copy psql_pipeline TO STDOUT \bind \sendpipeline
-\syncpipeline
-\getresults
-\endpipeline
--- with semicolon
-\startpipeline
-SELECT 'val1';
-copy psql_pipeline TO STDOUT;
-\syncpipeline
-\getresults
-\endpipeline
-
 -- Use \parse and \bind_named
 \startpipeline
 -- Deactivated for SplendidDataTest: SELECT $1 \parse ''
@@ -413,21 +313,21 @@ ROLLBACK;
 -- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
 -- Deactivated for SplendidDataTest: SELECT $1 \parse a
 \bind_named a 1 \sendpipeline
-\close a
+\close_prepared a
 \flushrequest
 \getresults
 -- Pipeline is aborted.
 -- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
 -- Deactivated for SplendidDataTest: SELECT $1 \parse a
 \bind_named a 1 \sendpipeline
-\close a
+\close_prepared a
 -- Sync allows pipeline to recover.
 \syncpipeline
 \getresults
 -- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
 -- Deactivated for SplendidDataTest: SELECT $1 \parse a
 \bind_named a 1 \sendpipeline
-\close a
+\close_prepared a
 \flushrequest
 \getresults
 \endpipeline

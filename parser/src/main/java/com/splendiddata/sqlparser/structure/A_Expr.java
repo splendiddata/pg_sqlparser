@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -21,6 +18,7 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.A_Expr_Kind;
@@ -49,6 +47,24 @@ public class A_Expr extends ConditionalExpr {
     /** right argument, or NULL if none */
     @XmlElement
     public Node rexpr;
+
+    /**
+     * If rexpr is a list of some kind, we separately track its starting and ending location; it's not the same as the
+     * starting and ending location of the token itself.
+     * 
+     * @since 18beta3
+     */
+    @XmlTransient
+    public Location rexpr_list_start;
+
+    /**
+     * If rexpr is a list of some kind, we separately track its starting and ending location; it's not the same as the
+     * starting and ending location of the token itself.
+     * 
+     * @since 18beta3
+     */
+    @XmlTransient
+    public Location rexpr_list_end;
 
     /**
      * Constructor
@@ -123,11 +139,11 @@ public class A_Expr extends ConditionalExpr {
             }
             return result.toString();
         case AEXPR_BETWEEN_SYM:
-            return result.append(lexpr).append(" between symmetric ").append(((List<Node>) rexpr).get(0)).append(" and ")
-                    .append(((List<Node>) rexpr).get(1)).toString();
+            return result.append(lexpr).append(" between symmetric ").append(((List<Node>) rexpr).get(0))
+                    .append(" and ").append(((List<Node>) rexpr).get(1)).toString();
         case AEXPR_NOT_BETWEEN_SYM:
-            return result.append(lexpr).append(" not between symmetric ").append(((List<Node>) rexpr).get(0)).append(" and ")
-                    .append(((List<Node>) rexpr).get(1)).toString();
+            return result.append(lexpr).append(" not between symmetric ").append(((List<Node>) rexpr).get(0))
+                    .append(" and ").append(((List<Node>) rexpr).get(1)).toString();
         case AEXPR_PAREN:
         default:
             throw new AssertionError("Unsupported A_Expr_Kind: " + kind);

@@ -154,7 +154,6 @@ static void base_yyerror(YYLTYPE *yylloc, core_yyscan_t yyscanner,
 						 const char *msg);
 static RawStmt *makeRawStmt(Node *stmt, int stmt_location);
 static void updateRawStmtEnd(RawStmt *rs, int end_location);
-static void updatePreparableStmtEnd(Node *n, int end_location);
 static Node *makeColumnRef(char *colname, List *indirection,
 						   int location, core_yyscan_t yyscanner);
 static Node *makeTypeCast(Node *arg, TypeName *typename, int location);
@@ -178,13 +177,13 @@ static void insertSelectOptions(SelectStmt *stmt,
 								SelectLimit *limitClause,
 								WithClause *withClause,
 								core_yyscan_t yyscanner);
-static Node *makeSetOp(SetOperation op, bool all, Node *larg, Node *rarg, int location);
+static Node *makeSetOp(SetOperation op, bool all, Node *larg, Node *rarg);
 static Node *doNegate(Node *n, int location);
 static void doNegateFloat(Float *v);
 static Node *makeAndExpr(Node *lexpr, Node *rexpr, int location);
 static Node *makeOrExpr(Node *lexpr, Node *rexpr, int location);
 static Node *makeNotExpr(Node *expr, int location);
-static Node *makeAArrayExpr(List *elements, int location);
+static Node *makeAArrayExpr(List *elements, int location, int end_location);
 static Node *makeSQLValueFunction(SQLValueFunctionOp op, int32 typmod,
 								  int location);
 static Node *makeXmlExpr(XmlExprOp op, char *name, List *named_args,
@@ -523,7 +522,7 @@ static Node *makeRecursiveViewSelect(char *relname, List *aliases, Node *query);
 %type <defelt>	def_elem reloption_elem old_aggr_elem operator_def_elem
 %type <node>	def_arg columnElem where_clause where_or_current_clause
 				a_expr b_expr c_expr AexprConst indirection_el opt_slice_bound
-				columnref in_expr having_clause func_table xmltable array_expr
+				columnref having_clause func_table xmltable array_expr
 				OptWhereClause operator_def_arg
 %type <list>	opt_column_and_period_list
 %type <list>	rowsfrom_item rowsfrom_list opt_col_def_list
@@ -2669,6 +2668,12 @@ alter_table_cmd:
 						c->alterDeferrability = true;
 					if ($4 & CAS_NO_INHERIT)
 						c->alterInheritability = true;
+					/* handle unsupported case with specific error message */
+					if ($4 & CAS_NOT_VALID)
+						ereport(ERROR,
+								errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+								errmsg("constraints cannot be altered to be NOT VALID"),
+								parser_errposition(@4));
 					processCASbits($4, @4, "FOREIGN KEY",
 									&c->deferrable,
 									&c->initdeferred,
@@ -3417,7 +3422,6 @@ CopyStmt:	COPY opt_binary qualified_name opt_column_list
 				{
 					CopyStmt *n = makeNode(CopyStmt);
 
-					updatePreparableStmtEnd($3, @4);
 					n->relation = NULL;
 					n->query = $3;
 					n->attlist = NIL;
@@ -12240,7 +12244,6 @@ InsertStmt:
 					$5->onConflictClause = $6;
 					$5->returningClause = $7;
 					$5->withClause = $1;
-					$5->stmt_location = @$;
 					$$ = (Node *) $5;
 				}
 		;
@@ -12431,7 +12434,6 @@ DeleteStmt: opt_with_clause DELETE_P FROM relation_expr_opt_alias
 					n->whereClause = $6;
 					n->returningClause = $7;
 					n->withClause = $1;
-					n->stmt_location = @$;
 					$$ = (Node *) n;
 				}
 		;
@@ -12506,7 +12508,6 @@ UpdateStmt: opt_with_clause UPDATE relation_expr_opt_alias
 					n->whereClause = $7;
 					n->returningClause = $8;
 					n->withClause = $1;
-					n->stmt_location = @$;
 					$$ = (Node *) n;
 				}
 		;
@@ -12584,7 +12585,6 @@ MergeStmt:
 					m->joinCondition = $8;
 					m->mergeWhenClauses = $9;
 					m->returningClause = $10;
-					m->stmt_location = @$;
 
 					$$ = (Node *) m;
 				}
@@ -12825,20 +12825,7 @@ SelectStmt: select_no_parens			%prec UMINUS
 		;
 
 select_with_parens:
-			'(' select_no_parens ')'
-				{
-					SelectStmt *n = (SelectStmt *) $2;
-
-					/*
-					 * As SelectStmt's location starts at the SELECT keyword,
-					 * we need to track the length of the SelectStmt within
-					 * parentheses to be able to extract the relevant part
-					 * of the query.  Without this, the RawStmt's length would
-					 * be used and would include the closing parenthesis.
-					 */
-					n->stmt_len = @3 - @2;
-					$$ = $2;
-				}
+			'(' select_no_parens ')'				{ $$ = $2; }
 			| '(' select_with_parens ')'			{ $$ = $2; }
 		;
 
@@ -12960,7 +12947,6 @@ simple_select:
 					n->groupDistinct = ($7)->distinct;
 					n->havingClause = $8;
 					n->windowClause = $9;
-					n->stmt_location = @1;
 					$$ = (Node *) n;
 				}
 			| SELECT distinct_clause target_list
@@ -12978,7 +12964,6 @@ simple_select:
 					n->groupDistinct = ($7)->distinct;
 					n->havingClause = $8;
 					n->windowClause = $9;
-					n->stmt_location = @1;
 					$$ = (Node *) n;
 				}
 			| values_clause							{ $$ = $1; }
@@ -12999,20 +12984,19 @@ simple_select:
 
 					n->targetList = list_make1(rt);
 					n->fromClause = list_make1($2);
-					n->stmt_location = @1;
 					$$ = (Node *) n;
 				}
 			| select_clause UNION set_quantifier select_clause
 				{
-					$$ = makeSetOp(SETOP_UNION, $3 == SET_QUANTIFIER_ALL, $1, $4, @1);
+					$$ = makeSetOp(SETOP_UNION, $3 == SET_QUANTIFIER_ALL, $1, $4);
 				}
 			| select_clause INTERSECT set_quantifier select_clause
 				{
-					$$ = makeSetOp(SETOP_INTERSECT, $3 == SET_QUANTIFIER_ALL, $1, $4, @1);
+					$$ = makeSetOp(SETOP_INTERSECT, $3 == SET_QUANTIFIER_ALL, $1, $4);
 				}
 			| select_clause EXCEPT set_quantifier select_clause
 				{
-					$$ = makeSetOp(SETOP_EXCEPT, $3 == SET_QUANTIFIER_ALL, $1, $4, @1);
+					$$ = makeSetOp(SETOP_EXCEPT, $3 == SET_QUANTIFIER_ALL, $1, $4);
 				}
 		;
 
@@ -13590,7 +13574,6 @@ values_clause:
 				{
 					SelectStmt *n = makeNode(SelectStmt);
 
-					n->stmt_location = @1;
 					n->valuesLists = list_make1($3);
 					$$ = (Node *) n;
 				}
@@ -14230,7 +14213,7 @@ xmltable_column_el:
 										 parser_errposition(defel->location)));
 							fc->colexpr = defel->arg;
 						}
-						else if (strcmp(defel->defname, "is_not_null") == 0)
+						else if (strcmp(defel->defname, "__pg__is_not_null") == 0)
 						{
 							if (nullability_seen)
 								ereport(ERROR,
@@ -14273,13 +14256,20 @@ xmltable_column_option_list:
 
 xmltable_column_option_el:
 			IDENT b_expr
-				{ $$ = makeDefElem($1, $2, @1); }
+				{
+					if (strcmp($1, "__pg__is_not_null") == 0)
+						ereport(ERROR,
+								(errcode(ERRCODE_SYNTAX_ERROR),
+								 errmsg("option name \"%s\" cannot be used in XMLTABLE", $1),
+								 parser_errposition(@1)));
+					$$ = makeDefElem($1, $2, @1);
+				}
 			| DEFAULT b_expr
 				{ $$ = makeDefElem("default", $2, @1); }
 			| NOT NULL_P
-				{ $$ = makeDefElem("is_not_null", (Node *) makeBoolean(true), @1); }
+				{ $$ = makeDefElem("__pg__is_not_null", (Node *) makeBoolean(true), @1); }
 			| NULL_P
-				{ $$ = makeDefElem("is_not_null", (Node *) makeBoolean(false), @1); }
+				{ $$ = makeDefElem("__pg__is_not_null", (Node *) makeBoolean(false), @1); }
 			| PATH b_expr
 				{ $$ = makeDefElem("path", $2, @1); }
 		;
@@ -15280,49 +15270,50 @@ a_expr:		c_expr									{ $$ = $1; }
 												   (Node *) list_make2($5, $7),
 												   @2);
 				}
-			| a_expr IN_P in_expr
+			| a_expr IN_P select_with_parens
 				{
-					/* in_expr returns a SubLink or a list of a_exprs */
-					if (IsA($3, SubLink))
-					{
-						/* generate foo = ANY (subquery) */
-						SubLink	   *n = (SubLink *) $3;
+					/* generate foo = ANY (subquery) */
+					SubLink	   *n = makeNode(SubLink);
 
-						n->subLinkType = ANY_SUBLINK;
-						n->subLinkId = 0;
-						n->testexpr = $1;
-						n->operName = NIL;		/* show it's IN not = ANY */
-						n->location = @2;
-						$$ = (Node *) n;
-					}
-					else
-					{
-						/* generate scalar IN expression */
-						$$ = (Node *) makeSimpleA_Expr(AEXPR_IN, "=", $1, $3, @2);
-					}
+					n->subselect = $3;
+					n->subLinkType = ANY_SUBLINK;
+					n->subLinkId = 0;
+					n->testexpr = $1;
+					n->operName = NIL;		/* show it's IN not = ANY */
+					n->location = @2;
+					$$ = (Node *) n;
 				}
-			| a_expr NOT_LA IN_P in_expr						%prec NOT_LA
+			| a_expr IN_P '(' expr_list ')'
 				{
-					/* in_expr returns a SubLink or a list of a_exprs */
-					if (IsA($4, SubLink))
-					{
-						/* generate NOT (foo = ANY (subquery)) */
-						/* Make an = ANY node */
-						SubLink	   *n = (SubLink *) $4;
+					/* generate scalar IN expression */
+					A_Expr *n = makeSimpleA_Expr(AEXPR_IN, "=", $1, (Node *) $4, @2);
 
-						n->subLinkType = ANY_SUBLINK;
-						n->subLinkId = 0;
-						n->testexpr = $1;
-						n->operName = NIL;		/* show it's IN not = ANY */
-						n->location = @2;
-						/* Stick a NOT on top; must have same parse location */
-						$$ = makeNotExpr((Node *) n, @2);
-					}
-					else
-					{
-						/* generate scalar NOT IN expression */
-						$$ = (Node *) makeSimpleA_Expr(AEXPR_IN, "<>", $1, $4, @2);
-					}
+					n->rexpr_list_start = @3;
+					n->rexpr_list_end = @5;
+					$$ = (Node *) n;
+				}
+			| a_expr NOT_LA IN_P select_with_parens			%prec NOT_LA
+				{
+					/* generate NOT (foo = ANY (subquery)) */
+					SubLink	   *n = makeNode(SubLink);
+
+					n->subselect = $4;
+					n->subLinkType = ANY_SUBLINK;
+					n->subLinkId = 0;
+					n->testexpr = $1;
+					n->operName = NIL;		/* show it's IN not = ANY */
+					n->location = @2;
+					/* Stick a NOT on top; must have same parse location */
+					$$ = makeNotExpr((Node *) n, @2);
+				}
+			| a_expr NOT_LA IN_P '(' expr_list ')'
+				{
+					/* generate scalar NOT IN expression */
+					A_Expr *n = makeSimpleA_Expr(AEXPR_IN, "<>", $1, (Node *) $5, @2);
+
+					n->rexpr_list_start = @4;
+					n->rexpr_list_end = @6;
+					$$ = (Node *) n;
 				}
 			| a_expr subquery_Op sub_type select_with_parens	%prec Op
 				{
@@ -16757,15 +16748,15 @@ type_list:	Typename								{ $$ = list_make1($1); }
 
 array_expr: '[' expr_list ']'
 				{
-					$$ = makeAArrayExpr($2, @1);
+					$$ = makeAArrayExpr($2, @1, @3);
 				}
 			| '[' array_expr_list ']'
 				{
-					$$ = makeAArrayExpr($2, @1);
+					$$ = makeAArrayExpr($2, @1, @3);
 				}
 			| '[' ']'
 				{
-					$$ = makeAArrayExpr(NIL, @1);
+					$$ = makeAArrayExpr(NIL, @1, @2);
 				}
 		;
 
@@ -16885,17 +16876,6 @@ substr_list:
 trim_list:	a_expr FROM expr_list					{ $$ = lappend($3, $1); }
 			| FROM expr_list						{ $$ = $2; }
 			| expr_list								{ $$ = $1; }
-		;
-
-in_expr:	select_with_parens
-				{
-					SubLink	   *n = makeNode(SubLink);
-
-					n->subselect = $1;
-					/* other fields will be filled later */
-					$$ = (Node *) n;
-				}
-			| '(' expr_list ')'						{ $$ = (Node *) $2; }
 		;
 
 /*
@@ -18741,47 +18721,6 @@ updateRawStmtEnd(RawStmt *rs, int end_location)
 	rs->stmt_len = end_location - rs->stmt_location;
 }
 
-/*
- * Adjust a PreparableStmt to reflect that it doesn't run to the end of the
- * string.
- */
-static void
-updatePreparableStmtEnd(Node *n, int end_location)
-{
-	if (IsA(n, SelectStmt))
-	{
-		SelectStmt *stmt = (SelectStmt *) n;
-
-		stmt->stmt_len = end_location - stmt->stmt_location;
-	}
-	else if (IsA(n, InsertStmt))
-	{
-		InsertStmt *stmt = (InsertStmt *) n;
-
-		stmt->stmt_len = end_location - stmt->stmt_location;
-	}
-	else if (IsA(n, UpdateStmt))
-	{
-		UpdateStmt *stmt = (UpdateStmt *) n;
-
-		stmt->stmt_len = end_location - stmt->stmt_location;
-	}
-	else if (IsA(n, DeleteStmt))
-	{
-		DeleteStmt *stmt = (DeleteStmt *) n;
-
-		stmt->stmt_len = end_location - stmt->stmt_location;
-	}
-	else if (IsA(n, MergeStmt))
-	{
-		MergeStmt  *stmt = (MergeStmt *) n;
-
-		stmt->stmt_len = end_location - stmt->stmt_location;
-	}
-	else
-		elog(ERROR, "unexpected node type %d", (int) n->type);
-}
-
 static Node *
 makeColumnRef(char *colname, List *indirection,
 			  int location, core_yyscan_t yyscanner)
@@ -19160,14 +19099,11 @@ insertSelectOptions(SelectStmt *stmt,
 					 errmsg("multiple WITH clauses not allowed"),
 					 parser_errposition(exprLocation((Node *) withClause))));
 		stmt->withClause = withClause;
-
-		/* Update SelectStmt's location to the start of the WITH clause */
-		stmt->stmt_location = withClause->location;
 	}
 }
 
 static Node *
-makeSetOp(SetOperation op, bool all, Node *larg, Node *rarg, int location)
+makeSetOp(SetOperation op, bool all, Node *larg, Node *rarg)
 {
 	SelectStmt *n = makeNode(SelectStmt);
 
@@ -19175,7 +19111,6 @@ makeSetOp(SetOperation op, bool all, Node *larg, Node *rarg, int location)
 	n->all = all;
 	n->larg = (SelectStmt *) larg;
 	n->rarg = (SelectStmt *) rarg;
-	n->stmt_location = location;
 	return (Node *) n;
 }
 
@@ -19293,12 +19228,14 @@ makeNotExpr(Node *expr, int location)
 }
 
 static Node *
-makeAArrayExpr(List *elements, int location)
+makeAArrayExpr(List *elements, int location, int location_end)
 {
 	A_ArrayExpr *n = makeNode(A_ArrayExpr);
 
 	n->elements = elements;
 	n->location = location;
+	n->list_start = location;
+	n->list_end = location_end;
 	return (Node *) n;
 }
 
