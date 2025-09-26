@@ -1928,7 +1928,12 @@ copy parent (a, b) from stdin;
 -- Deactivated for SplendidDataTest: AAA	42
 -- Deactivated for SplendidDataTest: BBB	42
 -- Deactivated for SplendidDataTest: CCC	42
--- Deactivated for SplendidDataTest: \.
+\.
+
+-- check detach/reattach behavior; statement triggers with transition tables
+-- should not prevent a table from becoming a partition again
+alter table parent detach partition child1;
+alter table parent attach partition child1 for values in ('AAA');
 
 -- DML affecting parent sees tuples collected from children even if
 -- there is no transition table trigger on the children
@@ -2147,7 +2152,12 @@ copy parent (a, b) from stdin;
 create index on parent(b);
 copy parent (a, b) from stdin;
 -- Deactivated for SplendidDataTest: DDD	42
--- Deactivated for SplendidDataTest: \.
+\.
+
+-- check disinherit/reinherit behavior; statement triggers with transition
+-- tables should not prevent a table from becoming an inheritance child again
+alter table child1 no inherit parent;
+alter table child1 inherit parent;
 
 -- DML affecting parent sees tuples collected from children even if
 -- there is no transition table trigger on the children

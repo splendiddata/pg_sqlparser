@@ -12,7 +12,7 @@
 --
 
 -- directory paths are passed to us in environment variables
--- Deactivated for SplendidDataTest: \getenv abs_srcdir PG_ABS_SRCDIR
+\getenv abs_srcdir PG_ABS_SRCDIR
 
 --
 -- BTREE
@@ -78,7 +78,7 @@ CREATE TABLE fast_emp4000 (
 	home_base	 box
 );
 
--- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/rect.data'
+\set filename :abs_srcdir '/data/rect.data'
 -- Deactivated for SplendidDataTest: COPY slow_emp4000 FROM :'filename';
 
 INSERT INTO fast_emp4000 SELECT * FROM slow_emp4000;
@@ -276,7 +276,7 @@ CREATE TABLE array_index_op_test (
 	t			text[]
 );
 
--- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/array.data'
+\set filename :abs_srcdir '/data/array.data'
 -- Deactivated for SplendidDataTest: COPY array_index_op_test FROM :'filename';
 ANALYZE array_index_op_test;
 
@@ -362,7 +362,7 @@ DROP TABLE array_gin_test;
 --
 CREATE INDEX gin_relopts_test ON array_index_op_test USING gin (i)
   WITH (FASTUPDATE=on, GIN_PENDING_LIST_LIMIT=128);
--- Deactivated for SplendidDataTest: \d+ gin_relopts_test
+\d+ gin_relopts_test
 
 --
 -- HASH
@@ -643,7 +643,7 @@ DROP TABLE cwi_test;
 CREATE TABLE syscol_table (a INT);
 
 -- System columns cannot be indexed
-CREATE INDEX ON syscolcol_table (ctid);
+CREATE INDEX ON syscol_table (ctid);
 
 -- nor used in expressions
 CREATE INDEX ON syscol_table ((ctid >= '(1000,0)'));
