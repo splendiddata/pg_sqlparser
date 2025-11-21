@@ -249,7 +249,7 @@ COPY t1 FROM stdin WITH ;
 -- Deactivated for SplendidDataTest: 102	2	bbb
 -- Deactivated for SplendidDataTest: 103	3	ccc
 -- Deactivated for SplendidDataTest: 104	4	dad
--- Deactivated for SplendidDataTest: \.
+\.
 
 CREATE TABLE t2 (c float) INHERITS (t1);
 GRANT ALL ON t2 TO public;
@@ -259,7 +259,7 @@ COPY t2 FROM stdin;
 -- Deactivated for SplendidDataTest: 202	2	bcd	2.2
 -- Deactivated for SplendidDataTest: 203	3	cde	3.3
 -- Deactivated for SplendidDataTest: 204	4	def	4.4
--- Deactivated for SplendidDataTest: \.
+\.
 
 CREATE TABLE t3 (id int not null primary key, c text, b text, a int);
 ALTER TABLE t3 INHERIT t1;
@@ -269,7 +269,7 @@ COPY t3(id, a,b,c) FROM stdin;
 -- Deactivated for SplendidDataTest: 301	1	xxx	X
 -- Deactivated for SplendidDataTest: 302	2	yyy	Y
 -- Deactivated for SplendidDataTest: 303	3	zzz	Z
--- Deactivated for SplendidDataTest: \.
+\.
 
 CREATE POLICY p1 ON t1 FOR ALL TO PUBLIC USING (a % 2 = 0); -- be even number
 CREATE POLICY p2 ON t2 FOR ALL TO PUBLIC USING (a % 2 = 1); -- be odd number
@@ -1648,14 +1648,14 @@ COPY copy_t FROM STDIN; --ok
 -- Deactivated for SplendidDataTest: 2	bcd
 -- Deactivated for SplendidDataTest: 3	cde
 -- Deactivated for SplendidDataTest: 4	def
--- Deactivated for SplendidDataTest: \.
+\.
 SET row_security TO ON;
 COPY copy_t FROM STDIN; --ok
 -- Deactivated for SplendidDataTest: 1	abc
 -- Deactivated for SplendidDataTest: 2	bcd
 -- Deactivated for SplendidDataTest: 3	cde
 -- Deactivated for SplendidDataTest: 4	def
--- Deactivated for SplendidDataTest: \.
+\.
 
 -- Check COPY FROM as user with permissions.
 SET SESSION AUTHORIZATION regress_rls_bob;
@@ -1672,7 +1672,7 @@ COPY copy_t FROM STDIN; --ok
 -- Deactivated for SplendidDataTest: 2	bcd
 -- Deactivated for SplendidDataTest: 3	cde
 -- Deactivated for SplendidDataTest: 4	def
--- Deactivated for SplendidDataTest: \.
+\.
 
 -- Check COPY FROM as user without permissions.
 SET SESSION AUTHORIZATION regress_rls_carol;
@@ -2170,7 +2170,7 @@ DROP VIEW rls_view;
 DROP TABLE rls_tbl;
 DROP TABLE ref_tbl;
 
--- Leaky operator test
+-- Leaky operator tests
 CREATE TABLE rls_tbl (a int);
 INSERT INTO rls_tbl SELECT x/10 FROM generate_series(1, 100) x;
 ANALYZE rls_tbl;
@@ -2185,9 +2185,58 @@ CREATE FUNCTION op_leak(int, int) RETURNS bool
 CREATE OPERATOR <<< (procedure = op_leak, leftarg = int, rightarg = int,
                      restrict = scalarltsel);
 SELECT * FROM rls_tbl WHERE a <<< 1000;
+RESET SESSION AUTHORIZATION;
+
+CREATE TABLE rls_child_tbl () INHERITS (rls_tbl);
+INSERT INTO rls_child_tbl SELECT x/10 FROM generate_series(1, 100) x;
+ANALYZE rls_child_tbl;
+
+CREATE TABLE rls_ptbl (a int) PARTITION BY RANGE (a);
+CREATE TABLE rls_part PARTITION OF rls_ptbl FOR VALUES FROM (-100) TO (100);
+INSERT INTO rls_ptbl SELECT x/10 FROM generate_series(1, 100) x;
+ANALYZE rls_ptbl, rls_part;
+
+ALTER TABLE rls_ptbl ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rls_part ENABLE ROW LEVEL SECURITY;
+GRANT SELECT ON rls_ptbl TO regress_rls_alice;
+GRANT SELECT ON rls_part TO regress_rls_alice;
+CREATE POLICY p1 ON rls_tbl USING (a < 0);
+CREATE POLICY p2 ON rls_ptbl USING (a < 0);
+CREATE POLICY p3 ON rls_part USING (a < 0);
+
+SET SESSION AUTHORIZATION regress_rls_alice;
+SELECT * FROM rls_tbl WHERE a <<< 1000;
+SELECT * FROM rls_child_tbl WHERE a <<< 1000;
+SELECT * FROM rls_ptbl WHERE a <<< 1000;
+SELECT * FROM rls_part WHERE a <<< 1000;
+SELECT * FROM (SELECT * FROM rls_tbl UNION ALL
+               SELECT * FROM rls_tbl) t WHERE a <<< 1000;
+SELECT * FROM (SELECT * FROM rls_child_tbl UNION ALL
+               SELECT * FROM rls_child_tbl) t WHERE a <<< 1000;
+RESET SESSION AUTHORIZATION;
+
+REVOKE SELECT ON rls_tbl FROM regress_rls_alice;
+CREATE VIEW rls_tbl_view AS SELECT * FROM rls_tbl;
+
+ALTER TABLE rls_child_tbl ENABLE ROW LEVEL SECURITY;
+GRANT SELECT ON rls_child_tbl TO regress_rls_alice;
+CREATE POLICY p4 ON rls_child_tbl USING (a < 0);
+
+SET SESSION AUTHORIZATION regress_rls_alice;
+SELECT * FROM rls_tbl WHERE a <<< 1000;
+SELECT * FROM rls_tbl_view WHERE a <<< 1000;
+SELECT * FROM rls_child_tbl WHERE a <<< 1000;
+SELECT * FROM (SELECT * FROM rls_tbl UNION ALL
+               SELECT * FROM rls_tbl) t WHERE a <<< 1000;
+SELECT * FROM (SELECT * FROM rls_child_tbl UNION ALL
+               SELECT * FROM rls_child_tbl) t WHERE a <<< 1000;
 DROP OPERATOR <<< (int, int);
 DROP FUNCTION op_leak(int, int);
 RESET SESSION AUTHORIZATION;
+DROP TABLE rls_part;
+DROP TABLE rls_ptbl;
+DROP TABLE rls_child_tbl;
+DROP VIEW rls_tbl_view;
 DROP TABLE rls_tbl;
 
 -- Bug #16006: whole-row Vars in a policy don't play nice with sub-selects
@@ -2225,8 +2274,66 @@ execute q;
 set role regress_rls_bob;
 execute q;
 
+-- make sure RLS dependencies in CTEs are handled
+reset role;
+create or replace function rls_f() returns setof rls_t
+  stable language sql
+  as $$ with cte as (select * from rls_t) select * from cte $$;
+prepare r as select current_user, * from rls_f();
+set role regress_rls_alice;
+execute r;
+set role regress_rls_bob;
+execute r;
+
+-- make sure RLS dependencies in subqueries are handled
+reset role;
+create or replace function rls_f() returns setof rls_t
+  stable language sql
+  as $$ select * from (select * from rls_t) _ $$;
+prepare s as select current_user, * from rls_f();
+set role regress_rls_alice;
+execute s;
+set role regress_rls_bob;
+execute s;
+
+-- make sure RLS dependencies in sublinks are handled
+reset role;
+create or replace function rls_f() returns setof rls_t
+  stable language sql
+  as $$ select exists(select * from rls_t)::text $$;
+prepare t as select current_user, * from rls_f();
+set role regress_rls_alice;
+execute t;
+set role regress_rls_bob;
+execute t;
+
+-- make sure RLS dependencies are handled when coercion projections are inserted
+reset role;
+create or replace function rls_f() returns setof rls_t
+  stable language sql
+  as $$ select * from (select array_agg(c) as cs from rls_t) _ group by cs $$;
+prepare u as select current_user, * from rls_f();
+set role regress_rls_alice;
+execute u;
+set role regress_rls_bob;
+execute u;
+
+-- make sure RLS dependencies in security invoker views are handled
+reset role;
+create view rls_v with (security_invoker) as select * from rls_t;
+grant select on rls_v to regress_rls_alice, regress_rls_bob;
+create or replace function rls_f() returns setof rls_t
+  stable language sql
+  as $$ select * from rls_v $$;
+prepare v as select current_user, * from rls_f();
+set role regress_rls_alice;
+execute v;
+set role regress_rls_bob;
+execute v;
+
 RESET ROLE;
 DROP FUNCTION rls_f();
+DROP VIEW rls_v;
 DROP TABLE rls_t;
 
 --

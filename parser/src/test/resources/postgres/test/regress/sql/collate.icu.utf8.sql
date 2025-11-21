@@ -29,7 +29,7 @@ CREATE TABLE collate_test1 (
     b text COLLATE "en-x-icu" NOT NULL
 );
 
--- Deactivated for SplendidDataTest: \d collate_test1
+\d collate_test1
 
 CREATE TABLE collate_test_fail (
     a int,
@@ -50,7 +50,7 @@ CREATE TABLE collate_test_like (
     LIKE collate_test1
 );
 
--- Deactivated for SplendidDataTest: \d collate_test_like
+\d collate_test_like
 
 CREATE TABLE collate_test2 (
     a int,
@@ -446,8 +446,8 @@ CREATE INDEX collate_dep_test4i ON collate_dep_test4t (b COLLATE test0);
 DROP COLLATION test0 RESTRICT; -- fail
 DROP COLLATION test0 CASCADE;
 
--- Deactivated for SplendidDataTest: \d collate_dep_test1
--- Deactivated for SplendidDataTest: \d collate_dep_test2
+\d collate_dep_test1
+\d collate_dep_test2
 
 DROP TABLE collate_dep_test1, collate_dep_test4t;
 DROP TYPE collate_dep_test2;
@@ -515,7 +515,6 @@ SELECT * FROM test7 ORDER BY a COLLATE testcoll_rules1;
 DROP TABLE test7;
 
 CREATE COLLATION testcoll_rulesx (provider = icu, locale = '', rules = '!!wrong!!');
-
 
 -- nondeterministic collations
 
@@ -804,6 +803,79 @@ INSERT INTO test33 VALUES (2, 'DEF');
 -- they end up in the same partition (but it's platform-dependent which one)
 SELECT (SELECT count(*) FROM test33_0) <> (SELECT count(*) FROM test33_1);
 
+--
+-- Bug #18568
+--
+-- Partitionwise aggregate (full or partial) should not be used when a
+-- partition key's collation doesn't match that of the GROUP BY column it is
+-- matched with.
+SET max_parallel_workers_per_gather TO 0;
+SET enable_incremental_sort TO off;
+
+CREATE TABLE pagg_tab3 (a text, c text collate case_insensitive) PARTITION BY LIST(c collate "C");
+CREATE TABLE pagg_tab3_p1 PARTITION OF pagg_tab3 FOR VALUES IN ('a', 'b');
+CREATE TABLE pagg_tab3_p2 PARTITION OF pagg_tab3 FOR VALUES IN ('B', 'A');
+INSERT INTO pagg_tab3 SELECT i % 4 + 1, substr('abAB', (i % 4) + 1 , 1) FROM generate_series(0, 19) i;
+ANALYZE pagg_tab3;
+
+SET enable_partitionwise_aggregate TO false;
+EXPLAIN (COSTS OFF)
+SELECT upper(c collate case_insensitive), count(c) FROM pagg_tab3 GROUP BY c collate case_insensitive ORDER BY 1;
+SELECT upper(c collate case_insensitive), count(c) FROM pagg_tab3 GROUP BY c collate case_insensitive ORDER BY 1;
+
+-- No "full" partitionwise aggregation allowed, though "partial" is allowed.
+SET enable_partitionwise_aggregate TO true;
+EXPLAIN (COSTS OFF)
+SELECT upper(c collate case_insensitive), count(c) FROM pagg_tab3 GROUP BY c collate case_insensitive ORDER BY 1;
+SELECT upper(c collate case_insensitive), count(c) FROM pagg_tab3 GROUP BY c collate case_insensitive ORDER BY 1;
+
+-- OK to use full partitionwise aggregate after changing the GROUP BY column's
+-- collation to be the same as that of the partition key.
+EXPLAIN (COSTS OFF)
+SELECT c collate "C", count(c) FROM pagg_tab3 GROUP BY c collate "C" ORDER BY 1;
+SELECT c collate "C", count(c) FROM pagg_tab3 GROUP BY c collate "C" ORDER BY 1;
+
+-- Partitionwise join should not be allowed too when the collation used by the
+-- join keys doesn't match the partition key collation.
+SET enable_partitionwise_join TO false;
+EXPLAIN (COSTS OFF)
+SELECT t1.c, count(t2.c) FROM pagg_tab3 t1 JOIN pagg_tab3 t2 ON t1.c = t2.c GROUP BY 1 ORDER BY t1.c COLLATE "C";
+SELECT t1.c, count(t2.c) FROM pagg_tab3 t1 JOIN pagg_tab3 t2 ON t1.c = t2.c GROUP BY 1 ORDER BY t1.c COLLATE "C";
+
+SET enable_partitionwise_join TO true;
+EXPLAIN (COSTS OFF)
+SELECT t1.c, count(t2.c) FROM pagg_tab3 t1 JOIN pagg_tab3 t2 ON t1.c = t2.c GROUP BY 1 ORDER BY t1.c COLLATE "C";
+SELECT t1.c, count(t2.c) FROM pagg_tab3 t1 JOIN pagg_tab3 t2 ON t1.c = t2.c GROUP BY 1 ORDER BY t1.c COLLATE "C";
+
+-- OK when the join clause uses the same collation as the partition key.
+EXPLAIN (COSTS OFF)
+SELECT t1.c COLLATE "C", count(t2.c) FROM pagg_tab3 t1 JOIN pagg_tab3 t2 ON t1.c = t2.c COLLATE "C" GROUP BY t1.c COLLATE "C" ORDER BY t1.c COLLATE "C";
+SELECT t1.c COLLATE "C", count(t2.c) FROM pagg_tab3 t1 JOIN pagg_tab3 t2 ON t1.c = t2.c COLLATE "C" GROUP BY t1.c COLLATE "C" ORDER BY t1.c COLLATE "C";
+
+SET enable_partitionwise_join TO false;
+EXPLAIN (COSTS OFF)
+SELECT t1.c COLLATE "C", count(t2.c) FROM pagg_tab3 t1 JOIN pagg_tab3 t2 ON t1.c = t2.c COLLATE "C" GROUP BY t1.c COLLATE "C" ORDER BY t1.c COLLATE "C";
+SELECT t1.c COLLATE "C", count(t2.c) FROM pagg_tab3 t1 JOIN pagg_tab3 t2 ON t1.c = t2.c COLLATE "C" GROUP BY t1.c COLLATE "C" ORDER BY t1.c COLLATE "C";
+
+DROP TABLE pagg_tab3;
+
+RESET enable_partitionwise_aggregate;
+RESET max_parallel_workers_per_gather;
+RESET enable_incremental_sort;
+
+-- Check that DEFAULT expressions in SQL/JSON functions use the same collation
+-- as the RETURNING type.  Mismatched collations should raise an error.
+CREATE DOMAIN d1 AS text COLLATE case_insensitive;
+CREATE DOMAIN d2 AS text COLLATE "C";
+SELECT JSON_VALUE('{"a": "A"}', '$.a' RETURNING d1 DEFAULT ('C' COLLATE "C") COLLATE case_insensitive ON EMPTY) = 'a'; -- true
+SELECT JSON_VALUE('{"a": "A"}', '$.a' RETURNING d1 DEFAULT 'C' ON EMPTY) = 'a'; -- true
+SELECT JSON_VALUE('{"a": "A"}', '$.a' RETURNING d1 DEFAULT 'C'::d2 ON EMPTY) = 'a'; -- error
+SELECT JSON_VALUE('{"a": "A"}', '$.a' RETURNING d1 DEFAULT 'C' COLLATE "C" ON EMPTY) = 'a'; -- error
+SELECT JSON_VALUE('{"a": "A"}', '$.c' RETURNING d1 DEFAULT 'A' ON EMPTY) = 'a'; -- true
+SELECT JSON_VALUE('{"a": "A"}', '$.c' RETURNING d1 DEFAULT 'A' COLLATE case_insensitive ON EMPTY) = 'a'; -- true
+SELECT JSON_VALUE('{"a": "A"}', '$.c' RETURNING d1 DEFAULT 'A'::d2 ON EMPTY) = 'a'; -- error
+SELECT JSON_VALUE('{"a": "A"}', '$.c' RETURNING d1 DEFAULT 'A' COLLATE "C" ON EMPTY) = 'a'; -- error
+DROP DOMAIN d1, d2;
 
 -- cleanup
 RESET search_path;

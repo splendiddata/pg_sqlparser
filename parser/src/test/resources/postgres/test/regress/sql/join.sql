@@ -694,6 +694,30 @@ reset enable_hashjoin;
 reset enable_nestloop;
 
 --
+-- regression test for bug #18522 (merge-right-anti-join in inner_unique cases)
+--
+
+create temp table tbl_ra(a int unique, b int);
+insert into tbl_ra select i, i%100 from generate_series(1,1000)i;
+create index on tbl_ra (b);
+analyze tbl_ra;
+
+set enable_hashjoin to off;
+set enable_nestloop to off;
+
+-- ensure we get a merge right anti join
+explain (costs off)
+select * from tbl_ra t1
+where not exists (select 1 from tbl_ra t2 where t2.b = t1.a) and t1.b < 2;
+
+-- and check we get the expected results
+select * from tbl_ra t1
+where not exists (select 1 from tbl_ra t2 where t2.b = t1.a) and t1.b < 2;
+
+reset enable_hashjoin;
+reset enable_nestloop;
+
+--
 -- regression test for bug #13908 (hash join with skew tuples & nbatch increase)
 --
 
@@ -2928,3 +2952,16 @@ SELECT t1.a FROM skip_fetch t1 LEFT JOIN skip_fetch t2 ON t2.a = 1 WHERE t2.a IS
 
 RESET enable_indexonlyscan;
 RESET enable_seqscan;
+
+-- Test that we do not account for nullingrels when looking up statistics
+CREATE TABLE group_tbl (a INT, b INT);
+INSERT INTO group_tbl SELECT 1, 1;
+CREATE STATISTICS group_tbl_stat (ndistinct) ON a, b FROM group_tbl;
+ANALYZE group_tbl;
+
+EXPLAIN (COSTS OFF)
+SELECT 1 FROM group_tbl t1
+    LEFT JOIN (SELECT a c1, COALESCE(a) c2 FROM group_tbl t2) s ON TRUE
+GROUP BY s.c1, s.c2;
+
+DROP TABLE group_tbl;

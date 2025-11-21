@@ -54,11 +54,11 @@ INSERT INTO basictest values ('88', 'haha', 'short', '123.1212');    -- Truncate
 -- Test copy
 COPY basictest (testvarchar) FROM stdin; -- fail
 -- Deactivated for SplendidDataTest: notsoshorttext
--- Deactivated for SplendidDataTest: \.
+\.
 
 COPY basictest (testvarchar) FROM stdin;
 -- Deactivated for SplendidDataTest: short
--- Deactivated for SplendidDataTest: \.
+\.
 
 select * from basictest;
 
@@ -118,12 +118,12 @@ select array_dims(testint4arr), array_dims(testchar4arr) from domarrtest;
 
 COPY domarrtest FROM stdin;
 -- Deactivated for SplendidDataTest: {3,4}	{q,w,e}
--- Deactivated for SplendidDataTest: \N	\N
--- Deactivated for SplendidDataTest: \.
+\N	\N
+\.
 
 COPY domarrtest FROM stdin;	-- fail
 -- Deactivated for SplendidDataTest: {3,4}	{qwerty,w,e}
--- Deactivated for SplendidDataTest: \.
+\.
 
 select * from domarrtest;
 
@@ -349,18 +349,18 @@ INSERT INTO nulltest values ('a', 'b', 'c', NULL, 'd'); -- Good
 -- Test copy
 COPY nulltest FROM stdin; --fail
 -- Deactivated for SplendidDataTest: a	b	\N	d	d
--- Deactivated for SplendidDataTest: \.
+\.
 
 COPY nulltest FROM stdin; --fail
 -- Deactivated for SplendidDataTest: a	b	c	d	\N
--- Deactivated for SplendidDataTest: \.
+\.
 
 -- Last row is bad
 COPY nulltest FROM stdin;
 -- Deactivated for SplendidDataTest: a	b	c	\N	c
 -- Deactivated for SplendidDataTest: a	b	c	\N	d
 -- Deactivated for SplendidDataTest: a	b	c	\N	a
--- Deactivated for SplendidDataTest: \.
+\.
 
 select * from nulltest;
 
@@ -408,7 +408,7 @@ insert into defaulttest default values;
 -- Test defaults with copy
 COPY defaulttest(col5) FROM stdin;
 -- Deactivated for SplendidDataTest: 42
--- Deactivated for SplendidDataTest: \.
+\.
 
 select * from defaulttest;
 
@@ -435,6 +435,17 @@ update domnotnull set col1 = null; -- fails
 
 alter domain dnotnulltest drop not null;
 
+update domnotnull set col1 = null;
+
+update domnotnull set col1 = 5;
+
+-- these constraints can also be added and removed by name
+alter domain dnotnulltest add constraint dnotnulltest_notnull not null;
+update domnotnull set col1 = null;		-- fails
+select conname, pg_get_constraintdef(oid) from pg_constraint
+ where contypid = 'dnotnulltest'::regtype;
+
+alter domain dnotnulltest drop constraint dnotnulltest_notnull;
 update domnotnull set col1 = null;
 
 drop domain dnotnulltest cascade;

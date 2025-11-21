@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -145,7 +145,7 @@ public class CreateStatsStmt extends Node {
         }
         if (relations != null) {
             String separator = " from ";
-            for (RangeVar relation : relations) {
+            for (Node relation : relations) {
                 result.append(separator).append(relation);
                 separator = ", ";
             }

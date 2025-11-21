@@ -307,7 +307,7 @@ COPY main_table (a,b) FROM stdin;
 -- Deactivated for SplendidDataTest: 30	10
 -- Deactivated for SplendidDataTest: 50	35
 -- Deactivated for SplendidDataTest: 80	15
--- Deactivated for SplendidDataTest: \.
+\.
 
 CREATE FUNCTION trigger_func() RETURNS trigger LANGUAGE plpgsql AS '
 BEGIN
@@ -350,7 +350,7 @@ ALTER TABLE main_table DROP CONSTRAINT main_table_a_key;
 COPY main_table (a, b) FROM stdin;
 -- Deactivated for SplendidDataTest: 30	40
 -- Deactivated for SplendidDataTest: 50	60
--- Deactivated for SplendidDataTest: \.
+\.
 
 SELECT * FROM main_table ORDER BY a, b;
 
@@ -380,7 +380,7 @@ INSERT INTO main_table (a) VALUES (123), (456);
 COPY main_table FROM stdin;
 -- Deactivated for SplendidDataTest: 123	999
 -- Deactivated for SplendidDataTest: 456	999
--- Deactivated for SplendidDataTest: \.
+\.
 DELETE FROM main_table WHERE a IN (123, 456);
 UPDATE main_table SET a = 50, b = 60;
 SELECT * FROM main_table ORDER BY a, b;
@@ -1566,12 +1566,12 @@ delete from parted_stmt_trig;
 copy parted_stmt_trig(a) from stdin;
 -- Deactivated for SplendidDataTest: 1
 -- Deactivated for SplendidDataTest: 2
--- Deactivated for SplendidDataTest: \.
+\.
 
 -- insert via copy on the first partition
 copy parted_stmt_trig1(a) from stdin;
 -- Deactivated for SplendidDataTest: 1
--- Deactivated for SplendidDataTest: \.
+\.
 
 -- Disabling a trigger in the parent table should disable children triggers too
 alter table parted_stmt_trig disable trigger trig_ins_after_parent;
@@ -2116,7 +2116,12 @@ copy parent (a, b) from stdin;
 -- Deactivated for SplendidDataTest: AAA	42
 -- Deactivated for SplendidDataTest: BBB	42
 -- Deactivated for SplendidDataTest: CCC	42
--- Deactivated for SplendidDataTest: \.
+\.
+
+-- check detach/reattach behavior; statement triggers with transition tables
+-- should not prevent a table from becoming a partition again
+alter table parent detach partition child1;
+alter table parent attach partition child1 for values in ('AAA');
 
 -- DML affecting parent sees tuples collected from children even if
 -- there is no transition table trigger on the children
@@ -2137,7 +2142,7 @@ copy parent (a, b) from stdin;
 -- Deactivated for SplendidDataTest: AAA	42
 -- Deactivated for SplendidDataTest: BBB	42
 -- Deactivated for SplendidDataTest: CCC	42
--- Deactivated for SplendidDataTest: \.
+\.
 
 -- insert into parent with a before trigger on a child tuple before
 -- insertion, and we capture the newly modified row in parent format
@@ -2162,7 +2167,7 @@ copy parent (a, b) from stdin;
 -- Deactivated for SplendidDataTest: AAA	42
 -- Deactivated for SplendidDataTest: BBB	42
 -- Deactivated for SplendidDataTest: CCC	234
--- Deactivated for SplendidDataTest: \.
+\.
 
 drop table child1, child2, child3, parent;
 drop function intercept_insert();
@@ -2194,6 +2199,52 @@ drop trigger child_row_trig on child;
 alter table parent attach partition child for values in ('AAA');
 
 drop table child, parent;
+
+--
+-- Verify access of transition tables with UPDATE triggers and tuples
+-- moved across partitions.
+--
+create or replace function dump_update_new() returns trigger language plpgsql as
+$$
+  begin
+    raise notice 'trigger = %, new table = %', TG_NAME,
+                 (select string_agg(new_table::text, ', ' order by a) from new_table);
+    return null;
+  end;
+$$;
+create or replace function dump_update_old() returns trigger language plpgsql as
+$$
+  begin
+    raise notice 'trigger = %, old table = %', TG_NAME,
+                 (select string_agg(old_table::text, ', ' order by a) from old_table);
+    return null;
+  end;
+$$;
+create table trans_tab_parent (a text) partition by list (a);
+create table trans_tab_child1 partition of trans_tab_parent for values in ('AAA1', 'AAA2');
+create table trans_tab_child2 partition of trans_tab_parent for values in ('BBB1', 'BBB2');
+create trigger trans_tab_parent_update_trig
+  after update on trans_tab_parent referencing old table as old_table
+  for each statement execute procedure dump_update_old();
+create trigger trans_tab_parent_insert_trig
+  after insert on trans_tab_parent referencing new table as new_table
+  for each statement execute procedure dump_insert();
+create trigger trans_tab_parent_delete_trig
+  after delete on trans_tab_parent referencing old table as old_table
+  for each statement execute procedure dump_delete();
+insert into trans_tab_parent values ('AAA1'), ('BBB1');
+-- should not trigger access to new table when moving across partitions.
+update trans_tab_parent set a = 'BBB2' where a = 'AAA1';
+drop trigger trans_tab_parent_update_trig on trans_tab_parent;
+create trigger trans_tab_parent_update_trig
+  after update on trans_tab_parent referencing new table as new_table
+  for each statement execute procedure dump_update_new();
+-- should not trigger access to old table when moving across partitions.
+update trans_tab_parent set a = 'AAA2' where a = 'BBB1';
+delete from trans_tab_parent;
+-- clean up
+drop table trans_tab_parent, trans_tab_child1, trans_tab_child2;
+drop function dump_update_new, dump_update_old;
 
 --
 -- Verify behavior of statement triggers on (non-partition)
@@ -2282,14 +2333,19 @@ copy parent (a, b) from stdin;
 -- Deactivated for SplendidDataTest: AAA	42
 -- Deactivated for SplendidDataTest: BBB	42
 -- Deactivated for SplendidDataTest: CCC	42
--- Deactivated for SplendidDataTest: \.
+\.
 
 -- same behavior for copy if there is an index (interesting because rows are
 -- captured by a different code path in copyfrom.c if there are indexes)
 create index on parent(b);
 copy parent (a, b) from stdin;
 -- Deactivated for SplendidDataTest: DDD	42
--- Deactivated for SplendidDataTest: \.
+\.
+
+-- check disinherit/reinherit behavior; statement triggers with transition
+-- tables should not prevent a table from becoming an inheritance child again
+alter table child1 no inherit parent;
+alter table child1 inherit parent;
 
 -- DML affecting parent sees tuples collected from children even if
 -- there is no transition table trigger on the children
