@@ -81,6 +81,8 @@ SELECT JSON_OBJECT('a': '1', 'b': NULL, 'c': 2);
 SELECT JSON_OBJECT('a': '1', 'b': NULL, 'c': 2 NULL ON NULL);
 SELECT JSON_OBJECT('a': '1', 'b': NULL, 'c': 2 ABSENT ON NULL);
 
+SELECT JSON_OBJECT(1: 1, '2': NULL, '3': 1, repeat('x', 1000): 1, 2: repeat('a', 100) WITH UNIQUE);
+
 SELECT JSON_OBJECT(1: 1, '1': NULL WITH UNIQUE);
 SELECT JSON_OBJECT(1: 1, '1': NULL ABSENT ON NULL WITH UNIQUE);
 SELECT JSON_OBJECT(1: 1, '1': NULL NULL ON NULL WITH UNIQUE RETURNING jsonb);
@@ -129,6 +131,8 @@ SELECT JSON_ARRAY(SELECT i FROM (VALUES (NULL::int[]), ('{1,2}'), (NULL), (NULL)
 --SELECT JSON_ARRAY(SELECT i FROM (VALUES (NULL::int[]), ('{1,2}'), (NULL), (NULL), ('{3,4}'), (NULL)) foo(i) NULL ON NULL);
 --SELECT JSON_ARRAY(SELECT i FROM (VALUES (NULL::int[]), ('{1,2}'), (NULL), (NULL), ('{3,4}'), (NULL)) foo(i) NULL ON NULL RETURNING jsonb);
 SELECT JSON_ARRAY(SELECT i FROM (VALUES (3), (1), (NULL), (2)) foo(i) ORDER BY i);
+SELECT JSON_ARRAY(WITH x AS (SELECT 1) VALUES (TRUE));
+
 -- Should fail
 SELECT JSON_ARRAY(SELECT FROM (VALUES (1)) foo(i));
 SELECT JSON_ARRAY(SELECT i, i FROM (VALUES (1)) foo(i));
@@ -160,7 +164,7 @@ SELECT	JSON_ARRAYAGG(NULL NULL ON NULL),
 		JSON_ARRAYAGG(NULL NULL ON NULL RETURNING jsonb)
 FROM generate_series(1, 5);
 
--- Deactivated for SplendidDataTest: \x
+\x
 SELECT
 	JSON_ARRAYAGG(bar) as no_options,
 	JSON_ARRAYAGG(bar RETURNING jsonb) as returning_jsonb,
@@ -174,7 +178,7 @@ SELECT
 	JSON_ARRAYAGG(foo ORDER BY bar RETURNING jsonb) FILTER (WHERE bar > 2) as row_filtered_agg_returning_jsonb
 FROM
 	(VALUES (NULL), (3), (1), (NULL), (NULL), (5), (2), (4), (NULL)) foo(bar);
--- Deactivated for SplendidDataTest: \x
+\x
 
 SELECT
 	bar, JSON_ARRAYAGG(bar) FILTER (WHERE bar > 2) OVER (PARTITION BY foo.bar % 2)
@@ -223,6 +227,9 @@ FROM (VALUES (1, 1), (1, NULL), (2, 2)) foo(k, v);
 SELECT JSON_OBJECTAGG(k: v ABSENT ON NULL WITH UNIQUE KEYS RETURNING jsonb)
 FROM (VALUES (1, 1), (1, NULL), (2, 2)) foo(k, v);
 
+SELECT JSON_OBJECTAGG(mod(i,100): (i)::text FORMAT JSON WITH UNIQUE)
+FROM generate_series(0, 199) i;
+
 -- Test JSON_OBJECT deparsing
 EXPLAIN (VERBOSE, COSTS OFF)
 SELECT JSON_OBJECT('foo' : '1' FORMAT JSON, 'bar' : 'baz' RETURNING json);
@@ -230,7 +237,7 @@ SELECT JSON_OBJECT('foo' : '1' FORMAT JSON, 'bar' : 'baz' RETURNING json);
 CREATE VIEW json_object_view AS
 SELECT JSON_OBJECT('foo' : '1' FORMAT JSON, 'bar' : 'baz' RETURNING json);
 
--- Deactivated for SplendidDataTest: \sv json_object_view
+\sv json_object_view
 
 DROP VIEW json_object_view;
 
@@ -241,7 +248,7 @@ SELECT JSON_ARRAY('1' FORMAT JSON, 2 RETURNING json);
 CREATE VIEW json_array_view AS
 SELECT JSON_ARRAY('1' FORMAT JSON, 2 RETURNING json);
 
--- Deactivated for SplendidDataTest: \sv json_array_view
+\sv json_array_view
 
 DROP VIEW json_array_view;
 
@@ -258,7 +265,7 @@ CREATE VIEW json_objectagg_view AS
 SELECT JSON_OBJECTAGG(i: ('111' || i)::bytea FORMAT JSON WITH UNIQUE RETURNING text) FILTER (WHERE i > 3)
 FROM generate_series(1,5) i;
 
--- Deactivated for SplendidDataTest: \sv json_objectagg_view
+\sv json_objectagg_view
 
 DROP VIEW json_objectagg_view;
 
@@ -275,7 +282,7 @@ CREATE VIEW json_arrayagg_view AS
 SELECT JSON_ARRAYAGG(('111' || i)::bytea FORMAT JSON NULL ON NULL RETURNING text) FILTER (WHERE i > 3)
 FROM generate_series(1,5) i;
 
--- Deactivated for SplendidDataTest: \sv json_arrayagg_view
+\sv json_arrayagg_view
 
 DROP VIEW json_arrayagg_view;
 
@@ -286,7 +293,7 @@ SELECT JSON_ARRAY(SELECT i FROM (VALUES (1), (2), (NULL), (4)) foo(i) RETURNING 
 CREATE VIEW json_array_subquery_view AS
 SELECT JSON_ARRAY(SELECT i FROM (VALUES (1), (2), (NULL), (4)) foo(i) RETURNING jsonb);
 
--- Deactivated for SplendidDataTest: \sv json_array_subquery_view
+\sv json_array_subquery_view
 
 DROP VIEW json_array_subquery_view;
 
@@ -382,6 +389,20 @@ SELECT '1' IS JSON AS "any", ('1' || i) IS JSON SCALAR AS "scalar", '[]' IS NOT 
 CREATE VIEW is_json_view AS
 SELECT '1' IS JSON AS "any", ('1' || i) IS JSON SCALAR AS "scalar", '[]' IS NOT JSON ARRAY AS "array", '{}' IS JSON OBJECT WITH UNIQUE AS "object" FROM generate_series(1, 3) i;
 
--- Deactivated for SplendidDataTest: \sv is_json_view
+\sv is_json_view
 
 DROP VIEW is_json_view;
+
+-- Bug #18657: JsonValueExpr.raw_expr was not initialized in ExecInitExprRec()
+-- causing the Aggrefs contained in it to also not be initialized, which led
+-- to a crash in ExecBuildAggTrans() as mentioned in the bug report:
+-- https://postgr.es/m/18657-1b90ccce2b16bdb8@postgresql.org
+CREATE FUNCTION volatile_one() RETURNS int AS $$ BEGIN RETURN 1; END; $$ LANGUAGE plpgsql VOLATILE;
+CREATE FUNCTION stable_one() RETURNS int AS $$ BEGIN RETURN 1; END; $$ LANGUAGE plpgsql STABLE;
+EXPLAIN (VERBOSE, COSTS OFF) SELECT JSON_OBJECT('a': JSON_OBJECTAGG('b': volatile_one() RETURNING text) FORMAT JSON);
+SELECT JSON_OBJECT('a': JSON_OBJECTAGG('b': volatile_one() RETURNING text) FORMAT JSON);
+EXPLAIN (VERBOSE, COSTS OFF) SELECT JSON_OBJECT('a': JSON_OBJECTAGG('b': stable_one() RETURNING text) FORMAT JSON);
+SELECT JSON_OBJECT('a': JSON_OBJECTAGG('b': stable_one() RETURNING text) FORMAT JSON);
+EXPLAIN (VERBOSE, COSTS OFF) SELECT JSON_OBJECT('a': JSON_OBJECTAGG('b': 1 RETURNING text) FORMAT JSON);
+SELECT JSON_OBJECT('a': JSON_OBJECTAGG('b': 1 RETURNING text) FORMAT JSON);
+DROP FUNCTION volatile_one, stable_one;

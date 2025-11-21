@@ -12,6 +12,8 @@
 
 CREATE USER regress_merge_privs;
 CREATE USER regress_merge_no_privs;
+CREATE USER regress_merge_none;
+
 DROP TABLE IF EXISTS target;
 DROP TABLE IF EXISTS source;
 CREATE TABLE target (tid integer, balance integer)
@@ -126,6 +128,14 @@ DROP MATERIALIZED VIEW mv;
 
 -- permissions
 
+SET SESSION AUTHORIZATION regress_merge_none;
+MERGE INTO target
+USING (SELECT 1)
+ON true
+WHEN MATCHED THEN
+	DO NOTHING;
+
+SET SESSION AUTHORIZATION regress_merge_privs;
 MERGE INTO target
 USING source2
 ON target.tid = source2.sid
@@ -946,6 +956,23 @@ WHEN MATCHED AND t.a < 10 THEN
 DROP TABLE ex_msource, ex_mtarget;
 DROP FUNCTION explain_merge(text);
 
+-- EXPLAIN SubPlans and InitPlans
+CREATE TABLE src (a int, b int, c int, d int);
+CREATE TABLE tgt (a int, b int, c int, d int);
+CREATE TABLE ref (ab int, cd int);
+
+EXPLAIN (verbose, costs off)
+MERGE INTO tgt t
+USING (SELECT *, (SELECT count(*) FROM ref r
+                   WHERE r.ab = s.a + s.b
+                     AND r.cd = s.c - s.d) cnt
+         FROM src s) s
+ON t.a = s.a AND t.b < s.cnt
+WHEN MATCHED AND t.c > s.cnt THEN
+  UPDATE SET (b, c) = (SELECT s.b, s.cnt);
+
+DROP TABLE src, tgt, ref;
+
 -- Subqueries
 BEGIN;
 MERGE INTO sq_target t
@@ -1041,6 +1068,19 @@ SELECT merge_func();
 SELECT * FROM pa_target ORDER BY tid;
 ROLLBACK;
 
+-- bug #18871: ExecInitPartitionInfo()'s handling of DO NOTHING actions
+BEGIN;
+TRUNCATE pa_target;
+MERGE INTO pa_target t
+  USING (VALUES (10, 100)) AS s(sid, delta)
+  ON t.tid = s.sid
+  WHEN NOT MATCHED THEN
+    INSERT VALUES (1, 10, 'inserted by merge')
+  WHEN MATCHED THEN
+    DO NOTHING;
+SELECT * FROM pa_target ORDER BY tid, val;
+ROLLBACK;
+
 DROP TABLE pa_target CASCADE;
 
 -- The target table is partitioned in the same way, but this time by attaching
@@ -1068,6 +1108,10 @@ INSERT INTO pa_target SELECT id, id * 100, 'initial' FROM generate_series(1,14,2
 
 -- try simple MERGE
 BEGIN;
+DO $$
+DECLARE
+  result integer;
+BEGIN
 MERGE INTO pa_target t
   USING pa_source s
   ON t.tid = s.sid
@@ -1075,6 +1119,10 @@ MERGE INTO pa_target t
     UPDATE SET balance = balance + delta, val = val || ' updated by merge'
   WHEN NOT MATCHED THEN
     INSERT VALUES (sid, delta, 'inserted by merge');
+GET DIAGNOSTICS result := ROW_COUNT;
+RAISE NOTICE 'ROW_COUNT = %', result;
+END;
+$$;
 SELECT * FROM pa_target ORDER BY tid;
 ROLLBACK;
 
@@ -1093,6 +1141,10 @@ ROLLBACK;
 
 -- try updating the partition key column
 BEGIN;
+DO $$
+DECLARE
+  result integer;
+BEGIN
 MERGE INTO pa_target t
   USING pa_source s
   ON t.tid = s.sid
@@ -1100,6 +1152,58 @@ MERGE INTO pa_target t
     UPDATE SET tid = tid + 1, balance = balance + delta, val = val || ' updated by merge'
   WHEN NOT MATCHED THEN
     INSERT VALUES (sid, delta, 'inserted by merge');
+GET DIAGNOSTICS result := ROW_COUNT;
+RAISE NOTICE 'ROW_COUNT = %', result;
+END;
+$$;
+SELECT * FROM pa_target ORDER BY tid;
+ROLLBACK;
+
+-- as above, but blocked by BEFORE DELETE ROW trigger
+BEGIN;
+CREATE FUNCTION trig_fn() RETURNS trigger LANGUAGE plpgsql AS
+  $$ BEGIN RETURN NULL; END; $$;
+CREATE TRIGGER del_trig BEFORE DELETE ON pa_target
+  FOR EACH ROW EXECUTE PROCEDURE trig_fn();
+DO $$
+DECLARE
+  result integer;
+BEGIN
+MERGE INTO pa_target t
+  USING pa_source s
+  ON t.tid = s.sid
+  WHEN MATCHED THEN
+    UPDATE SET tid = tid + 1, balance = balance + delta, val = val || ' updated by merge'
+  WHEN NOT MATCHED THEN
+    INSERT VALUES (sid, delta, 'inserted by merge');
+GET DIAGNOSTICS result := ROW_COUNT;
+RAISE NOTICE 'ROW_COUNT = %', result;
+END;
+$$;
+SELECT * FROM pa_target ORDER BY tid;
+ROLLBACK;
+
+-- as above, but blocked by BEFORE INSERT ROW trigger
+BEGIN;
+CREATE FUNCTION trig_fn() RETURNS trigger LANGUAGE plpgsql AS
+  $$ BEGIN RETURN NULL; END; $$;
+CREATE TRIGGER ins_trig BEFORE INSERT ON pa_target
+  FOR EACH ROW EXECUTE PROCEDURE trig_fn();
+DO $$
+DECLARE
+  result integer;
+BEGIN
+MERGE INTO pa_target t
+  USING pa_source s
+  ON t.tid = s.sid
+  WHEN MATCHED THEN
+    UPDATE SET tid = tid + 1, balance = balance + delta, val = val || ' updated by merge'
+  WHEN NOT MATCHED THEN
+    INSERT VALUES (sid, delta, 'inserted by merge');
+GET DIAGNOSTICS result := ROW_COUNT;
+RAISE NOTICE 'ROW_COUNT = %', result;
+END;
+$$;
 SELECT * FROM pa_target ORDER BY tid;
 ROLLBACK;
 
@@ -1404,14 +1508,70 @@ WHEN MATCHED THEN DELETE;
 
 SELECT * FROM new_measurement ORDER BY city_id, logdate;
 
+-- MERGE into inheritance root table
+DROP TRIGGER insert_measurement_trigger ON measurement;
+ALTER TABLE measurement ADD CONSTRAINT mcheck CHECK (city_id = 0) NO INHERIT;
+
+EXPLAIN (COSTS OFF)
+MERGE INTO measurement m
+ USING (VALUES (1, '01-17-2007'::date)) nm(city_id, logdate) ON
+      (m.city_id = nm.city_id and m.logdate=nm.logdate)
+WHEN NOT MATCHED THEN INSERT
+     (city_id, logdate, peaktemp, unitsales)
+   VALUES (city_id - 1, logdate, 25, 100);
+
+BEGIN;
+MERGE INTO measurement m
+ USING (VALUES (1, '01-17-2007'::date)) nm(city_id, logdate) ON
+      (m.city_id = nm.city_id and m.logdate=nm.logdate)
+WHEN NOT MATCHED THEN INSERT
+     (city_id, logdate, peaktemp, unitsales)
+   VALUES (city_id - 1, logdate, 25, 100);
+SELECT * FROM ONLY measurement ORDER BY city_id, logdate;
+ROLLBACK;
+
+ALTER TABLE measurement ENABLE ROW LEVEL SECURITY;
+ALTER TABLE measurement FORCE ROW LEVEL SECURITY;
+CREATE POLICY measurement_p ON measurement USING (peaktemp IS NOT NULL);
+
+MERGE INTO measurement m
+ USING (VALUES (1, '01-17-2007'::date)) nm(city_id, logdate) ON
+      (m.city_id = nm.city_id and m.logdate=nm.logdate)
+WHEN NOT MATCHED THEN INSERT
+     (city_id, logdate, peaktemp, unitsales)
+   VALUES (city_id - 1, logdate, NULL, 100); -- should fail
+
+MERGE INTO measurement m
+ USING (VALUES (1, '01-17-2007'::date)) nm(city_id, logdate) ON
+      (m.city_id = nm.city_id and m.logdate=nm.logdate)
+WHEN NOT MATCHED THEN INSERT
+     (city_id, logdate, peaktemp, unitsales)
+   VALUES (city_id - 1, logdate, 25, 100); -- ok
+SELECT * FROM ONLY measurement ORDER BY city_id, logdate;
+
 DROP TABLE measurement, new_measurement CASCADE;
 DROP FUNCTION measurement_insert_trigger();
 
 -- prepare
 
 RESET SESSION AUTHORIZATION;
+
+-- try a system catalog
+MERGE INTO pg_class c
+USING (SELECT 'pg_depend'::regclass AS oid) AS j
+ON j.oid = c.oid
+WHEN MATCHED THEN
+	UPDATE SET reltuples = reltuples + 1;
+
+MERGE INTO pg_class c
+USING pg_namespace n
+ON n.oid = c.relnamespace
+WHEN MATCHED AND c.oid = 'pg_depend'::regclass THEN
+	UPDATE SET reltuples = reltuples - 1;
+
 DROP TABLE target, target2;
 DROP TABLE source, source2;
 DROP FUNCTION merge_trigfunc();
 DROP USER regress_merge_privs;
 DROP USER regress_merge_no_privs;
+DROP USER regress_merge_none;

@@ -445,6 +445,16 @@ select distinct min(f1), max(f1) from minmaxtest;
 
 drop table minmaxtest cascade;
 
+-- DISTINCT can also trigger wrong answers with hash aggregation (bug #18465)
+begin;
+set local enable_sort = off;
+explain (costs off)
+  select f1, (select distinct min(t1.f1) from int4_tbl t1 where t1.f1 = t0.f1)
+  from int4_tbl t0;
+select f1, (select distinct min(t1.f1) from int4_tbl t1 where t1.f1 = t0.f1)
+from int4_tbl t0;
+rollback;
+
 -- check for correct detection of nested-aggregate errors
 select max(min(unique1)) from tenk1;
 select (select max(min(unique1)) from int8_tbl) from tenk1;
@@ -595,6 +605,25 @@ select sum(two order by two) from tenk1;
 reset enable_presorted_aggregate;
 
 --
+-- Test cases with FILTER clause
+--
+
+-- Ensure we presort when the aggregate contains plain Vars
+explain (costs off)
+select sum(two order by two) filter (where two > 1) from tenk1;
+
+-- Ensure we presort for RelabelType'd Vars
+explain (costs off)
+select string_agg(distinct f1, ',') filter (where length(f1) > 1)
+from varchar_tbl;
+
+-- Ensure we don't presort when the aggregate's argument contains an
+-- explicit cast.
+explain (costs off)
+select string_agg(distinct f1::varchar(2), ',') filter (where length(f1) > 1)
+from varchar_tbl;
+
+--
 -- Test combinations of DISTINCT and/or ORDER BY
 --
 
@@ -651,6 +680,15 @@ select aggfns(distinct a,a,c order by a)
 select aggfns(distinct a,b,c order by a,c using ~<~,b)
   from (values (1,3,'foo'),(0,null,null),(2,2,'bar'),(3,1,'baz')) v(a,b,c),
        generate_series(1,2) i;
+
+-- test a more complex permutation that has previous caused issues
+select
+    string_agg(distinct 'a', ','),
+    sum((
+        select sum(1)
+        from (values(1)) b(id)
+        where a.id = b.id
+)) from unnest(array[1]) a(id);
 
 -- check node I/O via view creation and usage, also deparsing logic
 
@@ -749,7 +787,7 @@ select string_agg(v, decode('ee', 'hex')) from bytea_test_table;
 drop table bytea_test_table;
 
 -- Test parallel string_agg and array_agg
-create table pagg_test (x int, y int);
+create table pagg_test (x int, y int) with (autovacuum_enabled = off);
 insert into pagg_test
 select (case x % 4 when 1 then null else x end), x % 10
 from generate_series(1,5000) x;
@@ -795,10 +833,15 @@ select * from v_pagg_test order by y;
 -- Ensure parallel aggregation is actually being used.
 explain (costs off) select * from v_pagg_test order by y;
 
-set max_parallel_workers_per_gather = 0;
-
 -- Ensure results are the same without parallel aggregation.
+set max_parallel_workers_per_gather = 0;
 select * from v_pagg_test order by y;
+
+-- Check that we don't fail on anonymous record types.
+set max_parallel_workers_per_gather = 2;
+explain (costs off)
+select array_dims(array_agg(s)) from (select * from pagg_test) s;
+select array_dims(array_agg(s)) from (select * from pagg_test) s;
 
 -- Clean up
 reset max_parallel_workers_per_gather;
