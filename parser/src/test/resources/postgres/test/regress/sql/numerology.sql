@@ -1,3 +1,10 @@
+/*
+ * This file has been altered by SplendidData.
+ * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
+ * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
+ */
+
+
 --
 -- NUMEROLOGY
 -- Test various combinations of numeric types and functions.
@@ -7,16 +14,16 @@
 -- Trailing junk in numeric literals
 --
 
-SELECT 123abc;
-SELECT 0x0o;
-SELECT 1_2_3;
-SELECT 0.a;
-SELECT 0.0a;
-SELECT .0a;
-SELECT 0.0e1a;
-SELECT 0.0e;
-SELECT 0.0e+a;
-PREPARE p1 AS SELECT $1a;
+-- Deactivated for SplendidDataTest: SELECT 123abc;
+-- Deactivated for SplendidDataTest: SELECT 0x0o;
+-- Deactivated for SplendidDataTest: SELECT 1_2_3;
+-- Deactivated for SplendidDataTest: SELECT 0.a;
+-- Deactivated for SplendidDataTest: SELECT 0.0a;
+-- Deactivated for SplendidDataTest: SELECT .0a;
+-- Deactivated for SplendidDataTest: SELECT 0.0e1a;
+-- Deactivated for SplendidDataTest: SELECT 0.0e;
+-- Deactivated for SplendidDataTest: SELECT 0.0e+a;
+-- Deactivated for SplendidDataTest: PREPARE p1 AS SELECT $1a;
 
 --
 -- Test implicit type conversions

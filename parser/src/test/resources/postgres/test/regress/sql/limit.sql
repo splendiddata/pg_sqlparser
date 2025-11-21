@@ -1,3 +1,10 @@
+/*
+ * This file has been altered by SplendidData.
+ * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
+ * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
+ */
+
+
 --
 -- LIMIT
 -- Check the LIMIT/OFFSET feature of SELECT
@@ -174,14 +181,14 @@ SELECT  thousand
 		ORDER BY thousand FETCH FIRST 2 ROW ONLY;
 
 -- SKIP LOCKED and WITH TIES are incompatible
-SELECT  thousand
-		FROM onek WHERE thousand < 5
-		ORDER BY thousand FETCH FIRST 1 ROW WITH TIES FOR UPDATE SKIP LOCKED;
+-- Deactivated for SplendidDataTest: SELECT  thousand
+-- Deactivated for SplendidDataTest: 		FROM onek WHERE thousand < 5
+-- Deactivated for SplendidDataTest: 		ORDER BY thousand FETCH FIRST 1 ROW WITH TIES FOR UPDATE SKIP LOCKED;
 
 -- should fail
-SELECT ''::text AS two, unique1, unique2, stringu1
-		FROM onek WHERE unique1 > 50
-		FETCH FIRST 2 ROW WITH TIES;
+-- Deactivated for SplendidDataTest: SELECT ''::text AS two, unique1, unique2, stringu1
+-- Deactivated for SplendidDataTest: 		FROM onek WHERE unique1 > 50
+-- Deactivated for SplendidDataTest: 		FETCH FIRST 2 ROW WITH TIES;
 
 -- test ruleutils
 CREATE VIEW limit_thousand_v_1 AS SELECT thousand FROM onek WHERE thousand < 995
@@ -196,6 +203,9 @@ CREATE VIEW limit_thousand_v_3 AS SELECT thousand FROM onek WHERE thousand < 995
 		ORDER BY thousand FETCH FIRST (NULL+1) ROWS WITH TIES;
 \d+ limit_thousand_v_3
 CREATE VIEW limit_thousand_v_4 AS SELECT thousand FROM onek WHERE thousand < 995
-		ORDER BY thousand FETCH FIRST NULL ROWS ONLY;
+		ORDER BY thousand FETCH FIRST (5::bigint) ROWS WITH TIES;
 \d+ limit_thousand_v_4
+CREATE VIEW limit_thousand_v_5 AS SELECT thousand FROM onek WHERE thousand < 995
+		ORDER BY thousand FETCH FIRST NULL ROWS ONLY;
+\d+ limit_thousand_v_5
 -- leave these views

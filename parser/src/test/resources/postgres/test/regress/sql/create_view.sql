@@ -13,11 +13,11 @@
 --
 
 -- directory paths and dlsuffix are passed to us in environment variables
--- Deactivated for SplendidDataTest: \getenv abs_srcdir PG_ABS_SRCDIR
--- Deactivated for SplendidDataTest: \getenv libdir PG_LIBDIR
--- Deactivated for SplendidDataTest: \getenv dlsuffix PG_DLSUFFIX
+\getenv abs_srcdir PG_ABS_SRCDIR
+\getenv libdir PG_LIBDIR
+\getenv dlsuffix PG_DLSUFFIX
 
--- Deactivated for SplendidDataTest: \set regresslib :libdir '/regress' :dlsuffix
+\set regresslib :libdir '/regress' :dlsuffix
 
 CREATE FUNCTION interpt_pp(path, path)
     RETURNS point
@@ -30,7 +30,7 @@ CREATE TABLE real_city (
 	outline 	path
 );
 
--- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/real_city.data'
+\set filename :abs_srcdir '/data/real_city.data'
 COPY real_city FROM :'filename';
 ANALYZE real_city;
 
@@ -303,7 +303,7 @@ SELECT relname, relkind, reloptions FROM pg_class
 
 CREATE VIEW unspecified_types AS
   SELECT 42 as i, 42.5 as num, 'foo' as u, 'foo'::unknown as u2, null as n;
--- Deactivated for SplendidDataTest: \d+ unspecified_types
+\d+ unspecified_types
 SELECT * FROM unspecified_types;
 
 -- This test checks that proper typmods are assigned in a multi-row VALUES
@@ -314,7 +314,7 @@ CREATE VIEW tt1 AS
        ('abc'::varchar(3), '0123456789', 42, 'abcd'::varchar(4)),
        ('0123456789', 'abc'::varchar(3), 42.12, 'abc'::varchar(4))
   ) vv(a,b,c,d);
--- Deactivated for SplendidDataTest: \d+ tt1
+\d+ tt1
 SELECT * FROM tt1;
 SELECT a::varchar(3) FROM tt1;
 DROP VIEW tt1;
@@ -338,48 +338,48 @@ CREATE VIEW aliased_view_4 AS
   select * from temp_view_test.tt1
     where exists (select 1 from tt1 where temp_view_test.tt1.y1 = tt1.f1);
 
--- Deactivated for SplendidDataTest: \d+ aliased_view_1
--- Deactivated for SplendidDataTest: \d+ aliased_view_2
--- Deactivated for SplendidDataTest: \d+ aliased_view_3
--- Deactivated for SplendidDataTest: \d+ aliased_view_4
+\d+ aliased_view_1
+\d+ aliased_view_2
+\d+ aliased_view_3
+\d+ aliased_view_4
 
 ALTER TABLE tx1 RENAME TO a1;
 
--- Deactivated for SplendidDataTest: \d+ aliased_view_1
--- Deactivated for SplendidDataTest: \d+ aliased_view_2
--- Deactivated for SplendidDataTest: \d+ aliased_view_3
--- Deactivated for SplendidDataTest: \d+ aliased_view_4
+\d+ aliased_view_1
+\d+ aliased_view_2
+\d+ aliased_view_3
+\d+ aliased_view_4
 
 ALTER TABLE tt1 RENAME TO a2;
 
--- Deactivated for SplendidDataTest: \d+ aliased_view_1
--- Deactivated for SplendidDataTest: \d+ aliased_view_2
--- Deactivated for SplendidDataTest: \d+ aliased_view_3
--- Deactivated for SplendidDataTest: \d+ aliased_view_4
+\d+ aliased_view_1
+\d+ aliased_view_2
+\d+ aliased_view_3
+\d+ aliased_view_4
 
 ALTER TABLE a1 RENAME TO tt1;
 
--- Deactivated for SplendidDataTest: \d+ aliased_view_1
--- Deactivated for SplendidDataTest: \d+ aliased_view_2
--- Deactivated for SplendidDataTest: \d+ aliased_view_3
--- Deactivated for SplendidDataTest: \d+ aliased_view_4
+\d+ aliased_view_1
+\d+ aliased_view_2
+\d+ aliased_view_3
+\d+ aliased_view_4
 
 ALTER TABLE a2 RENAME TO tx1;
 ALTER TABLE tx1 SET SCHEMA temp_view_test;
 
--- Deactivated for SplendidDataTest: \d+ aliased_view_1
--- Deactivated for SplendidDataTest: \d+ aliased_view_2
--- Deactivated for SplendidDataTest: \d+ aliased_view_3
--- Deactivated for SplendidDataTest: \d+ aliased_view_4
+\d+ aliased_view_1
+\d+ aliased_view_2
+\d+ aliased_view_3
+\d+ aliased_view_4
 
 ALTER TABLE temp_view_test.tt1 RENAME TO tmp1;
 ALTER TABLE temp_view_test.tmp1 SET SCHEMA testviewschm2;
 ALTER TABLE tmp1 RENAME TO tx1;
 
--- Deactivated for SplendidDataTest: \d+ aliased_view_1
--- Deactivated for SplendidDataTest: \d+ aliased_view_2
--- Deactivated for SplendidDataTest: \d+ aliased_view_3
--- Deactivated for SplendidDataTest: \d+ aliased_view_4
+\d+ aliased_view_1
+\d+ aliased_view_2
+\d+ aliased_view_3
+\d+ aliased_view_4
 
 -- Test aliasing of joins
 
@@ -388,7 +388,7 @@ select * from
   (select * from (tbl1 cross join tbl2) same) ss,
   (tbl3 cross join tbl4) same;
 
--- Deactivated for SplendidDataTest: \d+ view_of_joins
+\d+ view_of_joins
 
 create table tbl1a (a int, c int);
 create view view_of_joins_2a as select * from tbl1 join tbl1a using (a);
@@ -673,7 +673,7 @@ select * from int8_tbl i where i.* in (values(i.*::int8_tbl));
 create table tt15v_log(o tt15v, n tt15v, incr bool);
 create rule updlog as on update to tt15v do also
   insert into tt15v_log values(old, new, row(old,old) < row(new,new));
--- Deactivated for SplendidDataTest: \d+ tt15v
+\d+ tt15v
 
 -- check unique-ification of overlength names
 
@@ -711,6 +711,7 @@ select pg_get_viewdef('tt20v', true);
 
 create view tt201v as
 select
+  ('2022-12-01'::date + '1 day'::interval) at time zone 'UTC' as atz,
   extract(day from now()) as extr,
   (now(), '1 day'::interval) overlaps
     (current_timestamp(2), '1 day'::interval) as o,
@@ -729,8 +730,7 @@ select
   trim(trailing ' foo ') as rt,
   trim(E'\\000'::bytea from E'\\000Tom\\000'::bytea) as btb,
   trim(leading E'\\000'::bytea from E'\\000Tom\\000'::bytea) as ltb,
-  trim(trailing E'\\000'::bytea from E'\\000Tom\\000'::bytea) as rtb,
-  SYSTEM_USER as su;
+  trim(trailing E'\\000'::bytea from E'\\000Tom\\000'::bytea) as rtb;
 select pg_get_viewdef('tt201v', true);
 
 -- corner cases with empty join conditions
@@ -788,6 +788,37 @@ select x + y + z as c1,
        (x,y) <= ANY (values(1,2),(3,4)) as c11
 from (values(1,2,3)) v(x,y,z);
 select pg_get_viewdef('tt26v', true);
+
+
+-- Test that changing the relkind of a relcache entry doesn't cause
+-- trouble. Prior instances of where it did:
+-- CALDaNm2yXz+zOtv7y5zBd5WKT8O0Ld3YxikuU3dcyCvxF7gypA@mail.gmail.com
+-- CALDaNm3oZA-8Wbps2Jd1g5_Gjrr-x3YWrJPek-mF5Asrrvz2Dg@mail.gmail.com
+CREATE TABLE tt26(c int);
+
+BEGIN;
+CREATE TABLE tt27(c int);
+SAVEPOINT q;
+CREATE RULE "_RETURN" AS ON SELECT TO tt27 DO INSTEAD SELECT * FROM tt26;
+SELECT * FROM tt27;
+ROLLBACK TO q;
+CREATE RULE "_RETURN" AS ON SELECT TO tt27 DO INSTEAD SELECT * FROM tt26;
+ROLLBACK;
+
+BEGIN;
+CREATE TABLE tt28(c int);
+CREATE RULE "_RETURN" AS ON SELECT TO tt28 DO INSTEAD SELECT * FROM tt26;
+CREATE RULE "_RETURN" AS ON SELECT TO tt28 DO INSTEAD SELECT * FROM tt26;
+ROLLBACK;
+
+-- test restriction on non-system view expansion.
+create table tt27v_tbl (a int);
+create view tt27v as select a from tt27v_tbl;
+set restrict_nonsystem_relation_kind to 'view';
+select a from tt27v where a > 0; -- Error
+insert into tt27v values (1); -- Error
+select viewname from pg_views where viewname = 'tt27v'; -- Ok to access a system view.
+reset restrict_nonsystem_relation_kind;
 
 -- clean up all the random objects we made above
 DROP SCHEMA temp_view_test CASCADE;

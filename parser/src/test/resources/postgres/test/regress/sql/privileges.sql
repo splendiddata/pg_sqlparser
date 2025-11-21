@@ -45,63 +45,9 @@ CREATE USER regress_priv_user9;
 CREATE USER regress_priv_user10;
 CREATE ROLE regress_priv_role;
 
--- circular ADMIN OPTION grants should be disallowed
-GRANT regress_priv_user1 TO regress_priv_user2 WITH ADMIN OPTION;
-GRANT regress_priv_user1 TO regress_priv_user3 WITH ADMIN OPTION GRANTED BY regress_priv_user2;
-GRANT regress_priv_user1 TO regress_priv_user2 WITH ADMIN OPTION GRANTED BY regress_priv_user3;
-
--- need CASCADE to revoke grant or admin option if dependent grants exist
-REVOKE ADMIN OPTION FOR regress_priv_user1 FROM regress_priv_user2; -- fail
-REVOKE regress_priv_user1 FROM regress_priv_user2; -- fail
-SELECT member::regrole, admin_option FROM pg_auth_members WHERE roleid = 'regress_priv_user1'::regrole;
-BEGIN;
-REVOKE ADMIN OPTION FOR regress_priv_user1 FROM regress_priv_user2 CASCADE;
-SELECT member::regrole, admin_option FROM pg_auth_members WHERE roleid = 'regress_priv_user1'::regrole;
-ROLLBACK;
-REVOKE regress_priv_user1 FROM regress_priv_user2 CASCADE;
-SELECT member::regrole, admin_option FROM pg_auth_members WHERE roleid = 'regress_priv_user1'::regrole;
-
--- inferred grantor must be a role with ADMIN OPTION
-GRANT regress_priv_user1 TO regress_priv_user2 WITH ADMIN OPTION;
-GRANT regress_priv_user2 TO regress_priv_user3;
-SET ROLE regress_priv_user3;
-GRANT regress_priv_user1 TO regress_priv_user4;
-SELECT grantor::regrole FROM pg_auth_members WHERE roleid = 'regress_priv_user1'::regrole and member = 'regress_priv_user4'::regrole;
-RESET ROLE;
-REVOKE regress_priv_user2 FROM regress_priv_user3;
-REVOKE regress_priv_user1 FROM regress_priv_user2 CASCADE;
-
--- test GRANTED BY with DROP OWNED and REASSIGN OWNED
-GRANT regress_priv_user1 TO regress_priv_user2 WITH ADMIN OPTION;
-GRANT regress_priv_user1 TO regress_priv_user3 GRANTED BY regress_priv_user2;
-DROP ROLE regress_priv_user2; -- fail, dependency
-REASSIGN OWNED BY regress_priv_user2 TO regress_priv_user4;
-DROP ROLE regress_priv_user2; -- still fail, REASSIGN OWNED doesn't help
-DROP OWNED BY regress_priv_user2;
-DROP ROLE regress_priv_user2; -- ok now, DROP OWNED does the job
-
--- test that removing granted role or grantee role removes dependency
-GRANT regress_priv_user1 TO regress_priv_user3 WITH ADMIN OPTION;
-GRANT regress_priv_user1 TO regress_priv_user4 GRANTED BY regress_priv_user3;
-DROP ROLE regress_priv_user3; -- should fail, dependency
-DROP ROLE regress_priv_user4; -- ok
-DROP ROLE regress_priv_user3; -- ok now
-GRANT regress_priv_user1 TO regress_priv_user5 WITH ADMIN OPTION;
-GRANT regress_priv_user1 TO regress_priv_user6 GRANTED BY regress_priv_user5;
-DROP ROLE regress_priv_user5; -- should fail, dependency
-DROP ROLE regress_priv_user1, regress_priv_user5; -- ok, despite order
-
--- recreate the roles we just dropped
-CREATE USER regress_priv_user1;
-CREATE USER regress_priv_user2;
-CREATE USER regress_priv_user3;
-CREATE USER regress_priv_user4;
-CREATE USER regress_priv_user5;
-
 GRANT pg_read_all_data TO regress_priv_user6;
 GRANT pg_write_all_data TO regress_priv_user7;
 GRANT pg_read_all_settings TO regress_priv_user8 WITH ADMIN OPTION;
-GRANT regress_priv_user9 TO regress_priv_user8;
 
 SET SESSION AUTHORIZATION regress_priv_user8;
 GRANT pg_read_all_settings TO regress_priv_user9 WITH ADMIN OPTION;
@@ -110,12 +56,11 @@ SET SESSION AUTHORIZATION regress_priv_user9;
 GRANT pg_read_all_settings TO regress_priv_user10;
 
 SET SESSION AUTHORIZATION regress_priv_user8;
-REVOKE pg_read_all_settings FROM regress_priv_user10 GRANTED BY regress_priv_user9;
+REVOKE pg_read_all_settings FROM regress_priv_user10;
 REVOKE ADMIN OPTION FOR pg_read_all_settings FROM regress_priv_user9;
 REVOKE pg_read_all_settings FROM regress_priv_user9;
 
 RESET SESSION AUTHORIZATION;
-REVOKE regress_priv_user9 FROM regress_priv_user8;
 REVOKE ADMIN OPTION FOR pg_read_all_settings FROM regress_priv_user8;
 
 SET SESSION AUTHORIZATION regress_priv_user8;
@@ -123,6 +68,39 @@ SET ROLE pg_read_all_settings;
 RESET ROLE;
 
 RESET SESSION AUTHORIZATION;
+
+-- test interaction of SET SESSION AUTHORIZATION and SET ROLE,
+-- as well as propagation of these settings to parallel workers
+GRANT regress_priv_user9 TO regress_priv_user8;
+
+SET SESSION AUTHORIZATION regress_priv_user8;
+SET ROLE regress_priv_user9;
+SET force_parallel_mode = 0;
+SELECT session_user, current_role, current_user, current_setting('role') as role;
+SET force_parallel_mode = 1;
+SELECT session_user, current_role, current_user, current_setting('role') as role;
+
+BEGIN;
+SET SESSION AUTHORIZATION regress_priv_user10;
+SET force_parallel_mode = 0;
+SELECT session_user, current_role, current_user, current_setting('role') as role;
+SET force_parallel_mode = 1;
+SELECT session_user, current_role, current_user, current_setting('role') as role;
+ROLLBACK;
+SET force_parallel_mode = 0;
+SELECT session_user, current_role, current_user, current_setting('role') as role;
+SET force_parallel_mode = 1;
+SELECT session_user, current_role, current_user, current_setting('role') as role;
+
+RESET SESSION AUTHORIZATION;
+-- session_user at this point is installation-dependent
+SET force_parallel_mode = 0;
+SELECT session_user = current_role as c_r_ok, session_user = current_user as c_u_ok, current_setting('role') as role;
+SET force_parallel_mode = 1;
+SELECT session_user = current_role as c_r_ok, session_user = current_user as c_u_ok, current_setting('role') as role;
+
+RESET force_parallel_mode;
+
 REVOKE pg_read_all_settings FROM regress_priv_user8;
 
 DROP USER regress_priv_user10;
@@ -130,19 +108,12 @@ DROP USER regress_priv_user9;
 DROP USER regress_priv_user8;
 
 CREATE GROUP regress_priv_group1;
-CREATE GROUP regress_priv_group2 WITH ADMIN regress_priv_user1 USER regress_priv_user2;
+CREATE GROUP regress_priv_group2 WITH USER regress_priv_user1, regress_priv_user2;
 
 ALTER GROUP regress_priv_group1 ADD USER regress_priv_user4;
 
-GRANT regress_priv_group2 TO regress_priv_user2 GRANTED BY regress_priv_user1;
-SET SESSION AUTHORIZATION regress_priv_user1;
-ALTER GROUP regress_priv_group2 ADD USER regress_priv_user2;
 ALTER GROUP regress_priv_group2 ADD USER regress_priv_user2;	-- duplicate
 ALTER GROUP regress_priv_group2 DROP USER regress_priv_user2;
-ALTER USER regress_priv_user2 PASSWORD 'verysecret'; -- not permitted
-RESET SESSION AUTHORIZATION;
-ALTER GROUP regress_priv_group2 DROP USER regress_priv_user2;
-REVOKE ADMIN OPTION FOR regress_priv_group2 FROM regress_priv_user1;
 GRANT regress_priv_group2 TO regress_priv_user4 WITH ADMIN OPTION;
 
 -- prepare non-leakproof function for later
@@ -153,10 +124,9 @@ ALTER FUNCTION leak(integer,integer) OWNER TO regress_priv_user1;
 
 -- test owner privileges
 
-GRANT regress_priv_role TO regress_priv_user1 WITH ADMIN OPTION GRANTED BY regress_priv_role; -- error, doesn't have ADMIN OPTION
 GRANT regress_priv_role TO regress_priv_user1 WITH ADMIN OPTION GRANTED BY CURRENT_ROLE;
 REVOKE ADMIN OPTION FOR regress_priv_role FROM regress_priv_user1 GRANTED BY foo; -- error
-REVOKE ADMIN OPTION FOR regress_priv_role FROM regress_priv_user1 GRANTED BY regress_priv_user2; -- warning, noop
+REVOKE ADMIN OPTION FOR regress_priv_role FROM regress_priv_user1 GRANTED BY regress_priv_user2; -- error
 REVOKE ADMIN OPTION FOR regress_priv_role FROM regress_priv_user1 GRANTED BY CURRENT_USER;
 REVOKE regress_priv_role FROM regress_priv_user1 GRANTED BY CURRENT_ROLE;
 DROP ROLE regress_priv_role;
@@ -288,8 +258,6 @@ CREATE VIEW atest12v AS
   SELECT * FROM atest12 WHERE b <<< 5;
 CREATE VIEW atest12sbv WITH (security_barrier=true) AS
   SELECT * FROM atest12 WHERE b <<< 5;
-GRANT SELECT ON atest12v TO PUBLIC;
-GRANT SELECT ON atest12sbv TO PUBLIC;
 
 -- This plan should use nestloop, knowing that few rows will be selected.
 EXPLAIN (COSTS OFF) SELECT * FROM atest12v x, atest12v y WHERE x.a = y.b;
@@ -311,8 +279,16 @@ CREATE FUNCTION leak2(integer,integer) RETURNS boolean
 CREATE OPERATOR >>> (procedure = leak2, leftarg = integer, rightarg = integer,
                      restrict = scalargtsel);
 
--- This should not show any "leak" notices before failing.
+-- These should not show any "leak" notices before failing.
 EXPLAIN (COSTS OFF) SELECT * FROM atest12 WHERE a >>> 0;
+EXPLAIN (COSTS OFF) SELECT * FROM atest12v WHERE a >>> 0;
+EXPLAIN (COSTS OFF) SELECT * FROM atest12sbv WHERE a >>> 0;
+
+-- Now regress_priv_user1 grants access to regress_priv_user2 via the views.
+SET SESSION AUTHORIZATION regress_priv_user1;
+GRANT SELECT ON atest12v TO PUBLIC;
+GRANT SELECT ON atest12sbv TO PUBLIC;
+SET SESSION AUTHORIZATION regress_priv_user2;
 
 -- These plans should continue to use a nestloop, since they execute with the
 -- privileges of the view owner.
@@ -359,18 +335,7 @@ BEGIN;
 RESET SESSION AUTHORIZATION;
 ALTER ROLE regress_priv_user1 NOINHERIT;
 SET SESSION AUTHORIZATION regress_priv_user1;
-SAVEPOINT s1;
-DELETE FROM atest3; -- ok because grant-level option is unchanged
-ROLLBACK TO s1;
-RESET SESSION AUTHORIZATION;
--- Deactivated for SplendidDataTest: GRANT regress_priv_group2 TO regress_priv_user1 WITH INHERIT FALSE;
-SET SESSION AUTHORIZATION regress_priv_user1;
-DELETE FROM atest3; -- fail
-ROLLBACK TO s1;
-RESET SESSION AUTHORIZATION;
--- Deactivated for SplendidDataTest: REVOKE INHERIT OPTION FOR regress_priv_group2 FROM regress_priv_user1;
-SET SESSION AUTHORIZATION regress_priv_user1;
-DELETE FROM atest3; -- also fail
+DELETE FROM atest3;
 ROLLBACK;
 
 -- views
@@ -790,7 +755,7 @@ END;
 -- privileges on functions, languages
 
 -- switch to superuser
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 REVOKE ALL PRIVILEGES ON LANGUAGE sql FROM PUBLIC;
 GRANT USAGE ON LANGUAGE sql TO regress_priv_user1; -- ok
@@ -843,7 +808,7 @@ DROP FUNCTION priv_testfunc1(int); -- fail
 DROP AGGREGATE priv_testagg1(int); -- fail
 DROP PROCEDURE priv_testproc1(int); -- fail
 
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 DROP FUNCTION priv_testfunc1(int); -- ok
 -- restore to sanity
@@ -861,7 +826,7 @@ ROLLBACK;
 -- privileges on types
 
 -- switch to superuser
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 CREATE TYPE priv_testtype1 AS (a int, b text);
 REVOKE USAGE ON TYPE priv_testtype1 FROM PUBLIC;
@@ -946,7 +911,7 @@ CREATE TABLE test11b AS (SELECT 1::priv_testdomain1 AS a);
 
 REVOKE ALL ON TYPE priv_testtype1 FROM PUBLIC;
 
--- Deactivated for SplendidDataTest: \c -
+\c -
 DROP AGGREGATE priv_testagg1b(priv_testdomain1);
 DROP DOMAIN priv_testdomain2b;
 DROP OPERATOR !! (NONE, priv_testdomain1);
@@ -983,7 +948,7 @@ select has_table_privilege(-999999,'pg_authid','update');
 select has_table_privilege(1,'select');
 
 -- superuser
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 select has_table_privilege(current_user,'pg_authid','select');
 select has_table_privilege(current_user,'pg_authid','insert');
@@ -1122,7 +1087,7 @@ SELECT has_table_privilege('regress_priv_user1', 'atest4', 'SELECT WITH GRANT OP
 
 
 -- security-restricted operations
--- Deactivated for SplendidDataTest: \c -
+\c -
 CREATE ROLE regress_sro_user;
 
 -- Check that index expressions and predicates are run as the table's owner
@@ -1180,7 +1145,7 @@ CREATE FUNCTION mv_action() RETURNS bool LANGUAGE sql AS
 -- REFRESH of this MV will queue a GRANT at end of transaction
 CREATE MATERIALIZED VIEW sro_mv AS SELECT mv_action() WITH NO DATA;
 REFRESH MATERIALIZED VIEW sro_mv;
--- Deactivated for SplendidDataTest: \c -
+\c -
 REFRESH MATERIALIZED VIEW sro_mv;
 
 SET SESSION AUTHORIZATION regress_sro_user;
@@ -1194,7 +1159,7 @@ CREATE CONSTRAINT TRIGGER t AFTER INSERT ON sro_trojan_table
 CREATE OR REPLACE FUNCTION mv_action() RETURNS bool LANGUAGE sql AS
 	'INSERT INTO sro_trojan_table DEFAULT VALUES; SELECT true';
 REFRESH MATERIALIZED VIEW sro_mv;
--- Deactivated for SplendidDataTest: \c -
+\c -
 REFRESH MATERIALIZED VIEW sro_mv;
 BEGIN; SET CONSTRAINTS ALL IMMEDIATE; REFRESH MATERIALIZED VIEW sro_mv; COMMIT;
 
@@ -1211,7 +1176,7 @@ EXCEPTION WHEN OTHERS THEN
 END$$;
 CREATE MATERIALIZED VIEW sro_index_mv AS SELECT 1 AS c;
 CREATE UNIQUE INDEX ON sro_index_mv (c) WHERE unwanted_grant_nofail(1) > 0;
--- Deactivated for SplendidDataTest: \c -
+\c -
 REFRESH MATERIALIZED VIEW CONCURRENTLY sro_index_mv;
 REFRESH MATERIALIZED VIEW sro_index_mv;
 
@@ -1243,7 +1208,7 @@ REVOKE regress_priv_group2 FROM regress_priv_user5;
 
 
 -- has_sequence_privilege tests
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 CREATE SEQUENCE x_seq;
 
@@ -1258,7 +1223,7 @@ SET SESSION AUTHORIZATION regress_priv_user2;
 SELECT has_sequence_privilege('x_seq', 'USAGE');
 
 -- largeobject privilege tests
--- Deactivated for SplendidDataTest: \c -
+\c -
 SET SESSION AUTHORIZATION regress_priv_user1;
 
 SELECT lo_create(1001);
@@ -1277,7 +1242,7 @@ GRANT SELECT, INSERT ON LARGE OBJECT 1001 TO PUBLIC;	-- to be failed
 GRANT SELECT, UPDATE ON LARGE OBJECT 1001 TO nosuchuser;	-- to be failed
 GRANT SELECT, UPDATE ON LARGE OBJECT  999 TO PUBLIC;	-- to be failed
 
--- Deactivated for SplendidDataTest: \c -
+\c -
 SET SESSION AUTHORIZATION regress_priv_user2;
 
 SELECT lo_create(2001);
@@ -1304,7 +1269,7 @@ GRANT ALL ON LARGE OBJECT 2001 TO regress_priv_user3;
 SELECT lo_unlink(1001);		-- to be denied
 SELECT lo_unlink(2002);
 
--- Deactivated for SplendidDataTest: \c -
+\c -
 -- confirm ACL setting
 SELECT oid, pg_get_userbyid(lomowner) ownername, lomacl FROM pg_largeobject_metadata WHERE oid >= 1000 AND oid < 3000 ORDER BY oid;
 
@@ -1318,7 +1283,7 @@ SELECT lo_truncate(lo_open(1005, x'20000'::int), 10);	-- to be denied
 SELECT lo_truncate(lo_open(2001, x'20000'::int), 10);
 
 -- compatibility mode in largeobject permission
--- Deactivated for SplendidDataTest: \c -
+\c -
 SET lo_compat_privileges = false;	-- default setting
 SET SESSION AUTHORIZATION regress_priv_user4;
 
@@ -1331,7 +1296,7 @@ SELECT lo_export(1001, '/dev/null');			-- to be denied
 SELECT lo_import('/dev/null');				-- to be denied
 SELECT lo_import('/dev/null', 2003);			-- to be denied
 
--- Deactivated for SplendidDataTest: \c -
+\c -
 SET lo_compat_privileges = true;	-- compatibility mode
 SET SESSION AUTHORIZATION regress_priv_user4;
 
@@ -1342,11 +1307,26 @@ SELECT lo_unlink(1002);
 SELECT lo_export(1001, '/dev/null');			-- to be denied
 
 -- don't allow unpriv users to access pg_largeobject contents
--- Deactivated for SplendidDataTest: \c -
+\c -
 SELECT * FROM pg_largeobject LIMIT 0;
 
 SET SESSION AUTHORIZATION regress_priv_user1;
 SELECT * FROM pg_largeobject LIMIT 0;			-- to be denied
+
+-- pg_signal_backend can't signal superusers
+RESET SESSION AUTHORIZATION;
+BEGIN;
+CREATE OR REPLACE FUNCTION terminate_nothrow(pid int) RETURNS bool
+	LANGUAGE plpgsql SECURITY DEFINER SET client_min_messages = error AS $$
+BEGIN
+	RETURN pg_terminate_backend($1);
+EXCEPTION WHEN OTHERS THEN
+	RETURN false;
+END$$;
+ALTER FUNCTION terminate_nothrow OWNER TO pg_signal_backend;
+SELECT backend_type FROM pg_stat_activity
+WHERE CASE WHEN COALESCE(usesysid, 10) = 10 THEN terminate_nothrow(pid) END;
+ROLLBACK;
 
 -- test pg_database_owner
 RESET SESSION AUTHORIZATION;
@@ -1380,7 +1360,7 @@ INSERT INTO datdba_only DEFAULT VALUES;
 ROLLBACK;
 
 -- test default ACLs
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 CREATE SCHEMA testns;
 GRANT ALL ON SCHEMA testns TO regress_priv_user1;
@@ -1421,13 +1401,13 @@ ALTER DEFAULT PRIVILEGES FOR ROLE regress_priv_user1 REVOKE EXECUTE ON FUNCTIONS
 
 ALTER DEFAULT PRIVILEGES IN SCHEMA testns GRANT USAGE ON SCHEMAS TO regress_priv_user2; -- error
 
--- Test makeaclitem()
-SELECT makeaclitem('regress_priv_user1'::regrole, 'regress_priv_user2'::regrole,
-	'SELECT', TRUE);  -- single privilege
-SELECT makeaclitem('regress_priv_user1'::regrole, 'regress_priv_user2'::regrole,
-	'SELECT, INSERT,  UPDATE , DELETE  ', FALSE);  -- multiple privileges
-SELECT makeaclitem('regress_priv_user1'::regrole, 'regress_priv_user2'::regrole,
-	'SELECT, fake_privilege', FALSE);  -- error
+-- Test quoting and dequoting of user names in ACLs
+CREATE ROLE "regress_""quoted";
+SELECT makeaclitem('regress_"quoted'::regrole, 'regress_"quoted'::regrole,
+                   'SELECT', TRUE);
+SELECT '"regress_""quoted"=r*/"regress_""quoted"'::aclitem;
+SELECT '""=r*/""'::aclitem;  -- used to be misparsed as """"
+DROP ROLE "regress_""quoted";
 
 --
 -- Testing blanket default grants is very hazardous since it might change
@@ -1547,7 +1527,7 @@ SELECT d.*     -- check that entries went away
 
 
 -- Grant on all objects of given type in a schema
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 CREATE SCHEMA testns;
 CREATE TABLE testns.t1 (f1 int);
@@ -1593,7 +1573,7 @@ DROP SCHEMA testns CASCADE;
 
 
 -- Change owner of the schema & and rename of new schema owner
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 CREATE ROLE regress_schemauser1 superuser login;
 CREATE ROLE regress_schemauser2 superuser login;
@@ -1611,14 +1591,14 @@ set session role regress_schemauser_renamed;
 DROP SCHEMA testns CASCADE;
 
 -- clean up
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 DROP ROLE regress_schemauser1;
 DROP ROLE regress_schemauser_renamed;
 
 
 -- test that dependent privileges are revoked (or not) properly
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 set session role regress_priv_user1;
 create table dep_priv_test (a int);
@@ -1630,20 +1610,20 @@ set session role regress_priv_user3;
 grant select on dep_priv_test to regress_priv_user4 with grant option;
 set session role regress_priv_user4;
 grant select on dep_priv_test to regress_priv_user5;
--- Deactivated for SplendidDataTest: \dp dep_priv_test
+\dp dep_priv_test
 set session role regress_priv_user2;
 revoke select on dep_priv_test from regress_priv_user4 cascade;
--- Deactivated for SplendidDataTest: \dp dep_priv_test
+\dp dep_priv_test
 set session role regress_priv_user3;
 revoke select on dep_priv_test from regress_priv_user4 cascade;
--- Deactivated for SplendidDataTest: \dp dep_priv_test
+\dp dep_priv_test
 set session role regress_priv_user1;
 drop table dep_priv_test;
 
 
 -- clean up
 
--- Deactivated for SplendidDataTest: \c
+\c
 
 drop sequence x_seq;
 
@@ -1689,6 +1669,13 @@ DROP USER regress_priv_user7;
 DROP USER regress_priv_user8; -- does not exist
 
 
+-- leave some default ACLs for pg_upgrade's dump-restore test input.
+ALTER DEFAULT PRIVILEGES FOR ROLE pg_signal_backend
+	REVOKE USAGE ON TYPES FROM pg_signal_backend;
+ALTER DEFAULT PRIVILEGES FOR ROLE pg_read_all_settings
+	REVOKE USAGE ON TYPES FROM pg_read_all_settings;
+
+
 -- permissions with LOCK TABLE
 CREATE USER regress_locktable_user;
 CREATE TABLE lock_table (a int);
@@ -1705,7 +1692,7 @@ COMMIT;
 BEGIN;
 LOCK TABLE lock_table IN ACCESS EXCLUSIVE MODE; -- should fail
 ROLLBACK;
--- Deactivated for SplendidDataTest: \c
+\c
 REVOKE SELECT ON lock_table FROM regress_locktable_user;
 
 -- LOCK TABLE and INSERT permission
@@ -1720,7 +1707,7 @@ ROLLBACK;
 BEGIN;
 LOCK TABLE lock_table IN ACCESS EXCLUSIVE MODE; -- should fail
 ROLLBACK;
--- Deactivated for SplendidDataTest: \c
+\c
 REVOKE INSERT ON lock_table FROM regress_locktable_user;
 
 -- LOCK TABLE and UPDATE permission
@@ -1735,7 +1722,7 @@ ROLLBACK;
 BEGIN;
 LOCK TABLE lock_table IN ACCESS EXCLUSIVE MODE; -- should pass
 COMMIT;
--- Deactivated for SplendidDataTest: \c
+\c
 REVOKE UPDATE ON lock_table FROM regress_locktable_user;
 
 -- LOCK TABLE and DELETE permission
@@ -1750,7 +1737,7 @@ ROLLBACK;
 BEGIN;
 LOCK TABLE lock_table IN ACCESS EXCLUSIVE MODE; -- should pass
 COMMIT;
--- Deactivated for SplendidDataTest: \c
+\c
 REVOKE DELETE ON lock_table FROM regress_locktable_user;
 
 -- LOCK TABLE and TRUNCATE permission
@@ -1765,7 +1752,7 @@ ROLLBACK;
 BEGIN;
 LOCK TABLE lock_table IN ACCESS EXCLUSIVE MODE; -- should pass
 COMMIT;
--- Deactivated for SplendidDataTest: \c
+\c
 REVOKE TRUNCATE ON lock_table FROM regress_locktable_user;
 
 -- clean up
@@ -1776,7 +1763,7 @@ DROP USER regress_locktable_user;
 -- pg_backend_memory_contexts.
 
 -- switch to superuser
--- Deactivated for SplendidDataTest: \c -
+\c -
 
 CREATE ROLE regress_readallstats;
 
@@ -1796,28 +1783,3 @@ RESET ROLE;
 
 -- clean up
 DROP ROLE regress_readallstats;
-
--- test role grantor machinery
-CREATE ROLE regress_group;
-CREATE ROLE regress_group_direct_manager;
-CREATE ROLE regress_group_indirect_manager;
-CREATE ROLE regress_group_member;
-
--- Deactivated for SplendidDataTest: GRANT regress_group TO regress_group_direct_manager WITH INHERIT FALSE, ADMIN TRUE;
-GRANT regress_group_direct_manager TO regress_group_indirect_manager;
-
-SET SESSION AUTHORIZATION regress_group_direct_manager;
-GRANT regress_group TO regress_group_member;
-SELECT member::regrole::text, CASE WHEN grantor = 10 THEN 'BOOTSTRAP SUPERUSER' ELSE grantor::regrole::text END FROM pg_auth_members WHERE roleid = 'regress_group'::regrole ORDER BY 1, 2;
-REVOKE regress_group FROM regress_group_member;
-
-SET SESSION AUTHORIZATION regress_group_indirect_manager;
-GRANT regress_group TO regress_group_member;
-SELECT member::regrole::text, CASE WHEN grantor = 10 THEN 'BOOTSTRAP SUPERUSER' ELSE grantor::regrole::text END FROM pg_auth_members WHERE roleid = 'regress_group'::regrole ORDER BY 1, 2;
-REVOKE regress_group FROM regress_group_member;
-
-RESET SESSION AUTHORIZATION;
-DROP ROLE regress_group;
-DROP ROLE regress_group_direct_manager;
-DROP ROLE regress_group_indirect_manager;
-DROP ROLE regress_group_member;

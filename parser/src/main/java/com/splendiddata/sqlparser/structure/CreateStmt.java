@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -256,9 +256,9 @@ public class CreateStmt extends Node {
             if (options.size() == 1 && "oids".equals(options.get(0).defname.toLowerCase())) {
                 Value val = (Value) options.get(0).arg;
                 if (val == null || val.val.ival == 0) {
-                    result.append(" without oids");
+                    result.append(" with (oids = false)");
                 } else {
-                    result.append(" with oids");
+                    result.append(" with (oids = true)");
                 }
             } else {
                 result.append(" with (");

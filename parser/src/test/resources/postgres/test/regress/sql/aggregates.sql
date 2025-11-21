@@ -440,9 +440,22 @@ select distinct min(f1), max(f1) from minmaxtest;
 
 drop table minmaxtest cascade;
 
+-- DISTINCT can also trigger wrong answers with hash aggregation (bug #18465)
+begin;
+set local enable_sort = off;
+explain (costs off)
+  select f1, (select distinct min(t1.f1) from int4_tbl t1 where t1.f1 = t0.f1)
+  from int4_tbl t0;
+select f1, (select distinct min(t1.f1) from int4_tbl t1 where t1.f1 = t0.f1)
+from int4_tbl t0;
+rollback;
+
 -- check for correct detection of nested-aggregate errors
 select max(min(unique1)) from tenk1;
 select (select max(min(unique1)) from int8_tbl) from tenk1;
+select avg((select avg(a1.col1 order by (select avg(a2.col2) from tenk1 a3))
+            from tenk1 a1(col1)))
+from tenk1 a2(col2);
 
 --
 -- Test removal of redundant GROUP BY columns
@@ -511,49 +524,6 @@ select t1.f1 from t1 left join t2 using (f1) group by t1.f1;
 select t1.f1 from t1 left join t2 using (f1) group by f1;
 
 drop table t1, t2;
-
---
--- Test planner's selection of pathkeys for ORDER BY aggregates
---
-
--- Ensure we order by four.  This suits the most aggregate functions.
-explain (costs off)
-select sum(two order by two),max(four order by four), min(four order by four)
-from tenk1;
-
--- Ensure we order by two.  It's a tie between ordering by two and four but
--- we tiebreak on the aggregate's position.
-explain (costs off)
-select
-  sum(two order by two), max(four order by four),
-  min(four order by four), max(two order by two)
-from tenk1;
-
--- Similar to above, but tiebreak on ordering by four
-explain (costs off)
-select
-  max(four order by four), sum(two order by two),
-  min(four order by four), max(two order by two)
-from tenk1;
-
--- Ensure this one orders by ten since there are 3 aggregates that require ten
--- vs two that suit two and four.
-explain (costs off)
-select
-  max(four order by four), sum(two order by two),
-  min(four order by four), max(two order by two),
-  sum(ten order by ten), min(ten order by ten), max(ten order by ten)
-from tenk1;
-
--- Try a case involving a GROUP BY clause where the GROUP BY column is also
--- part of an aggregate's ORDER BY clause.  We want a sort order that works
--- for the GROUP BY along with the first and the last aggregate.
-explain (costs off)
-select
-  sum(unique1 order by ten, two), sum(unique1 order by four),
-  sum(unique1 order by two, four)
-from tenk1
-group by ten;
 
 --
 -- Test combinations of DISTINCT and/or ORDER BY

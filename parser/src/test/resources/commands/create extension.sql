@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -22,5 +22,3 @@ create extension ext_name_casc cascade;
 create extension ext_name_casc with cascade;
 
 create extension ext_name_casc with schema schema_name cascade;
-
-create extension ext_from_old_version with version v2 from v1;

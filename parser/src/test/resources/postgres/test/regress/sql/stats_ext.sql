@@ -48,6 +48,17 @@ CREATE STATISTICS tst ON x, x, y, x, x, (x || 'x'), (y + 1), (x || 'x'), (x || '
 CREATE STATISTICS tst ON (x || 'x'), (x || 'x'), (y + 1), (x || 'x'), (x || 'x'), (y + 1), (x || 'x'), (x || 'x'), (y + 1) FROM ext_stats_test;
 CREATE STATISTICS tst ON (x || 'x'), (x || 'x'), y FROM ext_stats_test;
 CREATE STATISTICS tst (unrecognized) ON x, y FROM ext_stats_test;
+-- unsupported targets
+CREATE STATISTICS tst ON a FROM (VALUES (x)) AS foo;
+CREATE STATISTICS tst ON a FROM foo NATURAL JOIN bar;
+CREATE STATISTICS tst ON a FROM (SELECT * FROM ext_stats_test) AS foo;
+CREATE STATISTICS tst ON a FROM ext_stats_test s TABLESAMPLE system (x);
+CREATE STATISTICS tst ON a FROM XMLTABLE('foo' PASSING 'bar' COLUMNS a text);
+CREATE FUNCTION tftest(int) returns table(a int, b int) as $$
+SELECT $1, $1+i FROM generate_series(1,5) g(i);
+$$ LANGUAGE sql IMMUTABLE STRICT;
+CREATE STATISTICS alt_stat2 ON a FROM tftest(1);
+DROP FUNCTION tftest;
 -- incorrect expressions
 CREATE STATISTICS tst ON (y) FROM ext_stats_test; -- single column reference
 -- Deactivated for SplendidDataTest: CREATE STATISTICS tst ON y + z FROM ext_stats_test; -- missing parentheses
@@ -65,6 +76,14 @@ DROP STATISTICS ab1_a_b_stats;
 ALTER STATISTICS ab1_a_b_stats RENAME TO ab1_a_b_stats_new;
 RESET SESSION AUTHORIZATION;
 DROP ROLE regress_stats_ext;
+CREATE STATISTICS pg_temp.stats_ext_temp ON a, b FROM ab1;
+SELECT regexp_replace(pg_describe_object(tableoid, oid, 0),
+                      'pg_temp_[0-9]*', 'pg_temp_REDACTED') AS descr,
+       pg_statistics_obj_is_visible(oid) AS visible
+  FROM pg_statistic_ext
+ WHERE stxname = 'stats_ext_temp';
+DROP STATISTICS stats_ext_temp;  -- shall fail
+DROP STATISTICS pg_temp.stats_ext_temp;
 
 CREATE STATISTICS IF NOT EXISTS ab1_a_b_stats ON a, b FROM ab1;
 DROP STATISTICS ab1_a_b_stats;
@@ -82,7 +101,7 @@ CREATE STATISTICS ab1_b_c_stats ON b, c FROM ab1;
 CREATE STATISTICS ab1_a_b_c_stats ON a, b, c FROM ab1;
 CREATE STATISTICS ab1_b_a_stats ON b, a FROM ab1;
 ALTER TABLE ab1 DROP COLUMN a;
--- Deactivated for SplendidDataTest: \d ab1
+\d ab1
 -- Ensure statistics are dropped when table is
 SELECT stxname FROM pg_statistic_ext WHERE stxname LIKE 'ab1%';
 DROP TABLE ab1;
@@ -97,13 +116,13 @@ ANALYZE ab1;
 ALTER TABLE ab1 ALTER a SET STATISTICS -1;
 -- setting statistics target 0 skips the statistics, without printing any message, so check catalog
 ALTER STATISTICS ab1_a_b_stats SET STATISTICS 0;
--- Deactivated for SplendidDataTest: \d ab1
+\d ab1
 ANALYZE ab1;
 SELECT stxname, stxdndistinct, stxddependencies, stxdmcv, stxdinherit
   FROM pg_statistic_ext s LEFT JOIN pg_statistic_ext_data d ON (d.stxoid = s.oid)
  WHERE s.stxname = 'ab1_a_b_stats';
 ALTER STATISTICS ab1_a_b_stats SET STATISTICS -1;
--- Deactivated for SplendidDataTest: \d+ ab1
+\d+ ab1
 -- partial analyze doesn't build stats either
 ANALYZE ab1 (a);
 ANALYZE ab1;
@@ -147,10 +166,11 @@ DROP TABLE stxdinh, stxdinh1, stxdinh2;
 CREATE TABLE stxdinp(i int, a int, b int) PARTITION BY RANGE (i);
 CREATE TABLE stxdinp1 PARTITION OF stxdinp FOR VALUES FROM (1) TO (100);
 INSERT INTO stxdinp SELECT 1, a/100, a/100 FROM generate_series(1, 999) a;
-CREATE STATISTICS stxdinp ON a, b FROM stxdinp;
+CREATE STATISTICS stxdinp ON (a + 1), a, b FROM stxdinp;
 VACUUM ANALYZE stxdinp; -- partitions are processed recursively
 SELECT 1 FROM pg_statistic_ext WHERE stxrelid = 'stxdinp'::regclass;
 SELECT * FROM check_estimated_rows('SELECT a, b FROM stxdinp GROUP BY 1, 2');
+SELECT * FROM check_estimated_rows('SELECT a + 1, b FROM ONLY stxdinp GROUP BY 1, 2');
 DROP TABLE stxdinp;
 
 -- basic test for statistics on expressions
@@ -1595,28 +1615,20 @@ insert into stts_t1 select i,i from generate_series(1,100) i;
 analyze stts_t1;
 set search_path to public, stts_s1, stts_s2, tststats;
 
--- Deactivated for SplendidDataTest: \dX
--- Deactivated for SplendidDataTest: \dX stts_t*
--- Deactivated for SplendidDataTest: \dX *stts_hoge
--- Deactivated for SplendidDataTest: \dX+
--- Deactivated for SplendidDataTest: \dX+ stts_t*
--- Deactivated for SplendidDataTest: \dX+ *stts_hoge
--- Deactivated for SplendidDataTest: \dX+ stts_s2.stts_yama
-
--- Deactivated for SplendidDataTest: create statistics (mcv) ON a, b, (a+b), (a-b) FROM stts_t1;
--- Deactivated for SplendidDataTest: create statistics (mcv) ON a, b, (a+b), (a-b) FROM stts_t1;
--- Deactivated for SplendidDataTest: create statistics (mcv) ON (a+b), (a-b) FROM stts_t1;
--- Deactivated for SplendidDataTest: \dX stts_t*expr*
-drop statistics stts_t1_a_b_expr_expr_stat;
-drop statistics stts_t1_a_b_expr_expr_stat1;
-drop statistics stts_t1_expr_expr_stat;
+\dX
+\dX stts_?
+\dX *stts_hoge
+\dX+
+\dX+ stts_?
+\dX+ *stts_hoge
+\dX+ stts_s2.stts_yama
 
 set search_path to public, stts_s1;
--- Deactivated for SplendidDataTest: \dX
+\dX
 
 create role regress_stats_ext nosuperuser;
 set role regress_stats_ext;
--- Deactivated for SplendidDataTest: \dX
+\dX
 reset role;
 
 drop table stts_t1, stts_t2, stts_t3;
@@ -1640,7 +1652,14 @@ CREATE FUNCTION op_leak(int, int) RETURNS bool
     LANGUAGE plpgsql;
 CREATE OPERATOR <<< (procedure = op_leak, leftarg = int, rightarg = int,
                      restrict = scalarltsel);
+CREATE FUNCTION op_leak(record, record) RETURNS bool
+    AS 'BEGIN RAISE NOTICE ''op_leak => %, %'', $1, $2; RETURN $1 < $2; END'
+    LANGUAGE plpgsql;
+CREATE OPERATOR <<< (procedure = op_leak, leftarg = record, rightarg = record,
+                     restrict = scalarltsel);
 SELECT * FROM tststats.priv_test_tbl WHERE a <<< 0 AND b <<< 0; -- Permission denied
+SELECT * FROM tststats.priv_test_tbl t
+ WHERE a <<< 0 AND (b <<< 0 OR t.* <<< (1, 1) IS NOT NULL); -- Permission denied
 DELETE FROM tststats.priv_test_tbl WHERE a <<< 0 AND b <<< 0; -- Permission denied
 
 -- Grant access via a security barrier view, but hide all data
@@ -1652,21 +1671,99 @@ GRANT SELECT, DELETE ON tststats.priv_test_view TO regress_stats_user1;
 -- Should now have access via the view, but see nothing and leak nothing
 SET SESSION AUTHORIZATION regress_stats_user1;
 SELECT * FROM tststats.priv_test_view WHERE a <<< 0 AND b <<< 0; -- Should not leak
+SELECT * FROM tststats.priv_test_view t
+ WHERE a <<< 0 AND (b <<< 0 OR t.* <<< (1, 1) IS NOT NULL); -- Should not leak
 DELETE FROM tststats.priv_test_view WHERE a <<< 0 AND b <<< 0; -- Should not leak
 
 -- Grant table access, but hide all data with RLS
 RESET SESSION AUTHORIZATION;
 ALTER TABLE tststats.priv_test_tbl ENABLE ROW LEVEL SECURITY;
+CREATE POLICY priv_test_tbl_pol ON tststats.priv_test_tbl USING (2 * a < 0);
 GRANT SELECT, DELETE ON tststats.priv_test_tbl TO regress_stats_user1;
 
 -- Should now have direct table access, but see nothing and leak nothing
 SET SESSION AUTHORIZATION regress_stats_user1;
 SELECT * FROM tststats.priv_test_tbl WHERE a <<< 0 AND b <<< 0; -- Should not leak
+SELECT * FROM tststats.priv_test_tbl t
+ WHERE a <<< 0 AND (b <<< 0 OR t.* <<< (1, 1) IS NOT NULL); -- Should not leak
 DELETE FROM tststats.priv_test_tbl WHERE a <<< 0 AND b <<< 0; -- Should not leak
+
+-- Create plain inheritance parent table with no access permissions
+RESET SESSION AUTHORIZATION;
+CREATE TABLE tststats.priv_test_parent_tbl (a int, b int);
+ALTER TABLE tststats.priv_test_tbl INHERIT tststats.priv_test_parent_tbl;
+
+-- Should not have access to parent, and should leak nothing
+SET SESSION AUTHORIZATION regress_stats_user1;
+SELECT * FROM tststats.priv_test_parent_tbl WHERE a <<< 0 AND b <<< 0; -- Permission denied
+SELECT * FROM tststats.priv_test_parent_tbl t
+ WHERE a <<< 0 AND (b <<< 0 OR t.* <<< (1, 1) IS NOT NULL); -- Permission denied
+DELETE FROM tststats.priv_test_parent_tbl WHERE a <<< 0 AND b <<< 0; -- Permission denied
+
+-- Grant table access to parent, but hide all data with RLS
+RESET SESSION AUTHORIZATION;
+ALTER TABLE tststats.priv_test_parent_tbl ENABLE ROW LEVEL SECURITY;
+CREATE POLICY priv_test_parent_tbl_pol ON tststats.priv_test_parent_tbl USING (2 * a < 0);
+GRANT SELECT, DELETE ON tststats.priv_test_parent_tbl TO regress_stats_user1;
+
+-- Should now have direct table access to parent, but see nothing and leak nothing
+SET SESSION AUTHORIZATION regress_stats_user1;
+SELECT * FROM tststats.priv_test_parent_tbl WHERE a <<< 0 AND b <<< 0; -- Should not leak
+SELECT * FROM tststats.priv_test_parent_tbl t
+ WHERE a <<< 0 AND (b <<< 0 OR t.* <<< (1, 1) IS NOT NULL); -- Should not leak
+DELETE FROM tststats.priv_test_parent_tbl WHERE a <<< 0 AND b <<< 0; -- Should not leak
+
+-- privilege checks for pg_stats_ext and pg_stats_ext_exprs
+RESET SESSION AUTHORIZATION;
+CREATE TABLE stats_ext_tbl (id INT PRIMARY KEY GENERATED BY DEFAULT AS IDENTITY, col TEXT);
+INSERT INTO stats_ext_tbl (col) VALUES ('secret'), ('secret'), ('very secret');
+CREATE STATISTICS s_col ON id, col FROM stats_ext_tbl;
+CREATE STATISTICS s_expr ON mod(id, 2), lower(col) FROM stats_ext_tbl;
+ANALYZE stats_ext_tbl;
+
+-- unprivileged role should not have access
+SET SESSION AUTHORIZATION regress_stats_user1;
+SELECT statistics_name, most_common_vals FROM pg_stats_ext x
+    WHERE tablename = 'stats_ext_tbl' ORDER BY ROW(x.*);
+SELECT statistics_name, most_common_vals FROM pg_stats_ext_exprs x
+    WHERE tablename = 'stats_ext_tbl' ORDER BY ROW(x.*);
+
+-- give unprivileged role ownership of table
+RESET SESSION AUTHORIZATION;
+ALTER TABLE stats_ext_tbl OWNER TO regress_stats_user1;
+
+-- unprivileged role should now have access
+SET SESSION AUTHORIZATION regress_stats_user1;
+SELECT statistics_name, most_common_vals FROM pg_stats_ext x
+    WHERE tablename = 'stats_ext_tbl' ORDER BY ROW(x.*);
+SELECT statistics_name, most_common_vals FROM pg_stats_ext_exprs x
+    WHERE tablename = 'stats_ext_tbl' ORDER BY ROW(x.*);
+
+-- CREATE STATISTICS checks for CREATE on the schema
+RESET SESSION AUTHORIZATION;
+CREATE SCHEMA sts_sch1 CREATE TABLE sts_sch1.tbl (a INT, b INT);
+GRANT USAGE ON SCHEMA sts_sch1 TO regress_stats_user1;
+ALTER TABLE sts_sch1.tbl OWNER TO regress_stats_user1;
+SET SESSION AUTHORIZATION regress_stats_user1;
+CREATE STATISTICS sts_sch1.fail ON a, b FROM sts_sch1.tbl;
+RESET SESSION AUTHORIZATION;
+GRANT CREATE ON SCHEMA sts_sch1 TO regress_stats_user1;
+SET SESSION AUTHORIZATION regress_stats_user1;
+CREATE STATISTICS sts_sch1.pass ON a, b FROM sts_sch1.tbl;
+
+-- re-creating statistics via ALTER TABLE bypasses checks for CREATE on schema
+RESET SESSION AUTHORIZATION;
+REVOKE CREATE ON SCHEMA sts_sch1 FROM regress_stats_user1;
+SET SESSION AUTHORIZATION regress_stats_user1;
+ALTER TABLE sts_sch1.tbl ALTER COLUMN a TYPE SMALLINT;
 
 -- Tidy up
 DROP OPERATOR <<< (int, int);
 DROP FUNCTION op_leak(int, int);
+DROP OPERATOR <<< (record, record);
+DROP FUNCTION op_leak(record, record);
 RESET SESSION AUTHORIZATION;
+DROP TABLE stats_ext_tbl;
 DROP SCHEMA tststats CASCADE;
+DROP SCHEMA sts_sch1 CASCADE;
 DROP USER regress_stats_user1;

@@ -98,23 +98,23 @@ INSERT INTO document VALUES
 ALTER TABLE document ENABLE ROW LEVEL SECURITY;
 
 -- user's security level must be higher than or equal to document's
-CREATE POLICY p1 ON document AS PERMISSIVE
-    USING (dlevel <= (SELECT seclv FROM uaccount WHERE pguser = current_user));
+-- Deactivated for SplendidDataTest: CREATE POLICY p1 ON document AS PERMISSIVE
+-- Deactivated for SplendidDataTest:     USING (dlevel <= (SELECT seclv FROM uaccount WHERE pguser = current_user));
 
 -- try to create a policy of bogus type
-CREATE POLICY p1 ON document AS UGLY
-    USING (dlevel <= (SELECT seclv FROM uaccount WHERE pguser = current_user));
+-- Deactivated for SplendidDataTest: CREATE POLICY p1 ON document AS UGLY
+-- Deactivated for SplendidDataTest:     USING (dlevel <= (SELECT seclv FROM uaccount WHERE pguser = current_user));
 
 -- but Dave isn't allowed to anything at cid 50 or above
 -- this is to make sure that we sort the policies by name first
 -- when applying WITH CHECK, a later INSERT by Dave should fail due
 -- to p1r first
-CREATE POLICY p2r ON document AS RESTRICTIVE TO regress_rls_dave
-    USING (cid <> 44 AND cid < 50);
+-- Deactivated for SplendidDataTest: CREATE POLICY p2r ON document AS RESTRICTIVE TO regress_rls_dave
+-- Deactivated for SplendidDataTest:     USING (cid <> 44 AND cid < 50);
 
 -- and Dave isn't allowed to see manga documents
-CREATE POLICY p1r ON document AS RESTRICTIVE TO regress_rls_dave
-    USING (cid <> 44);
+-- Deactivated for SplendidDataTest: CREATE POLICY p1r ON document AS RESTRICTIVE TO regress_rls_dave
+-- Deactivated for SplendidDataTest:     USING (cid <> 44);
 
 \dp
 \d document
@@ -357,12 +357,12 @@ ALTER TABLE part_document ENABLE ROW LEVEL SECURITY;
 
 -- Create policy on parent
 -- user's security level must be higher than or equal to document's
-CREATE POLICY pp1 ON part_document AS PERMISSIVE
-    USING (dlevel <= (SELECT seclv FROM uaccount WHERE pguser = current_user));
+-- Deactivated for SplendidDataTest: CREATE POLICY pp1 ON part_document AS PERMISSIVE
+-- Deactivated for SplendidDataTest:     USING (dlevel <= (SELECT seclv FROM uaccount WHERE pguser = current_user));
 
 -- Dave is only allowed to see cid < 55
-CREATE POLICY pp1r ON part_document AS RESTRICTIVE TO regress_rls_dave
-    USING (cid < 55);
+-- Deactivated for SplendidDataTest: CREATE POLICY pp1r ON part_document AS RESTRICTIVE TO regress_rls_dave
+-- Deactivated for SplendidDataTest:     USING (cid < 55);
 
 \d+ part_document
 SELECT * FROM pg_policies WHERE schemaname = 'regress_rls_schema' AND tablename like '%part_document%' ORDER BY policyname;
@@ -401,8 +401,8 @@ SELECT * FROM part_document_satire WHERE f_leak(dtitle) ORDER BY did;
 -- Turn on RLS and create policy on child to show RLS is checked before constraints
 SET SESSION AUTHORIZATION regress_rls_alice;
 ALTER TABLE part_document_satire ENABLE ROW LEVEL SECURITY;
-CREATE POLICY pp3 ON part_document_satire AS RESTRICTIVE
-    USING (cid < 55);
+-- Deactivated for SplendidDataTest: CREATE POLICY pp3 ON part_document_satire AS RESTRICTIVE
+-- Deactivated for SplendidDataTest:     USING (cid < 55);
 -- This should fail with RLS violation now.
 SET SESSION AUTHORIZATION regress_rls_dave;
 INSERT INTO part_document_satire VALUES (101, 55, 1, 'regress_rls_dave', 'testing RLS with partitions'); -- fail
@@ -462,8 +462,8 @@ SELECT * FROM part_document_satire ORDER by did;
 -- Check behavior with a policy that uses a SubPlan not an InitPlan.
 SET SESSION AUTHORIZATION regress_rls_alice;
 SET row_security TO ON;
-CREATE POLICY pp3 ON part_document AS RESTRICTIVE
-    USING ((SELECT dlevel <= seclv FROM uaccount WHERE pguser = current_user));
+-- Deactivated for SplendidDataTest: CREATE POLICY pp3 ON part_document AS RESTRICTIVE
+-- Deactivated for SplendidDataTest:     USING ((SELECT dlevel <= seclv FROM uaccount WHERE pguser = current_user));
 
 SET SESSION AUTHORIZATION regress_rls_carol;
 INSERT INTO part_document VALUES (100, 11, 5, 'regress_rls_carol', 'testing pp3'); -- fail
@@ -830,10 +830,10 @@ ALTER TABLE document ADD COLUMN dnotes text DEFAULT '';
 CREATE POLICY p1 ON document FOR SELECT USING (true);
 -- one may insert documents only authored by them
 CREATE POLICY p2 ON document FOR INSERT WITH CHECK (dauthor = current_user);
--- one may only update documents in 'novel' category
+-- one may only update documents in 'novel' category and new dlevel must be > 0
 CREATE POLICY p3 ON document FOR UPDATE
   USING (cid = (SELECT cid from category WHERE cname = 'novel'))
-  WITH CHECK (dauthor = current_user);
+  WITH CHECK (dlevel > 0);
 -- one may only delete documents in 'manga' category
 CREATE POLICY p4 ON document FOR DELETE
   USING (cid = (SELECT cid from category WHERE cname = 'manga'));
@@ -842,12 +842,12 @@ SELECT * FROM document;
 
 SET SESSION AUTHORIZATION regress_rls_bob;
 
--- Fails, since update violates WITH CHECK qual on dauthor
+-- Fails, since update violates WITH CHECK qual on dlevel
 MERGE INTO document d
 USING (SELECT 1 as sdid) s
 ON did = s.sdid
 WHEN MATCHED THEN
-	UPDATE SET dnotes = dnotes || ' notes added by merge1 ', dauthor = 'regress_rls_alice';
+	UPDATE SET dnotes = dnotes || ' notes added by merge1 ', dlevel = 0;
 
 -- Should be OK since USING and WITH CHECK quals pass
 MERGE INTO document d
@@ -856,12 +856,12 @@ ON did = s.sdid
 WHEN MATCHED THEN
 	UPDATE SET dnotes = dnotes || ' notes added by merge2 ';
 
--- Even when dauthor is updated explicitly, but to the existing value
+-- Even when dlevel is updated explicitly, but to the existing value
 MERGE INTO document d
 USING (SELECT 1 as sdid) s
 ON did = s.sdid
 WHEN MATCHED THEN
-	UPDATE SET dnotes = dnotes || ' notes added by merge3 ', dauthor = 'regress_rls_bob';
+	UPDATE SET dnotes = dnotes || ' notes added by merge3 ', dlevel = 1;
 
 -- There is a MATCH for did = 3, but UPDATE's USING qual does not allow
 -- updating an item in category 'science fiction'
@@ -900,6 +900,15 @@ WHEN MATCHED AND dnotes <> '' THEN
 	UPDATE SET dnotes = dnotes || ' notes added by merge '
 WHEN MATCHED THEN
 	DELETE;
+
+-- OK if DELETE is replaced with DO NOTHING
+MERGE INTO document d
+USING (SELECT 4 as sdid) s
+ON did = s.sdid
+WHEN MATCHED AND dnotes <> '' THEN
+	UPDATE SET dnotes = dnotes || ' notes added by merge '
+WHEN MATCHED THEN
+	DO NOTHING;
 
 SELECT * FROM document WHERE did = 4;
 
@@ -950,23 +959,48 @@ WHEN NOT MATCHED THEN
 	INSERT VALUES (12, 11, 1, 'regress_rls_bob', 'another novel');
 
 -- drop and create a new SELECT policy which prevents us from reading
--- any document except with category 'magna'
+-- any document except with category 'novel'
 RESET SESSION AUTHORIZATION;
 DROP POLICY p1 ON document;
 CREATE POLICY p1 ON document FOR SELECT
-  USING (cid = (SELECT cid from category WHERE cname = 'manga'));
+  USING (cid = (SELECT cid from category WHERE cname = 'novel'));
 
 SET SESSION AUTHORIZATION regress_rls_bob;
 
 -- MERGE can no longer see the matching row and hence attempts the
 -- NOT MATCHED action, which results in unique key violation
 MERGE INTO document d
-USING (SELECT 1 as sdid) s
+USING (SELECT 7 as sdid) s
 ON did = s.sdid
 WHEN MATCHED THEN
 	UPDATE SET dnotes = dnotes || ' notes added by merge5 '
 WHEN NOT MATCHED THEN
 	INSERT VALUES (12, 11, 1, 'regress_rls_bob', 'another novel');
+
+-- UPDATE action fails if new row is not visible
+MERGE INTO document d
+USING (SELECT 1 as sdid) s
+ON did = s.sdid
+WHEN MATCHED THEN
+	UPDATE SET dnotes = dnotes || ' notes added by merge6 ',
+			   cid = (SELECT cid from category WHERE cname = 'technology');
+
+-- but OK if new row is visible
+MERGE INTO document d
+USING (SELECT 1 as sdid) s
+ON did = s.sdid
+WHEN MATCHED THEN
+	UPDATE SET dnotes = dnotes || ' notes added by merge7 ',
+			   cid = (SELECT cid from category WHERE cname = 'novel');
+
+-- OK to insert a new row that is not visible
+MERGE INTO document d
+USING (SELECT 13 as sdid) s
+ON did = s.sdid
+WHEN MATCHED THEN
+	UPDATE SET dnotes = dnotes || ' notes added by merge8 '
+WHEN NOT MATCHED THEN
+	INSERT VALUES (13, 44, 1, 'regress_rls_bob', 'new manga');
 
 RESET SESSION AUTHORIZATION;
 -- drop the restrictive SELECT policy so that we can look at the
@@ -1086,7 +1120,7 @@ EXPLAIN (COSTS OFF) SELECT * FROM rls_view;
 SET SESSION AUTHORIZATION regress_rls_alice;
 CREATE TABLE z1_blacklist (a int);
 INSERT INTO z1_blacklist VALUES (3), (4);
-CREATE POLICY p3 ON z1 AS RESTRICTIVE USING (a NOT IN (SELECT a FROM z1_blacklist));
+-- Deactivated for SplendidDataTest: CREATE POLICY p3 ON z1 AS RESTRICTIVE USING (a NOT IN (SELECT a FROM z1_blacklist));
 
 -- Query as role that is not owner of table but is owner of view without permissions.
 SET SESSION AUTHORIZATION regress_rls_bob;
@@ -1169,7 +1203,7 @@ EXPLAIN (COSTS OFF) SELECT * FROM rls_view;
 
 -- Policy requiring access to another table.
 SET SESSION AUTHORIZATION regress_rls_alice;
-CREATE POLICY p3 ON z1 AS RESTRICTIVE USING (a NOT IN (SELECT a FROM z1_blacklist));
+-- Deactivated for SplendidDataTest: CREATE POLICY p3 ON z1 AS RESTRICTIVE USING (a NOT IN (SELECT a FROM z1_blacklist));
 
 -- Query as role that is not owner of table but is owner of view without permissions.
 SET SESSION AUTHORIZATION regress_rls_bob;
@@ -1523,6 +1557,40 @@ ALTER TABLE copy_rel_to ENABLE ROW LEVEL SECURITY;
 GRANT ALL ON copy_rel_to TO regress_rls_bob, regress_rls_exempt_user;
 
 INSERT INTO copy_rel_to VALUES (1, md5('1'));
+
+-- Check COPY TO as Superuser/owner.
+RESET SESSION AUTHORIZATION;
+SET row_security TO OFF;
+COPY copy_rel_to TO STDOUT WITH DELIMITER ',';
+SET row_security TO ON;
+COPY copy_rel_to TO STDOUT WITH DELIMITER ',';
+
+-- Check COPY TO as user with permissions.
+SET SESSION AUTHORIZATION regress_rls_bob;
+SET row_security TO OFF;
+COPY copy_rel_to TO STDOUT WITH DELIMITER ','; --fail - would be affected by RLS
+SET row_security TO ON;
+COPY copy_rel_to TO STDOUT WITH DELIMITER ','; --ok
+
+-- Check COPY TO as user with permissions and BYPASSRLS
+SET SESSION AUTHORIZATION regress_rls_exempt_user;
+SET row_security TO OFF;
+COPY copy_rel_to TO STDOUT WITH DELIMITER ','; --ok
+SET row_security TO ON;
+COPY copy_rel_to TO STDOUT WITH DELIMITER ','; --ok
+
+-- Check COPY TO as user without permissions. SET row_security TO OFF;
+SET SESSION AUTHORIZATION regress_rls_carol;
+SET row_security TO OFF;
+COPY copy_rel_to TO STDOUT WITH DELIMITER ','; --fail - permission denied
+SET row_security TO ON;
+COPY copy_rel_to TO STDOUT WITH DELIMITER ','; --fail - permission denied
+
+-- Check behavior with a child table.
+RESET SESSION AUTHORIZATION;
+SET row_security TO ON;
+CREATE TABLE copy_rel_to_child () INHERITS (copy_rel_to);
+INSERT INTO copy_rel_to_child VALUES (1, 'one'), (2, 'two');
 
 -- Check COPY TO as Superuser/owner.
 RESET SESSION AUTHORIZATION;
@@ -2087,7 +2155,7 @@ DROP VIEW rls_view;
 DROP TABLE rls_tbl;
 DROP TABLE ref_tbl;
 
--- Leaky operator test
+-- Leaky operator tests
 CREATE TABLE rls_tbl (a int);
 INSERT INTO rls_tbl SELECT x/10 FROM generate_series(1, 100) x;
 ANALYZE rls_tbl;
@@ -2102,9 +2170,58 @@ CREATE FUNCTION op_leak(int, int) RETURNS bool
 CREATE OPERATOR <<< (procedure = op_leak, leftarg = int, rightarg = int,
                      restrict = scalarltsel);
 SELECT * FROM rls_tbl WHERE a <<< 1000;
+RESET SESSION AUTHORIZATION;
+
+CREATE TABLE rls_child_tbl () INHERITS (rls_tbl);
+INSERT INTO rls_child_tbl SELECT x/10 FROM generate_series(1, 100) x;
+ANALYZE rls_child_tbl;
+
+CREATE TABLE rls_ptbl (a int) PARTITION BY RANGE (a);
+CREATE TABLE rls_part PARTITION OF rls_ptbl FOR VALUES FROM (-100) TO (100);
+INSERT INTO rls_ptbl SELECT x/10 FROM generate_series(1, 100) x;
+ANALYZE rls_ptbl, rls_part;
+
+ALTER TABLE rls_ptbl ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rls_part ENABLE ROW LEVEL SECURITY;
+GRANT SELECT ON rls_ptbl TO regress_rls_alice;
+GRANT SELECT ON rls_part TO regress_rls_alice;
+CREATE POLICY p1 ON rls_tbl USING (a < 0);
+CREATE POLICY p2 ON rls_ptbl USING (a < 0);
+CREATE POLICY p3 ON rls_part USING (a < 0);
+
+SET SESSION AUTHORIZATION regress_rls_alice;
+SELECT * FROM rls_tbl WHERE a <<< 1000;
+SELECT * FROM rls_child_tbl WHERE a <<< 1000;
+SELECT * FROM rls_ptbl WHERE a <<< 1000;
+SELECT * FROM rls_part WHERE a <<< 1000;
+SELECT * FROM (SELECT * FROM rls_tbl UNION ALL
+               SELECT * FROM rls_tbl) t WHERE a <<< 1000;
+SELECT * FROM (SELECT * FROM rls_child_tbl UNION ALL
+               SELECT * FROM rls_child_tbl) t WHERE a <<< 1000;
+RESET SESSION AUTHORIZATION;
+
+REVOKE SELECT ON rls_tbl FROM regress_rls_alice;
+CREATE VIEW rls_tbl_view AS SELECT * FROM rls_tbl;
+
+ALTER TABLE rls_child_tbl ENABLE ROW LEVEL SECURITY;
+GRANT SELECT ON rls_child_tbl TO regress_rls_alice;
+CREATE POLICY p4 ON rls_child_tbl USING (a < 0);
+
+SET SESSION AUTHORIZATION regress_rls_alice;
+SELECT * FROM rls_tbl WHERE a <<< 1000;
+SELECT * FROM rls_tbl_view WHERE a <<< 1000;
+SELECT * FROM rls_child_tbl WHERE a <<< 1000;
+SELECT * FROM (SELECT * FROM rls_tbl UNION ALL
+               SELECT * FROM rls_tbl) t WHERE a <<< 1000;
+SELECT * FROM (SELECT * FROM rls_child_tbl UNION ALL
+               SELECT * FROM rls_child_tbl) t WHERE a <<< 1000;
 DROP OPERATOR <<< (int, int);
 DROP FUNCTION op_leak(int, int);
 RESET SESSION AUTHORIZATION;
+DROP TABLE rls_part;
+DROP TABLE rls_ptbl;
+DROP TABLE rls_child_tbl;
+DROP VIEW rls_tbl_view;
 DROP TABLE rls_tbl;
 
 -- Bug #16006: whole-row Vars in a policy don't play nice with sub-selects
@@ -2125,6 +2242,84 @@ SELECT * FROM rls_tbl;
 
 DROP TABLE rls_tbl;
 RESET SESSION AUTHORIZATION;
+
+-- CVE-2023-2455: inlining an SRF may introduce an RLS dependency
+create table rls_t (c text);
+insert into rls_t values ('invisible to bob');
+alter table rls_t enable row level security;
+grant select on rls_t to regress_rls_alice, regress_rls_bob;
+create policy p1 on rls_t for select to regress_rls_alice using (true);
+create policy p2 on rls_t for select to regress_rls_bob using (false);
+create function rls_f () returns setof rls_t
+  stable language sql
+  as $$ select * from rls_t $$;
+prepare q as select current_user, * from rls_f();
+set role regress_rls_alice;
+execute q;
+set role regress_rls_bob;
+execute q;
+
+-- make sure RLS dependencies in CTEs are handled
+reset role;
+create or replace function rls_f() returns setof rls_t
+  stable language sql
+  as $$ with cte as (select * from rls_t) select * from cte $$;
+prepare r as select current_user, * from rls_f();
+set role regress_rls_alice;
+execute r;
+set role regress_rls_bob;
+execute r;
+
+-- make sure RLS dependencies in subqueries are handled
+reset role;
+create or replace function rls_f() returns setof rls_t
+  stable language sql
+  as $$ select * from (select * from rls_t) _ $$;
+prepare s as select current_user, * from rls_f();
+set role regress_rls_alice;
+execute s;
+set role regress_rls_bob;
+execute s;
+
+-- make sure RLS dependencies in sublinks are handled
+reset role;
+create or replace function rls_f() returns setof rls_t
+  stable language sql
+  as $$ select exists(select * from rls_t)::text $$;
+prepare t as select current_user, * from rls_f();
+set role regress_rls_alice;
+execute t;
+set role regress_rls_bob;
+execute t;
+
+-- make sure RLS dependencies are handled when coercion projections are inserted
+reset role;
+create or replace function rls_f() returns setof rls_t
+  stable language sql
+  as $$ select * from (select array_agg(c) as cs from rls_t) _ group by cs $$;
+prepare u as select current_user, * from rls_f();
+set role regress_rls_alice;
+execute u;
+set role regress_rls_bob;
+execute u;
+
+-- make sure RLS dependencies in security invoker views are handled
+reset role;
+create view rls_v with (security_invoker) as select * from rls_t;
+grant select on rls_v to regress_rls_alice, regress_rls_bob;
+create or replace function rls_f() returns setof rls_t
+  stable language sql
+  as $$ select * from rls_v $$;
+prepare v as select current_user, * from rls_f();
+set role regress_rls_alice;
+execute v;
+set role regress_rls_bob;
+execute v;
+
+RESET ROLE;
+DROP FUNCTION rls_f();
+DROP VIEW rls_v;
+DROP TABLE rls_t;
 
 --
 -- Clean up objects

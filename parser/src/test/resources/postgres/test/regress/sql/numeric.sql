@@ -842,6 +842,31 @@ SELECT i as pow,
 	round((2.5 * 10 ^ i)::numeric, -i)
 FROM generate_series(-5,5) AS t(i);
 
+-- Check limits of rounding before the decimal point
+SELECT round(4.4e131071, -131071) = 4e131071;
+SELECT round(4.5e131071, -131071) = 5e131071;
+SELECT round(4.5e131071, -131072); -- loses all digits
+SELECT round(5.5e131071, -131072); -- rounds up and overflows
+SELECT round(5.5e131071, -131073); -- loses all digits
+SELECT round(5.5e131071, -1000000); -- loses all digits
+
+-- Check limits of rounding after the decimal point
+SELECT round(5e-16383, 1000000) = 5e-16383;
+SELECT round(5e-16383, 16383) = 5e-16383;
+SELECT round(5e-16383, 16382) = 1e-16382;
+SELECT round(5e-16383, 16381) = 0;
+
+-- Check limits of trunc() before the decimal point
+SELECT trunc(9.9e131071, -131071) = 9e131071;
+SELECT trunc(9.9e131071, -131072); -- loses all digits
+SELECT trunc(9.9e131071, -131073);  -- loses all digits
+SELECT trunc(9.9e131071, -1000000);  -- loses all digits
+
+-- Check limits of trunc() after the decimal point
+SELECT trunc(5e-16383, 1000000) = 5e-16383;
+SELECT trunc(5e-16383, 16383) = 5e-16383;
+SELECT trunc(5e-16383, 16382) = 0;
+
 -- Testing for width_bucket(). For convenience, we test both the
 -- numeric and float8 versions of the function in this file.
 
@@ -988,6 +1013,7 @@ FROM v;
 SELECT to_char('100'::numeric, 'FM999.9');
 SELECT to_char('100'::numeric, 'FM999.');
 SELECT to_char('100'::numeric, 'FM999');
+SELECT to_char('12345678901'::float8, 'FM9999999999D9999900000000000000000');
 
 -- Check parsing of literal text in a format string
 SELECT to_char('100'::numeric, 'foo999');
@@ -1073,7 +1099,7 @@ CREATE TABLE num_typemod_test (
   thousandths numeric(3, 3),
   millionths numeric(3, 6)
 );
--- Deactivated for SplendidDataTest: \d num_typemod_test
+\d num_typemod_test
 
 -- rounding of valid inputs
 INSERT INTO num_typemod_test VALUES (123456, 123, 0.123, 0.000123, 0.000000123);

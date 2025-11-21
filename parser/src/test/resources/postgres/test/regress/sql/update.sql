@@ -350,7 +350,7 @@ DROP FUNCTION func_parted_mod_b();
 ALTER TABLE range_parted ENABLE ROW LEVEL SECURITY;
 CREATE USER regress_range_parted_user;
 GRANT ALL ON range_parted, mintab TO regress_range_parted_user;
-CREATE POLICY seeall ON range_parted AS PERMISSIVE FOR SELECT USING (true);
+-- Deactivated for SplendidDataTest: CREATE POLICY seeall ON range_parted AS PERMISSIVE FOR SELECT USING (true);
 CREATE POLICY policy_range_parted ON range_parted for UPDATE USING (true) WITH CHECK (c % 2 = 0);
 
 -- Deactivated for SplendidDataTest: :init_range_parted;
@@ -393,9 +393,9 @@ DROP FUNCTION func_d_1_15();
 -- Policy expression contains SubPlan
 RESET SESSION AUTHORIZATION;
 -- Deactivated for SplendidDataTest: :init_range_parted;
-CREATE POLICY policy_range_parted_subplan on range_parted
-    AS RESTRICTIVE for UPDATE USING (true)
-    WITH CHECK ((SELECT range_parted.c <= c1 FROM mintab));
+-- Deactivated for SplendidDataTest: CREATE POLICY policy_range_parted_subplan on range_parted
+-- Deactivated for SplendidDataTest:     AS RESTRICTIVE for UPDATE USING (true)
+-- Deactivated for SplendidDataTest:     WITH CHECK ((SELECT range_parted.c <= c1 FROM mintab));
 SET SESSION AUTHORIZATION regress_range_parted_user;
 -- fail, mintab has row with c1 = 120
 UPDATE range_parted set a = 'b', c = 122 WHERE a = 'a' and c = 200;
@@ -406,8 +406,8 @@ UPDATE range_parted set a = 'b', c = 120 WHERE a = 'a' and c = 200;
 
 RESET SESSION AUTHORIZATION;
 -- Deactivated for SplendidDataTest: :init_range_parted;
-CREATE POLICY policy_range_parted_wholerow on range_parted AS RESTRICTIVE for UPDATE USING (true)
-   WITH CHECK (range_parted = row('b', 10, 112, 1, NULL)::range_parted);
+-- Deactivated for SplendidDataTest: CREATE POLICY policy_range_parted_wholerow on range_parted AS RESTRICTIVE for UPDATE USING (true)
+-- Deactivated for SplendidDataTest:    WITH CHECK (range_parted = row('b', 10, 112, 1, NULL)::range_parted);
 SET SESSION AUTHORIZATION regress_range_parted_user;
 -- ok, should pass the RLS check
 UPDATE range_parted set a = 'b', c = 112 WHERE a = 'a' and c = 200;

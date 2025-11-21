@@ -13,7 +13,7 @@
 --
 
 -- directory paths are passed to us in environment variables
--- Deactivated for SplendidDataTest: \getenv abs_srcdir PG_ABS_SRCDIR
+\getenv abs_srcdir PG_ABS_SRCDIR
 
 --
 -- BTREE
@@ -79,7 +79,7 @@ CREATE TABLE fast_emp4000 (
 	home_base	 box
 );
 
--- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/rect.data'
+\set filename :abs_srcdir '/data/rect.data'
 -- Deactivated for SplendidDataTest: COPY slow_emp4000 FROM :'filename';
 
 INSERT INTO fast_emp4000 SELECT * FROM slow_emp4000;
@@ -277,7 +277,7 @@ CREATE TABLE array_index_op_test (
 	t			text[]
 );
 
--- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/array.data'
+\set filename :abs_srcdir '/data/array.data'
 -- Deactivated for SplendidDataTest: COPY array_index_op_test FROM :'filename';
 ANALYZE array_index_op_test;
 
@@ -363,7 +363,7 @@ DROP TABLE array_gin_test;
 --
 CREATE INDEX gin_relopts_test ON array_index_op_test USING gin (i)
   WITH (FASTUPDATE=on, GIN_PENDING_LIST_LIMIT=128);
--- Deactivated for SplendidDataTest: \d+ gin_relopts_test
+\d+ gin_relopts_test
 
 --
 -- HASH
@@ -413,9 +413,9 @@ DELETE FROM unique_tbl WHERE t = 'seven';
 
 CREATE UNIQUE INDEX unique_idx4 ON unique_tbl (i) NULLS NOT DISTINCT;  -- ok now
 
--- Deactivated for SplendidDataTest: \d unique_tbl
--- Deactivated for SplendidDataTest: \d unique_idx3
--- Deactivated for SplendidDataTest: \d unique_idx4
+\d unique_tbl
+\d unique_idx3
+\d unique_idx4
 SELECT pg_get_indexdef('unique_idx3'::regclass);
 SELECT pg_get_indexdef('unique_idx4'::regclass);
 
@@ -437,8 +437,8 @@ INSERT INTO func_index_heap VALUES('ABCD', 'EF');
 INSERT INTO func_index_heap VALUES('QWERTY');
 
 -- while we're here, see that the metadata looks sane
--- Deactivated for SplendidDataTest: \d func_index_heap
--- Deactivated for SplendidDataTest: \d func_index_index
+\d func_index_heap
+\d func_index_index
 
 
 --
@@ -457,8 +457,8 @@ INSERT INTO func_index_heap VALUES('ABCD', 'EF');
 INSERT INTO func_index_heap VALUES('QWERTY');
 
 -- while we're here, see that the metadata looks sane
--- Deactivated for SplendidDataTest: \d func_index_heap
--- Deactivated for SplendidDataTest: \d func_index_index
+\d func_index_heap
+\d func_index_index
 
 -- this should fail because of unsafe column type (anonymous record)
 create index on func_index_heap ((f1 || f2), (row(f1, f2)));
@@ -534,9 +534,9 @@ VACUUM FULL concur_heap;
 REINDEX TABLE concur_heap;
 DELETE FROM concur_heap WHERE f1 = 'b';
 VACUUM FULL concur_heap;
--- Deactivated for SplendidDataTest: \d concur_heap
+\d concur_heap
 REINDEX TABLE concur_heap;
--- Deactivated for SplendidDataTest: \d concur_heap
+\d concur_heap
 
 -- Temporary tables with concurrent builds and on-commit actions
 -- CONCURRENTLY used with CREATE INDEX and DROP INDEX is ignored.
@@ -582,7 +582,7 @@ DROP INDEX CONCURRENTLY "concur_index5";
 DROP INDEX CONCURRENTLY "concur_index1";
 DROP INDEX CONCURRENTLY "concur_heap_expr_idx";
 
--- Deactivated for SplendidDataTest: \d concur_heap
+\d concur_heap
 
 DROP TABLE concur_heap;
 
@@ -599,16 +599,16 @@ INSERT INTO cwi_test VALUES(1, 2), (3, 4), (5, 6);
 CREATE UNIQUE INDEX cwi_uniq_idx ON cwi_test(a , b);
 ALTER TABLE cwi_test ADD primary key USING INDEX cwi_uniq_idx;
 
--- Deactivated for SplendidDataTest: \d cwi_test
--- Deactivated for SplendidDataTest: \d cwi_uniq_idx
+\d cwi_test
+\d cwi_uniq_idx
 
 CREATE UNIQUE INDEX cwi_uniq2_idx ON cwi_test(b , a);
 ALTER TABLE cwi_test DROP CONSTRAINT cwi_uniq_idx,
 	ADD CONSTRAINT cwi_replaced_pkey PRIMARY KEY
 		USING INDEX cwi_uniq2_idx;
 
--- Deactivated for SplendidDataTest: \d cwi_test
--- Deactivated for SplendidDataTest: \d cwi_replaced_pkey
+\d cwi_test
+\d cwi_replaced_pkey
 
 DROP INDEX cwi_replaced_pkey;	-- Should fail; a constraint depends on it
 
@@ -632,7 +632,7 @@ DROP TABLE cwi_test;
 CREATE TABLE syscol_table (a INT);
 
 -- System columns cannot be indexed
-CREATE INDEX ON syscolcol_table (ctid);
+CREATE INDEX ON syscol_table (ctid);
 
 -- nor used in expressions
 CREATE INDEX ON syscol_table ((ctid >= '(1000,0)'));
@@ -820,9 +820,9 @@ explain (costs off)
 -- REINDEX (VERBOSE)
 --
 CREATE TABLE reindex_verbose(id integer primary key);
--- Deactivated for SplendidDataTest: \set VERBOSITY terse \\ -- suppress machine-dependent details
+\set VERBOSITY terse \\ -- suppress machine-dependent details
 REINDEX (VERBOSE) TABLE reindex_verbose;
--- Deactivated for SplendidDataTest: \set VERBOSITY default
+\set VERBOSITY default
 DROP TABLE reindex_verbose;
 
 --
@@ -919,7 +919,7 @@ CREATE INDEX concur_appclass_ind on concur_appclass_tab
 CREATE INDEX concur_appclass_ind_2 on concur_appclass_tab
   USING gist (k tsvector_ops (siglen='300'), j tsvector_ops);
 REINDEX TABLE CONCURRENTLY concur_appclass_tab;
--- Deactivated for SplendidDataTest: \d concur_appclass_tab
+\d concur_appclass_tab
 DROP TABLE concur_appclass_tab;
 
 -- Partitions
@@ -1081,15 +1081,11 @@ REINDEX INDEX CONCURRENTLY pg_class_oid_index; -- no catalog index
 REINDEX TABLE CONCURRENTLY pg_toast.pg_toast_1260; -- no catalog toast table
 REINDEX INDEX CONCURRENTLY pg_toast.pg_toast_1260_index; -- no catalog toast index
 REINDEX SYSTEM CONCURRENTLY postgres; -- not allowed for SYSTEM
-REINDEX (CONCURRENTLY) SYSTEM postgres; -- ditto
--- Deactivated for SplendidDataTest: REINDEX (CONCURRENTLY) SYSTEM;  -- ditto
 -- Warns about catalog relations
 REINDEX SCHEMA CONCURRENTLY pg_catalog;
--- Not the current database
-REINDEX DATABASE not_current_database;
 
 -- Check the relation status, there should not be invalid indexes
--- Deactivated for SplendidDataTest: \d concur_reindex_tab
+\d concur_reindex_tab
 DROP MATERIALIZED VIEW concur_reindex_matview;
 DROP TABLE concur_reindex_tab, concur_reindex_tab2, concur_reindex_tab3;
 
@@ -1101,16 +1097,16 @@ CREATE UNIQUE INDEX CONCURRENTLY concur_reindex_ind5 ON concur_reindex_tab4 (c1)
 -- Reindexing concurrently this index fails with the same failure.
 -- The extra index created is itself invalid, and can be dropped.
 REINDEX INDEX CONCURRENTLY concur_reindex_ind5;
--- Deactivated for SplendidDataTest: \d concur_reindex_tab4
+\d concur_reindex_tab4
 DROP INDEX concur_reindex_ind5_ccnew;
 -- This makes the previous failure go away, so the index can become valid.
 DELETE FROM concur_reindex_tab4 WHERE c1 = 1;
 -- The invalid index is not processed when running REINDEX TABLE.
 REINDEX TABLE CONCURRENTLY concur_reindex_tab4;
--- Deactivated for SplendidDataTest: \d concur_reindex_tab4
+\d concur_reindex_tab4
 -- But it is fixed with REINDEX INDEX.
 REINDEX INDEX CONCURRENTLY concur_reindex_ind5;
--- Deactivated for SplendidDataTest: \d concur_reindex_tab4
+\d concur_reindex_tab4
 DROP TABLE concur_reindex_tab4;
 
 -- Check handling of indexes with expressions and predicates.  The

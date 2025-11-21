@@ -2559,7 +2559,7 @@ alter_table_cmd:
 					n->def = (Node *) c;
 					c->contype = CONSTR_FOREIGN; /* others not supported, yet */
 					c->conname = $3;
-					processCASbits($4, @4, "ALTER CONSTRAINT statement",
+					processCASbits($4, @4, "FOREIGN KEY",
 									&c->deferrable,
 									&c->initdeferred,
 									NULL, NULL, yyscanner);
@@ -4738,6 +4738,10 @@ SeqOptElem: AS SimpleTypename
 				{
 					$$ = makeDefElem("increment", (Node *) $3, @1);
 				}
+			| LOGGED
+				{
+					$$ = makeDefElem("logged", NULL, @1);
+				}
 			| MAXVALUE NumericOnly
 				{
 					$$ = makeDefElem("maxvalue", (Node *) $2, @1);
@@ -4760,7 +4764,6 @@ SeqOptElem: AS SimpleTypename
 				}
 			| SEQUENCE NAME_P any_name
 				{
-					/* not documented, only used by pg_dump */
 					$$ = makeDefElem("sequence_name", (Node *) $3, @1);
 				}
 			| START opt_with NumericOnly
@@ -4774,6 +4777,10 @@ SeqOptElem: AS SimpleTypename
 			| RESTART opt_with NumericOnly
 				{
 					$$ = makeDefElem("restart", (Node *) $3, @1);
+				}
+			| UNLOGGED
+				{
+					$$ = makeDefElem("unlogged", NULL, @1);
 				}
 		;
 
@@ -13813,7 +13820,7 @@ xmltable_column_el:
 										 parser_errposition(defel->location)));
 							fc->colexpr = defel->arg;
 						}
-						else if (strcmp(defel->defname, "is_not_null") == 0)
+						else if (strcmp(defel->defname, "__pg__is_not_null") == 0)
 						{
 							if (nullability_seen)
 								ereport(ERROR,
@@ -13856,13 +13863,20 @@ xmltable_column_option_list:
 
 xmltable_column_option_el:
 			IDENT b_expr
-				{ $$ = makeDefElem($1, $2, @1); }
+				{
+					if (strcmp($1, "__pg__is_not_null") == 0)
+						ereport(ERROR,
+								(errcode(ERRCODE_SYNTAX_ERROR),
+								 errmsg("option name \"%s\" cannot be used in XMLTABLE", $1),
+								 parser_errposition(@1)));
+					$$ = makeDefElem($1, $2, @1);
+				}
 			| DEFAULT b_expr
 				{ $$ = makeDefElem("default", $2, @1); }
 			| NOT NULL_P
-				{ $$ = makeDefElem("is_not_null", (Node *) makeBoolean(true), @1); }
+				{ $$ = makeDefElem("__pg__is_not_null", (Node *) makeBoolean(true), @1); }
 			| NULL_P
-				{ $$ = makeDefElem("is_not_null", (Node *) makeBoolean(false), @1); }
+				{ $$ = makeDefElem("__pg__is_not_null", (Node *) makeBoolean(false), @1); }
 		;
 
 xml_namespace_list:

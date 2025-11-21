@@ -1,3 +1,10 @@
+/*
+ * This file has been altered by SplendidData.
+ * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
+ * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
+ */
+
+
 --
 -- SUBSELECT
 --
@@ -13,7 +20,7 @@ SELECT 1 AS zero WHERE 1 IN (SELECT 2);
 SELECT * FROM (SELECT 1 AS x) ss;
 SELECT * FROM ((SELECT 1 AS x)) ss;
 
-SELECT * FROM ((SELECT 1 AS x)), ((SELECT * FROM ((SELECT 2 AS y))));
+-- Deactivated for SplendidDataTest: SELECT * FROM ((SELECT 1 AS x)), ((SELECT * FROM ((SELECT 2 AS y))));
 
 (SELECT 2) UNION SELECT 2;
 ((SELECT 2)) UNION SELECT 2;
@@ -84,15 +91,15 @@ SELECT f1 AS "Correlated Field"
 
 -- Subselects without aliases
 
-SELECT count FROM (SELECT COUNT(DISTINCT name) FROM road);
-SELECT COUNT(*) FROM (SELECT DISTINCT name FROM road);
+-- Deactivated for SplendidDataTest: SELECT count FROM (SELECT COUNT(DISTINCT name) FROM road);
+-- Deactivated for SplendidDataTest: SELECT COUNT(*) FROM (SELECT DISTINCT name FROM road);
 
-SELECT * FROM (SELECT * FROM int4_tbl), (VALUES (123456)) WHERE f1 = column1;
+-- Deactivated for SplendidDataTest: SELECT * FROM (SELECT * FROM int4_tbl), (VALUES (123456)) WHERE f1 = column1;
 
-CREATE VIEW view_unnamed_ss AS
-SELECT * FROM (SELECT * FROM (SELECT abs(f1) AS a1 FROM int4_tbl)),
-              (SELECT * FROM int8_tbl)
-  WHERE a1 < 10 AND q1 > a1 ORDER BY q1, q2;
+-- Deactivated for SplendidDataTest: CREATE VIEW view_unnamed_ss AS
+-- Deactivated for SplendidDataTest: SELECT * FROM (SELECT * FROM (SELECT abs(f1) AS a1 FROM int4_tbl)),
+-- Deactivated for SplendidDataTest:               (SELECT * FROM int8_tbl)
+-- Deactivated for SplendidDataTest:   WHERE a1 < 10 AND q1 > a1 ORDER BY q1, q2;
 
 SELECT * FROM view_unnamed_ss;
 
@@ -102,10 +109,10 @@ DROP VIEW view_unnamed_ss;
 
 -- Test matching of locking clause to correct alias
 
-CREATE VIEW view_unnamed_ss_locking AS
-SELECT * FROM (SELECT * FROM int4_tbl), int8_tbl AS unnamed_subquery
-  WHERE f1 = q1
-  FOR UPDATE OF unnamed_subquery;
+-- Deactivated for SplendidDataTest: CREATE VIEW view_unnamed_ss_locking AS
+-- Deactivated for SplendidDataTest: SELECT * FROM (SELECT * FROM int4_tbl), int8_tbl AS unnamed_subquery
+-- Deactivated for SplendidDataTest:   WHERE f1 = q1
+-- Deactivated for SplendidDataTest:   FOR UPDATE OF unnamed_subquery;
 
 \sv view_unnamed_ss_locking
 
