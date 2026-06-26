@@ -54,8 +54,7 @@ class ParserUtilTest {
         Node stmt = new SelectStmt();
         String xml = ParserUtil.stmtToXml(stmt);
         Assertions.assertEquals(
-                "<ns2:selectStmt all=\"false\" nodeType=\"T_SelectStmt\" class=\"SelectStmt\" xmlns:ns2=\"parser\">\n"
-                        + "    <groupDistinct>false</groupDistinct>\n" + "</ns2:selectStmt>",
+                "<ns2:selectStmt groupDistinct=\"false\" groupByAll=\"false\" all=\"false\" nodeType=\"T_SelectStmt\" class=\"SelectStmt\" xmlns:ns2=\"parser\"/>",
                 xml, "stmtToXml: " + stmt);
     }
 

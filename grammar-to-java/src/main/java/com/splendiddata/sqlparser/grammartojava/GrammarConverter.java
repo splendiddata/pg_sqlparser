@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -40,6 +40,8 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import com.splendiddata.sqlparser.enums.A_Expr_Kind;
+import com.splendiddata.sqlparser.enums.AlterDomainType;
+import com.splendiddata.sqlparser.enums.AlterPropGraphElementKind;
 import com.splendiddata.sqlparser.enums.AlterPublicationAction;
 import com.splendiddata.sqlparser.enums.AlterSubscriptionType;
 import com.splendiddata.sqlparser.enums.AlterTSConfigType;
@@ -55,10 +57,12 @@ import com.splendiddata.sqlparser.enums.DefElemAction;
 import com.splendiddata.sqlparser.enums.DiscardMode;
 import com.splendiddata.sqlparser.enums.DropBehavior;
 import com.splendiddata.sqlparser.enums.FetchDirection;
+import com.splendiddata.sqlparser.enums.FetchDirectionKeywords;
 import com.splendiddata.sqlparser.enums.FkConstrMatch;
 import com.splendiddata.sqlparser.enums.FrameOption;
 import com.splendiddata.sqlparser.enums.GeneratedKind;
 import com.splendiddata.sqlparser.enums.GrantTargetType;
+import com.splendiddata.sqlparser.enums.GraphElementPatternKind;
 import com.splendiddata.sqlparser.enums.GroupingSetKind;
 import com.splendiddata.sqlparser.enums.ImportForeignSchemaType;
 import com.splendiddata.sqlparser.enums.JoinType;
@@ -79,15 +83,18 @@ import com.splendiddata.sqlparser.enums.MergeMatchKind;
 import com.splendiddata.sqlparser.enums.MinMaxOp;
 import com.splendiddata.sqlparser.enums.NodeTag;
 import com.splendiddata.sqlparser.enums.NullTestType;
+import com.splendiddata.sqlparser.enums.NullTreatment;
 import com.splendiddata.sqlparser.enums.ObjectType;
 import com.splendiddata.sqlparser.enums.OnCommitAction;
 import com.splendiddata.sqlparser.enums.OnConflictAction;
 import com.splendiddata.sqlparser.enums.OverridingKind;
 import com.splendiddata.sqlparser.enums.PartitionRangeDatumKind;
 import com.splendiddata.sqlparser.enums.PartitionStrategy;
+import com.splendiddata.sqlparser.enums.PublicationAllObjType;
 import com.splendiddata.sqlparser.enums.PublicationObjSpecType;
 import com.splendiddata.sqlparser.enums.ReindexObjectType;
 import com.splendiddata.sqlparser.enums.RelPersistence;
+import com.splendiddata.sqlparser.enums.RepackCommand;
 import com.splendiddata.sqlparser.enums.ReplicaIdentityType;
 import com.splendiddata.sqlparser.enums.ReturningOptionKind;
 import com.splendiddata.sqlparser.enums.RoleSpecType;
@@ -377,6 +384,11 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                             .replace("%type <retclause> returning_clause", "%type <ReturningClause> returning_clause")
                             .replace("%type <retoptionkind> returning_option_kind",
                                     "%type <ReturningOptionKind> returning_option_kind")
+                            /* Since PPostgres 19 */
+                            .replaceAll("%type <ival>\\s+vertex_or_edge",
+                                    "%type <AlterPropGraphElementKind> vertex_or_edge")
+                            .replace("%type <publicationallobjectspec> PublicationAllObjSpec", "%type <PublicationAllObjSpec> PublicationAllObjSpec")
+                            .replace("%type <ival>	null_treatment opt_window_exclusion_clause", "%type <NullTreatment>	null_treatment\n%type <ival> opt_window_exclusion_clause")
                             /* remaining ival types */
                             .replace("%type <ival>", "%type <Integer>");
                     /*
@@ -699,7 +711,42 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                          * ReturningOptionKind from "enum".
                          */
                         .replaceAll("(\\W)(" + ReturningOptionKind.REPLACEMENT_REGEXP_PART + ")(\\W)",
-                                "$1ReturningOptionKind.$2$3");
+                                "$1ReturningOptionKind.$2$3")
+                        /*
+                         * FetchDirectionKeywords from "enum".
+                         */
+                        .replaceAll("(\\W)(" + FetchDirectionKeywords.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1FetchDirectionKeywords.$2$3")
+                        /*
+                         * AlterPropGraphElementKind from "enum".
+                         */
+                        .replaceAll("(\\W)(" + AlterPropGraphElementKind.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1AlterPropGraphElementKind.$2$3")
+                        /*
+                         * PublicationAllObjType from "enum".
+                         */
+                        .replaceAll("(\\W)(" + PublicationAllObjType.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1PublicationAllObjType.$2$3")
+                        /*
+                         * AlterDomainType from "enum".
+                         */
+                        .replaceAll("(\\W)(" + AlterDomainType.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1AlterDomainType.$2$3")
+                        /*
+                         * RepackCommand from "enum".
+                         */
+                        .replaceAll("(\\W)(" + RepackCommand.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1RepackCommand.$2$3")
+                        /*
+                         * NullTreatment from "enum".
+                         */
+                        .replaceAll("(\\W)(" + NullTreatment.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1NullTreatment.$2$3")
+                        /*
+                         * GraphElementPatternKind from "enum".
+                         */
+                        .replaceAll("(\\W)(" + GraphElementPatternKind.REPLACEMENT_REGEXP_PART + ")(\\W)",
+                                "$1GraphElementPatternKind.$2$3");
                 /*
                  * Replace some constants that are defined in the type that uses them
                  */
@@ -784,8 +831,9 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                         specialBlock = SpecialGrammarBlock.IN_EREPORT;
                         bracketsRemoved = 0;
                     } else if (convertedLine.matches(".*?palloc.*")) {
-                        convertedLine = convertedLine.replaceAll("(\\s*)(\\w*)(\\s*\\*\\s*)(\\w*).*",
-                                "$1$2 $4 = new $2();");
+                        convertedLine = convertedLine
+                                .replaceAll("(\\s*)(\\w*)(\\s*\\*\\s*)(\\w*).*", "$1$2 $4 = new $2();").replaceAll(
+                                        "(\\s*)(\\w+)\\-\\>(\\w+)\\s*=\\s*\\w+\\((\\w+)\\).*", "$1$2.$3 = new $4();");
                         log.debug("changed to: " + convertedLine);
                         out.println(convertedLine);
                         continue;
@@ -795,7 +843,7 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                     /*
                      * Change the c "->" pointer constructs to "."
                      */
-                    convertedLine = convertedLine.replace("->", ".")
+                    convertedLine = convertedLine.replaceAll("(?<!\")->(?!\")", ".")
                             /*
                              * But i->yystack.valueAt(i) is intended to be a closure, so repair that.
                              */
@@ -1010,6 +1058,10 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                  * The processCASbits function is to be removed completely.
                  */
                 return null;
+            case "preprocess_pub_all_objtype_list":
+                convertedLine = epilogFunctionReturnType + ' ' + input.replace("List *all_objects_list", "List<PublicationAllObjSpec> all_objects_list")
+                .replace("List **pubobjects", "AbstractPublicationStmt stmt");
+                break;
             default:
                 convertedLine = epilogFunctionReturnType + ' ' + input;
                 break;
@@ -1098,6 +1150,21 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                         .replace("elog(Severity.ERROR, \"unexpected node type %d\", (int) n->type);",
                                 "ereport(Severity.ERROR, errmsg(\"unexpected node type %d\", n.type));");
                 break;
+            case "preprocess_pub_all_objtype_list":
+                convertedLine = input.replaceAll("^\\s+\\*all_tables = false;", "").replaceAll("^\\s+\\*all_sequences = false;", "")
+                .replace("foreach_ptr(PublicationAllObjSpec, obj, all_objects_list)","for (PublicationAllObjSpec obj : all_objects_list)")
+                .replace("if (*all_tables)", "if (stmt.for_all_tables)").replace("if (*all_sequences)","if (stmt.for_all_sequences)")
+                .replace("*all_tables = true;", "stmt.for_all_tables = true;").replace("*all_sequences = true;", "stmt.for_all_sequences = true;")
+                .replace("*pubobjects = list_concat(*pubobjects, obj->except_tables);", """
+                        if (obj.except_tables != null) {
+                            			if (stmt.pubobjects == null) {
+                               			    stmt.pubobjects = obj.except_tables.clone();
+                               			} else {
+                               				stmt.pubobjects.addAll(obj.except_tables);
+                               			}
+                                    }""");
+System.out.println("preprocess_pub_all_objtype_list: " + convertedLine + "\nfrom: " + input);        
+break;
             default:
                 convertedLine = input;
                 break;

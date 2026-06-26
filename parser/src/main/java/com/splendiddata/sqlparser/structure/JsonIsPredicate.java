@@ -1,9 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2023 - 2024
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
- * This unpublished material is proprietary to Splendid Data Product Development B.V. All rights reserved. The methods
- * and techniques described herein are considered trade secrets and/or confidential. Reproduction or distribution, in
- * whole or in part, is forbidden except by express written permission of Splendid Data Product Development B.V.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -14,6 +20,7 @@ import com.splendiddata.sqlparser.enums.NodeTag;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 /**
  * JsonIsPredicate - representation of IS JSON predicate
@@ -42,6 +49,14 @@ public class JsonIsPredicate extends Node {
     @XmlAttribute
     public boolean unique_keys;
 
+    /**
+     * base type of the subject expression
+     * 
+     * @since 19beta1
+     */
+    @XmlTransient
+    public Oid exprBaseType;
+
     public JsonIsPredicate() {
         super(NodeTag.T_JsonIsPredicate);
     }
@@ -56,8 +71,12 @@ public class JsonIsPredicate extends Node {
         }
         this.item_type = original.item_type;
         this.unique_keys = original.unique_keys;
+        if (original.exprBaseType != null) {
+            this.exprBaseType = original.exprBaseType.clone();
+        }
     }
 
+    @Override
     public JsonIsPredicate clone() {
         JsonIsPredicate clone = (JsonIsPredicate) super.clone();
         if (expr != null) {
@@ -65,6 +84,9 @@ public class JsonIsPredicate extends Node {
         }
         if (format != null) {
             clone.format = format.clone();
+        }
+        if (exprBaseType != null) {
+            clone.exprBaseType = exprBaseType.clone();
         }
         return clone;
     }

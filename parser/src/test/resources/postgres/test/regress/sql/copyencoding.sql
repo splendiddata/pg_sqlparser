@@ -23,6 +23,13 @@ CREATE TABLE copy_encoding_tab (t text);
 COPY (SELECT E'\u3042') TO :'utf8_csv' WITH (FORMAT csv, ENCODING 'UTF8');
 -- Read UTF8 data as LATIN1: no error
 COPY copy_encoding_tab FROM :'utf8_csv' WITH (FORMAT csv, ENCODING 'LATIN1');
+-- Non-server encodings have distinct code paths.
+\set fname :abs_builddir '/results/copyencoding_gb18030.csv'
+COPY (SELECT E'\u3042,') TO :'fname' WITH (FORMAT csv, ENCODING 'GB18030');
+COPY copy_encoding_tab FROM :'fname' WITH (FORMAT csv, ENCODING 'GB18030');
+\set fname :abs_builddir '/results/copyencoding_gb18030.data'
+COPY (SELECT E'\u3042,') TO :'fname' WITH (FORMAT text, ENCODING 'GB18030');
+COPY copy_encoding_tab FROM :'fname' WITH (FORMAT text, ENCODING 'GB18030');
 
 -- Use client_encoding
 SET client_encoding TO UTF8;
@@ -49,5 +56,24 @@ COPY (SELECT E'\u3042') TO :'utf8_csv' WITH (FORMAT csv);
 SET client_encoding TO EUC_JP;
 COPY copy_encoding_tab FROM :'utf8_csv' WITH (FORMAT csv);
 RESET client_encoding;
+
+-- JSON format encoding conversion
+\set json_latin1 :abs_builddir '/results/copyencoding_json_latin1.json'
+COPY (SELECT E'\u00e9' AS c) TO :'json_latin1' WITH (FORMAT json, ENCODING 'LATIN1');
+-- Verify the file contains LATIN1 'é' (single byte 0xe9) and not UTF-8 (0xc3 0xa9).
+-- Done as separate position checks to stay independent of the platform's
+-- end-of-line convention.
+SELECT position('\xe9'::bytea  IN pg_read_binary_file(:'json_latin1')) > 0 AS has_latin1_e9,
+       position('\xc3a9'::bytea IN pg_read_binary_file(:'json_latin1')) > 0 AS has_utf8_e9;
+
+-- Same with implicit encoding inherited from client_encoding (no ENCODING
+-- option).  Covers the case where a client with a non-UTF8 client_encoding
+-- runs COPY ... FORMAT json and would otherwise receive unconverted bytes.
+\set json_implicit :abs_builddir '/results/copyencoding_json_implicit_latin1.json'
+SET client_encoding TO LATIN1;
+COPY (SELECT E'\u00e9' AS c) TO :'json_implicit' WITH (FORMAT json);
+RESET client_encoding;
+SELECT position('\xe9'::bytea  IN pg_read_binary_file(:'json_implicit')) > 0 AS has_latin1_e9,
+       position('\xc3a9'::bytea IN pg_read_binary_file(:'json_implicit')) > 0 AS has_utf8_e9;
 
 DROP TABLE copy_encoding_tab;

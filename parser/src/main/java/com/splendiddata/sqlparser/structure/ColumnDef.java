@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -182,6 +182,11 @@ public class ColumnDef extends Node {
             space = " ";
         }
 
+        if (storage_name != null) {
+            result.append(space).append("storage").append(' ').append(storage_name);
+            space = " ";
+        }
+
         if (compression != null) {
             result.append(space).append("compression ").append(compression);
             space = " ";
@@ -214,11 +219,6 @@ public class ColumnDef extends Node {
 
         if (storage != 0) {
             result.append(space).append(ParserUtil.reportUnknownValue("storage", storage, getClass()));
-            space = " ";
-        }
-
-        if (storage_name != null) {
-            result.append(space).append("storage").append(' ').append(storage_name);
             space = " ";
         }
 

@@ -62,6 +62,8 @@ public enum ObjectType {
     OBJECT_POLICY("policy"),
     /** @since 6.0 - Postgres version 11 */
     OBJECT_PROCEDURE("procedure"),
+    /** @since 19beta1 */
+    OBJECT_PROPGRAPH("property graph"),
     /** @since 5.0 */
     OBJECT_PUBLICATION("publication"),
     OBJECT_ROLE("role"),

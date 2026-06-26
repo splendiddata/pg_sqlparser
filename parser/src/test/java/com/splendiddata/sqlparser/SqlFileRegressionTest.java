@@ -134,7 +134,7 @@ public class SqlFileRegressionTest {
                                 BufferedReader br = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
                             COPY_STMT_FILTER.reset();
                             br.lines().filter(line -> COPY_STMT_FILTER.test(line))
-                                    .map(line -> line.replaceAll("(?i)\\\\crosstabview", "; -- \\crosstabview")
+                                    .map(line -> line.replace("\\gx", ";").replaceAll("(?i)\\\\crosstabview", "; -- \\crosstabview")
                                             .replaceAll("(?i)\\\\gset", "; -- \\gset")
                                             .replaceAll("(?i)\\\\gexec", "; -- \\gexec").replace("\\;", ";")
                                             .replaceAll("([^:\\d]):(['\\w^\\d])", "$1$2").replaceAll("^\\\\", "-- \\\\")

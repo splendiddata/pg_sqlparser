@@ -239,7 +239,12 @@ public class LexConverter extends AbstractMojo implements FileVisitor<Path> {
                             /*
                              * char assignment from long is not allowed unless it is cast to char.
                              */
-                            .replaceAll("char\\s*(\\w*)\\s*=\\s*strtoul", "char $1 = (char)strtoul")
+                            .replaceAll("char\\s+(\\w*)\\s*=\\s*strtoul", "char $1 = (char)strtoul")
+                            /*
+                             * int assignment from long is not allowed unless it is cast to int.
+                             * @since 19beta1
+                             */
+                            .replaceAll("char32_t\\s+(\\w*)\\s*=\\s*strtoul", "int $1 = (int)strtoul")
                             /*
                              * yytext is for Postgres's flex scanner. We use jflex here.
                              */
@@ -383,6 +388,8 @@ public class LexConverter extends AbstractMojo implements FileVisitor<Path> {
                 "  private static final BackslashQuoteType BACKSLASH_QUOTE_OFF = BackslashQuoteType.BACKSLASH_QUOTE_OFF;");
         out.println(
                 "  private static final BackslashQuoteType BACKSLASH_QUOTE_SAFE_ENCODING = BackslashQuoteType.BACKSLASH_QUOTE_SAFE_ENCODING;");
+        out.println("/** @since 19beta1 */");
+        out.println("  private static final int RIGHT_ARROW = ScanKeyword.RIGHT_ARROW.value;");
         out.println();
         out.println("  private core_yyscan_t yyscanner;");
         out.println("%}");

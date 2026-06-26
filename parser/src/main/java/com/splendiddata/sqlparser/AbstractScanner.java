@@ -627,12 +627,38 @@ public abstract class AbstractScanner extends AbstractCProgram implements com.sp
      * copied from /postgresql-9.3.4/src/backend/parser/scan.c
      * </p>
      *
+     * @param c
+     * @return
+     * @since 19beta1
+     */
+    static boolean is_utf16_surrogate_first(long c) {
+        return (c >= 0xD800 && c <= 0xDBFF);
+    }
+
+    /**
+     * <p>
+     * copied from /postgresql-9.3.4/src/backend/parser/scan.c
+     * </p>
+     *
+     * @param c
+     * @return
+     * @since 19beta1
+     */
+    static boolean is_utf16_surrogate_second(long c) {
+        return (c >= 0xDC00 && c <= 0xDFFF);
+    }
+
+    /**
+     * <p>
+     * copied from /postgresql-9.3.4/src/backend/parser/scan.c
+     * </p>
+     *
      * @param first
      * @param second
      * @return
      */
-    static char surrogate_pair_to_codepoint(int first, char second) {
-        return (char) ((((char) first & 0x3FF) << 10) + 0x10000 + (second & 0x3FF));
+    static char surrogate_pair_to_codepoint(int first, int second) {
+        return (char) ((( first & 0x3FF) << 10) + 0x10000 + (second & 0x3FF));
     }
 
     /**
@@ -648,6 +674,22 @@ public abstract class AbstractScanner extends AbstractCProgram implements com.sp
      */
     void addunicode(char c, core_yyscan_t yyscanner) {
         yyextra.literalbuf.append(c);
+    }
+
+    /**
+     * Adds a character to yyextra.literalbuf
+     * <p>
+     * copied from /postgresql-9.3.4/src/backend/parser/scan.c
+     * </p>
+     *
+     * @param c
+     *            The character to add
+     * @param yyscanner
+     *            unused
+     * @since 19beta1
+     */
+    void addunicode(int c, core_yyscan_t yyscanner) {
+        yyextra.literalbuf.append((char) c);
     }
 
     /**

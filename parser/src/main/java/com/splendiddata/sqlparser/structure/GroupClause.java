@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -39,6 +39,12 @@ public class GroupClause implements Cloneable {
     public List<Node> list;
 
     /**
+     * @since 19beta1
+     */
+    @XmlAttribute
+    public boolean all;
+
+    /**
      * Constructor
      */
     public GroupClause() {
@@ -56,6 +62,7 @@ public class GroupClause implements Cloneable {
         if (orig.list != null) {
             this.list = orig.list.clone();
         }
+        this.all=orig.all;
     }
 
     @Override

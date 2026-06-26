@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -14,13 +14,13 @@
 
 package com.splendiddata.sqlparser.structure;
 
-import jakarta.xml.bind.annotation.XmlAttribute;
+import com.splendiddata.sqlparser.ParserUtil;
+import com.splendiddata.sqlparser.enums.NodeTag;
+import com.splendiddata.sqlparser.enums.PublicationObjSpecType;
+
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
-
-import com.splendiddata.sqlparser.ParserUtil;
-import com.splendiddata.sqlparser.enums.NodeTag;
 
 /**
  * Copied from /postgresql-10rc1/src/include/nodes/parsenodes.h
@@ -29,37 +29,17 @@ import com.splendiddata.sqlparser.enums.NodeTag;
  * @since 5.0
  */
 @XmlRootElement(namespace = "parser")
-public class CreatePublicationStmt extends Node {
-    /** Name of of the publication */
-    @XmlAttribute
-    public String pubname;
-
-    /**
-     * List of DefElem nodes
-     */
-    @XmlElementWrapper(name = "options")
-    @XmlElement(name = "option")
-    public List<DefElem> options;
+public class CreatePublicationStmt extends AbstractPublicationStmt {
 
     /**
      * Optional list of tables to add
+     * 
+     * @deprecated since Postgres 15 - is replaced by @{link #pubobjects}
      */
     @XmlElementWrapper(name = "tables")
     @XmlElement(name = "table")
+    @Deprecated(since = "Postgres 15", forRemoval = true)
     public List<RangeVar> tables;
-
-    /**
-     * Optional list of publication objects
-     * 
-     * @since Postgres 15
-     */
-    @XmlElementWrapper(name = "pubobjects")
-    @XmlElement(name = "pubobject")
-    public List<PublicationObjSpec> pubobjects;
-
-    /** Special publication for all tables in db */
-    @XmlAttribute
-    public boolean for_all_tables;
 
     /**
      * Constructor
@@ -76,30 +56,16 @@ public class CreatePublicationStmt extends Node {
      */
     public CreatePublicationStmt(CreatePublicationStmt original) {
         super(original);
-        this.pubname = original.pubname;
-        if (original.options != null) {
-            this.options = original.options.clone();
-        }
         if (original.tables != null) {
             this.tables = original.tables.clone();
         }
-        if (original.pubobjects != null) {
-            this.pubobjects = original.pubobjects.clone();
-        }
-        this.for_all_tables = original.for_all_tables;
     }
 
     @Override
     public CreatePublicationStmt clone() {
         CreatePublicationStmt clone = (CreatePublicationStmt) super.clone();
-        if (options != null) {
-            clone.options = options.clone();
-        }
         if (tables != null) {
             clone.tables = tables.clone();
-        }
-        if (pubobjects != null) {
-            clone.pubobjects = pubobjects.clone();
         }
         return clone;
     }
@@ -110,6 +76,8 @@ public class CreatePublicationStmt extends Node {
                 .append(ParserUtil.identifierToSql(pubname));
         if (for_all_tables) {
             result.append(" for all tables");
+        } else if (for_all_sequences) {
+            result.append(" for all sequences");
         } else if (tables != null && !tables.isEmpty()) {
             String separator = " for table ";
             for (RangeVar table : tables) {
@@ -119,9 +87,17 @@ public class CreatePublicationStmt extends Node {
         }
         if (pubobjects != null && !pubobjects.isEmpty()) {
             String sep = " for ";
+            List<PublicationObjSpec> exclTables = new List<>();
             for (PublicationObjSpec pubObject : pubobjects) {
-                result.append(sep).append(pubObject);
-                sep = ", ";
+                if (PublicationObjSpecType.PUBLICATIONOBJ_EXCEPT_TABLE.equals(pubObject.pubobjtype)) {
+                    exclTables.add(pubObject);
+                } else {
+                    result.append(sep).append(pubObject);
+                    sep = ", ";
+                }
+            }
+            if (!exclTables.isEmpty()) {
+                result.append(" except ").append(exclTables);
             }
         }
         if (options != null && !options.isEmpty()) {

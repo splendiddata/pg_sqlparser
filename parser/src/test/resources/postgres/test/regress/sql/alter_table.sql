@@ -2338,6 +2338,14 @@ ALTER TABLE test_add_column
 \d test_add_column
 ALTER TABLE test_add_column
 	ADD COLUMN IF NOT EXISTS c5 SERIAL CHECK (c5 > 10);
+ALTER TABLE test_add_column
+	ADD c6 integer; -- omit COLUMN
+ALTER TABLE test_add_column
+	ADD IF NOT EXISTS c6 integer;
+ALTER TABLE test_add_column
+	DROP c6; -- omit COLUMN
+ALTER TABLE test_add_column
+	DROP IF EXISTS c6;
 \d test_add_column*
 DROP TABLE test_add_column;
 \d test_add_column*
@@ -2404,8 +2412,12 @@ CREATE TABLE nonpartitioned (
 	a int,
 	b int
 );
-ALTER TABLE partitioned INHERIT nonpartitioned;
-ALTER TABLE nonpartitioned INHERIT partitioned;
+ALTER TABLE partitioned INHERIT nonpartitioned; -- fail
+ALTER TABLE partitioned NO INHERIT nonpartitioned; -- fail
+ALTER TABLE nonpartitioned INHERIT partitioned; -- fail
+CREATE TABLE partitioned_p1 PARTITION OF partitioned FOR VALUES FROM (0, 0) TO (10, 100);
+ALTER TABLE partitioned_p1 INHERIT nonpartitioned; -- fail
+ALTER TABLE partitioned_p1 NO INHERIT nonpartitioned; -- fail
 
 -- cannot add NO INHERIT constraint to partitioned tables
 ALTER TABLE partitioned ADD CONSTRAINT chk_a CHECK (a > 0) NO INHERIT;
@@ -2833,13 +2845,16 @@ DROP TABLE part_rpd;
 -- works fine
 ALTER TABLE range_parted2 DETACH PARTITION part_rp CONCURRENTLY;
 \d+ range_parted2
--- constraint should be created
-\d part_rp
-CREATE TABLE part_rp100 PARTITION OF range_parted2 (CHECK (a>=123 AND a<133 AND a IS NOT NULL)) FOR VALUES FROM (100) to (200);
-ALTER TABLE range_parted2 DETACH PARTITION part_rp100 CONCURRENTLY;
--- redundant constraint should not be created
-\d part_rp100
 DROP TABLE range_parted2;
+
+-- Test that hash partitions continue to work after they're concurrently
+-- detached (bugs #18371, #19070)
+CREATE TABLE hash_parted2 (a int) PARTITION BY HASH(a);
+CREATE TABLE part_hp PARTITION OF hash_parted2 FOR VALUES WITH (MODULUS 2, REMAINDER 0);
+ALTER TABLE hash_parted2 DETACH PARTITION part_hp CONCURRENTLY;
+DROP TABLE hash_parted2;
+INSERT INTO part_hp VALUES (1);
+DROP TABLE part_hp;
 
 -- Check ALTER TABLE commands for partitioned tables and partitions
 

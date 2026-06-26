@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -70,7 +70,16 @@ public class SelectStmt extends Expr {
      * 
      * @since 14.0
      */
+    @XmlAttribute
     public boolean groupDistinct;
+
+    /**
+     * Is this GROUP BY ALL?
+     * 
+     * @since 19beta1
+     */
+    @XmlAttribute
+    public boolean groupByAll;
 
     /** HAVING conditional-expression */
     @XmlElement
@@ -231,6 +240,7 @@ public class SelectStmt extends Expr {
         }
         this.stmt_len = other.stmt_len;
         this.groupDistinct = other.groupDistinct;
+        this.groupByAll = other.groupByAll;
     }
 
     @Override
@@ -360,10 +370,17 @@ public class SelectStmt extends Expr {
             result.append(" where ").append(whereClause);
         }
 
-        if (groupClause != null) {
-            String separator = " group by ";
-            if (groupDistinct) {
-                separator += "distinct ";
+        if (groupClause == null || groupClause.isEmpty()) {
+            if (groupByAll) {
+                result.append(" group by all");
+            }
+        } else {
+            result.append(" group by");
+            String separator = " ";
+            if (groupByAll) {
+                result.append(" all");
+            } else if (groupDistinct) {
+                result.append(" distinct");
             }
             for (Object target : groupClause) {
                 result.append(separator).append(target);

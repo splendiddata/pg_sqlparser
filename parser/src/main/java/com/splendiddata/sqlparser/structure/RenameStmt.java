@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -200,6 +200,9 @@ public class RenameStmt extends Node {
                         .append(ParserUtil.identifierToSql(newname)).toString();
             case OBJECT_POLICY:
                 result.append(' ').append(ParserUtil.identifierToSql(subname)).append(" on ").append(relation);
+                break;
+            case OBJECT_PROPGRAPH:
+                result.append(' ').append(relation);
                 break;
             default:
                 result.append(' ').append(ParserUtil.nameToSql(object));

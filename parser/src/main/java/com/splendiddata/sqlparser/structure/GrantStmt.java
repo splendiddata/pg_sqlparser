@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -160,72 +160,32 @@ public class GrantStmt extends Node {
             if (GrantTargetType.ACL_TARGET_ALL_IN_SCHEMA.equals(targtype)) {
                 result.append("all ");
             }
-            switch (objtype) {
-            case OBJECT_COLUMN:
-                result.append("column");
-                break;
-            case OBJECT_DATABASE:
-                result.append("database");
-                break;
-            case OBJECT_DOMAIN:
-                result.append("domain");
-                break;
-            case OBJECT_FDW:
-                result.append("foreign data wrapper");
-                break;
-            case OBJECT_FOREIGN_SERVER:
-                result.append("foreign server");
-                break;
-            case OBJECT_FUNCTION:
-                result.append("function");
-                break;
-            case OBJECT_LANGUAGE:
-                result.append("language");
-                break;
-            case OBJECT_LARGEOBJECT:
-                result.append("large object");
-                break;
-            case OBJECT_PROCEDURE:
-                result.append("procedure");
-                break;
-            case OBJECT_ROUTINE:
-                result.append("routine");
-                break;
-            case OBJECT_SCHEMA:
-                result.append("schema");
-                break;
-            case OBJECT_TABLE:
-                result.append("table");
-                break;
-            case OBJECT_SEQUENCE:
-                result.append("sequence");
-                break;
-            case OBJECT_TABLESPACE:
-                result.append("tablespace");
-                break;
-            case OBJECT_TYPE:
-                result.append("type");
-                break;
-            default:
-                result.append(" ??????? unknown GrantObjectType ").append(objtype).append(" in ")
-                        .append(getClass().getName()).append(" ???????");
-                break;
-            }
+            result.append(switch (objtype) {
+            case OBJECT_COLUMN -> "column";
+            case OBJECT_DATABASE -> "database";
+            case OBJECT_DOMAIN -> "domain";
+            case OBJECT_FDW -> "foreign data wrapper";
+            case OBJECT_FOREIGN_SERVER -> "foreign server";
+            case OBJECT_FUNCTION -> "function";
+            case OBJECT_LANGUAGE -> "language";
+            case OBJECT_LARGEOBJECT -> "large object";
+            case OBJECT_PROCEDURE -> "procedure";
+            case OBJECT_ROUTINE -> "routine";
+            case OBJECT_SCHEMA -> "schema";
+            case OBJECT_TABLE -> "table";
+            case OBJECT_SEQUENCE -> "sequence";
+            case OBJECT_TABLESPACE -> "tablespace";
+            case OBJECT_TYPE -> "type";
+            case OBJECT_PROPGRAPH -> "property graph";
+            default -> ParserUtil.reportUnknownValue("objtype", objtype, getClass());
+            });
 
-            switch (targtype) {
-            case ACL_TARGET_ALL_IN_SCHEMA:
-                result.append("s in schema");
-                break;
-            case ACL_TARGET_DEFAULTS:
-                result.append("s");
-                break;
-            case ACL_TARGET_OBJECT:
-                break;
-            default:
-                result.append(" ??????? unknown GrantTargetType ").append(targtype).append(" in ")
-                        .append(getClass().getName()).append(" ???????");
-                break;
-            }
+            result.append(switch (targtype) {
+            case ACL_TARGET_ALL_IN_SCHEMA -> "s in schema";
+            case ACL_TARGET_DEFAULTS -> "s";
+            case ACL_TARGET_OBJECT -> "";
+            default -> ParserUtil.reportUnknownValue("targtype", targtype, getClass());
+            });
         }
 
         if (objects != null) {
@@ -259,19 +219,11 @@ public class GrantStmt extends Node {
         }
 
         if (behavior != null) {
-            result.append(' ');
-            switch (behavior) {
-            case DROP_RESTRICT:
-                //                result.append(" restrict");
-                break;
-            case DROP_CASCADE:
-                result.append(" cascade");
-                break;
-            default:
-                result.append(" ??????? unknonw DropBehavior").append(behavior).append(" in ")
-                        .append(getClass().getName()).append(" ???????");
-                break;
-            }
+            result.append(switch (behavior) {
+            case DROP_RESTRICT -> "";
+            case DROP_CASCADE -> " cascade";
+            default -> ParserUtil.reportUnknownValue("behavior", behavior, getClass());
+            });
         }
 
         if (grantor != null) {

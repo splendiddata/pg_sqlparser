@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -760,7 +760,59 @@ public enum NodeTag {
     /**
      * @since Postgres 18
      */
-    T_ReturningOption;
+    T_ReturningOption,
+    /**
+     * @since 19beta1
+     */
+    T_CreatePropGraphStmt,
+    /**
+     * @since 19beta1
+     */
+    T_PropGraphVertex,
+    /**
+     * @since 19beta1
+     */
+    T_PropGraphEdge,
+    /**
+     * @since 19beta1
+     */
+    T_PropGraphLabelAndProperties,
+    /**
+     * @since 19beta1
+     */
+    T_PropGraphProperties,
+    /**
+     * @since 19beta1
+     */
+    T_AlterPropGraphStmt,
+    /**
+     * @since 19beta1
+     */
+    T_PublicationAllObjSpec,
+    /**
+     * @since 19beta1
+     */
+    T_RepackStmt,
+    /**
+     * @since 19beta1
+     */
+    T_ForPortionOfClause,
+    /**
+     * @since 19beta1
+     */
+    T_RangeGraphTable,
+    /**
+     * @since 19beta1
+     */
+    T_GraphPattern,
+    /**
+     * @since 19beta1
+     */
+    T_WaitStmt,
+    /**
+     * @since 19beta1
+     */
+    T_GraphElementPattern;
 
     /**
      * String containing all values with "|" characters between them, that can be used as argument in a regular

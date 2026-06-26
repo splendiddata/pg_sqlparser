@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -76,6 +76,7 @@ public class PublicationObjSpec extends Node {
     public String toString() {
         switch (pubobjtype) {
         case PUBLICATIONOBJ_TABLE:
+        case PUBLICATIONOBJ_EXCEPT_TABLE:
             return pubtable.toString();
         case PUBLICATIONOBJ_TABLES_IN_CUR_SCHEMA:
             return "tables in schema current_schema";
@@ -85,7 +86,7 @@ public class PublicationObjSpec extends Node {
         default:
             break;
         }
-        return new StringBuilder().append(ParserUtil.reportUnknownValue("pubonjtype", pubobjtype.name(), getClass()))
+        return new StringBuilder().append(ParserUtil.reportUnknownValue("pubobjtype", pubobjtype.name(), getClass()))
                 .toString();
     }
 }

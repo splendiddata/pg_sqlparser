@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -120,6 +120,8 @@ public class DropStmt extends Node {
         case OBJECT_TSTEMPLATE:
         case OBJECT_FOREIGN_SERVER:
         case OBJECT_EVENT_TRIGGER:
+        case OBJECT_ACCESS_METHOD:
+        case OBJECT_PROPGRAPH:
             return dropMultipleToString();
         case OBJECT_OPCLASS:
         case OBJECT_OPFAMILY:
@@ -131,8 +133,6 @@ public class DropStmt extends Node {
             return dropPolicyToString();
         case OBJECT_TRANSFORM:
             return dropTransformToString();
-        case OBJECT_ACCESS_METHOD:
-            return dropMultipleToString();
         default:
             return ParserUtil.reportUnknownValue("removeType", removeType, getClass());
         }

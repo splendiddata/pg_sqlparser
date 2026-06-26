@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -48,7 +45,7 @@ public class Node implements Cloneable {
      */
     @XmlAttribute(name = "class")
     private final String className = getClass().getSimpleName();
-    
+
     /**
      * Constructor
      */
@@ -109,7 +106,7 @@ public class Node implements Cloneable {
             throw new AssertionError("com.splendiddata.sqlparser.structure.Node.clone()->failed", e);
         }
     }
-    
+
     /**
      * @return NodeTag the type of node
      */
@@ -123,5 +120,11 @@ public class Node implements Cloneable {
     @XmlAttribute(name = "location")
     private String getLocationString() {
         return location == null ? null : location.toString();
+    }
+
+    @Override
+    public String toString() {
+        return new StringBuilder().append("????? please implement ").append(getClass().getName()).append(".toString()")
+                .toString();
     }
 }

@@ -352,6 +352,14 @@ public class SqlScannerTest {
         checkToken(ScanKeyword.IDENT, scanner.yylex());
         Assertions.assertEquals("C", scanner.getLVal());
         checkToken(ScanKeyword.EOF, scanner.yylex());
+        
+        sql = "a -> b";
+        scanner = new SqlScanner(new StringReader(sql), new core_yyscan_t());
+        checkToken(ScanKeyword.IDENT, scanner.yylex());
+        Assertions.assertEquals("a", scanner.getLVal());
+        checkToken(ScanKeyword.RIGHT_ARROW, scanner.yylex());
+        checkToken(ScanKeyword.IDENT, scanner.yylex());
+        Assertions.assertEquals("b", scanner.getLVal());
     }
 
     @Test

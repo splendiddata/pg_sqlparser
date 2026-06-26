@@ -42,4 +42,7 @@ public class PostgresVersionMagicInteger {
     /** Vesion number 18 */
     public static final int VERSION_EIGHTTEEN = 18;
 
+    /** Vesion number 18 */
+    public static final int VERSION_NINETEEN = 19;
+
 }

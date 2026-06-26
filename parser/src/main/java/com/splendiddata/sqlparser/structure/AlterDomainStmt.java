@@ -20,6 +20,7 @@ import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 import com.splendiddata.sqlparser.ParserUtil;
+import com.splendiddata.sqlparser.enums.AlterDomainType;
 import com.splendiddata.sqlparser.enums.DropBehavior;
 import com.splendiddata.sqlparser.enums.NodeTag;
 
@@ -42,9 +43,11 @@ public class AlterDomainStmt extends Node {
      * <li>V = validate constraint</li>
      * </ul>
      * ------------
+     * 
+     * @since 19beta1 altered from char to AlterDomainType
      */
     @XmlAttribute
-    public char subtype;
+    public AlterDomainType subtype;
 
     /** domain to work on */
     @XmlElementWrapper(name = "typeName")
@@ -113,23 +116,23 @@ public class AlterDomainStmt extends Node {
         result.append("alter domain ").append(ParserUtil.nameToSql(typeName));
 
         switch (subtype) {
-        case 'T':
+        case AD_AlterDefault:
             if (def == null) {
                 result.append(" drop default");
             } else {
                 result.append(" set default ").append(def);
             }
             break;
-        case 'N':
+        case AD_DropNotNull:
             result.append(" drop not null");
             break;
-        case 'O':
+        case AD_SetNotNull:
             result.append(" set not null");
             break;
-        case 'C':
+        case AD_AddConstraint:
             result.append(" add ").append(def);
             break;
-        case 'X':
+        case AD_DropConstraint:
             result.append(" drop constraint");
             if (missing_ok) {
                 result.append(" if exists");
@@ -149,7 +152,7 @@ public class AlterDomainStmt extends Node {
                 }
             }
             break;
-        case 'V':
+        case AD_ValidateConstraint:
             result.append(" validate constraint ").append(ParserUtil.identifierToSql(name));
             break;
         default:

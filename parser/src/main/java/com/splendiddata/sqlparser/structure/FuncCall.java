@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -27,6 +24,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.CoercionForm;
 import com.splendiddata.sqlparser.enums.NodeTag;
+import com.splendiddata.sqlparser.enums.NullTreatment;
 
 /**
  * Copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
@@ -70,6 +68,18 @@ public class FuncCall extends Expr {
     @XmlElement
     public Node agg_filter;
 
+    /** OVER clause, if any */
+    @XmlElement
+    public WindowDef over;
+
+    /**
+     * ignore nulls for window function
+     * 
+     * @since 19beta1
+     */
+    @XmlAttribute
+    public NullTreatment ignore_nulls;
+
     /** ORDER BY appeared in WITHIN GROUP */
     @XmlAttribute
     public boolean agg_within_group;
@@ -86,17 +96,14 @@ public class FuncCall extends Expr {
     @XmlAttribute
     public boolean func_variadic;
 
-    /** OVER clause, if any */
-    @XmlElement
-    public WindowDef over;
-    
     /**
      * how to display this node
+     * 
      * @since 14
      */
     @XmlAttribute
     public CoercionForm funcformat;
-    
+
     /**
      * Constructor
      */
@@ -127,6 +134,7 @@ public class FuncCall extends Expr {
         if (toCopy.over != null) {
             this.over = toCopy.over.clone();
         }
+        this.ignore_nulls = toCopy.ignore_nulls;
         this.agg_within_group = toCopy.agg_within_group;
         this.agg_star = toCopy.agg_star;
         this.agg_distinct = toCopy.agg_distinct;
@@ -197,6 +205,15 @@ public class FuncCall extends Expr {
         }
 
         result.append(")");
+
+        if (ignore_nulls != null) {
+            result.append(switch (ignore_nulls) {
+            case IGNORE_NULLS, PARSER_IGNORE_NULLS -> " ignore nulls";
+            case NO_NULLTREATMENT -> "";
+            case PARSER_RESPECT_NULLS -> " respect nulls";
+            default -> ParserUtil.reportUnknownValue("ignore_nulls", ignore_nulls, this.getClass());
+            });
+        }
 
         if (agg_filter != null) {
             result.append(" filter (where ").append(agg_filter).append(')');

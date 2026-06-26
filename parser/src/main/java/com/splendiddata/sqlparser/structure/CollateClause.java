@@ -30,7 +30,7 @@ import com.splendiddata.sqlparser.ParserUtil;
  * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
-public class CollateClause extends Node {
+public class CollateClause extends Expr {
 
     /** input expression */
     @XmlElement

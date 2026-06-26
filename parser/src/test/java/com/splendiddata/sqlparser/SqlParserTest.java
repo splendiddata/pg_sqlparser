@@ -25,7 +25,10 @@ import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.splendiddata.sqlparser.structure.A_Expr;
 import com.splendiddata.sqlparser.structure.Node;
+import com.splendiddata.sqlparser.structure.ResTarget;
+import com.splendiddata.sqlparser.structure.SelectStmt;
 
 public class SqlParserTest {
     private static final Logger log = LogManager.getLogger(SqlParserTest.class);
@@ -189,6 +192,21 @@ public class SqlParserTest {
         for (Node obj : parser.getResult()) {
             log.debug("parsed sql = " + obj);
             log.trace(ParserUtil.stmtToXml(obj));
+        }
+    }
+
+    @Test
+    void arrow() throws IOException {
+        String sql = "select a -> b";
+        log.debug("source sql = " + sql);
+        SqlParser parser = new SqlParser(new StringReader(sql));
+        Assertions.assertTrue(parser.parse());
+        for (Node selectStmt : parser.getResult()) {
+            log.debug("parsed sql = " + selectStmt);
+            log.trace(ParserUtil.stmtToXml(selectStmt));
+            for (ResTarget target : ((SelectStmt)selectStmt).targetList) {
+                Assertions.assertEquals("\"->\"", ParserUtil.nameListToSql(((A_Expr)target.val).name), "The operator is supposed to be a right arrow ('->')");
+            }
         }
     }
 }

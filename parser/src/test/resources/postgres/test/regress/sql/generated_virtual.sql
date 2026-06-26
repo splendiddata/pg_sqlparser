@@ -225,6 +225,10 @@ COPY gtest1 FROM stdin;
 
 COPY gtest1 (a, b) FROM stdin;
 
+COPY gtest1 FROM stdin WHERE b <> 10;
+
+COPY gtest1 FROM stdin WHERE gtest1 IS NULL;
+
 SELECT * FROM gtest1 ORDER BY a;
 
 TRUNCATE gtest3;
@@ -243,6 +247,9 @@ COPY gtest3 (a, b) FROM stdin;
 
 SELECT * FROM gtest3 ORDER BY a;
 
+-- COPY JSON should exclude generated columns, same as text/CSV
+COPY gtest1 TO stdout WITH (FORMAT json);
+
 -- null values
 CREATE TABLE gtest2 (a int PRIMARY KEY, b int GENERATED ALWAYS AS (NULL) VIRTUAL);
 INSERT INTO gtest2 VALUES (1);
@@ -260,7 +267,7 @@ CREATE TYPE double_int as (a int, b int);
 CREATE TABLE gtest4 (
     a int,
     b double_int GENERATED ALWAYS AS ((a * 2, a * 3)) VIRTUAL
-);
+);  -- fails, user-defined type
 --INSERT INTO gtest4 VALUES (1), (6);
 --SELECT * FROM gtest4;
 
@@ -321,8 +328,13 @@ CREATE TABLE gtest20 (a int PRIMARY KEY, b int GENERATED ALWAYS AS (a * 2) VIRTU
 INSERT INTO gtest20 (a) VALUES (10);  -- ok
 INSERT INTO gtest20 (a) VALUES (30);  -- violates constraint
 
-ALTER TABLE gtest20 ALTER COLUMN b SET EXPRESSION AS (a * 100);  -- violates constraint (currently not supported)
-ALTER TABLE gtest20 ALTER COLUMN b SET EXPRESSION AS (a * 3);  -- ok (currently not supported)
+ALTER TABLE gtest20 ALTER COLUMN b SET EXPRESSION AS (a * 100);  -- violates constraint
+ALTER TABLE gtest20 ALTER COLUMN b SET EXPRESSION AS (a * 3);  -- ok
+-- table rewrite should not happen
+SELECT pg_relation_filenode('gtest20') AS gtest20_filenode \gset
+ALTER TABLE gtest20 ALTER COLUMN b SET EXPRESSION AS (a * 4), ADD COLUMN c INT DEFAULT 11;
+SELECT pg_relation_filenode('gtest20') = :gtest20_filenode AS is_same_file;
+\d gtest20
 
 CREATE TABLE gtest20a (a int PRIMARY KEY, b int GENERATED ALWAYS AS (a * 2) VIRTUAL);
 INSERT INTO gtest20a (a) VALUES (10);
@@ -472,9 +484,6 @@ CREATE TABLE gtest24nn (a int, b gtestdomainnn GENERATED ALWAYS AS (a * 2) VIRTU
 --INSERT INTO gtest24nn (a) VALUES (4);  -- ok
 --INSERT INTO gtest24nn (a) VALUES (NULL);  -- error
 
--- using user-defined type not yet supported
-CREATE TABLE gtest24xxx (a gtestdomain1, b gtestdomain1, c int GENERATED ALWAYS AS (greatest(a, b)) VIRTUAL);  -- error
-
 -- typed tables (currently not supported)
 CREATE TYPE gtest_type AS (f1 integer, f2 text, f3 bigint);
 CREATE TABLE gtest28 OF gtest_type (f1 WITH OPTIONS GENERATED ALWAYS AS (f2 *2) VIRTUAL);
@@ -540,6 +549,13 @@ ALTER TABLE gtest_child ALTER COLUMN f3 SET EXPRESSION AS (f2 * 10);
 \d gtest_child3
 SELECT tableoid::regclass, * FROM gtest_parent ORDER BY 1, 2, 3;
 
+-- check constraint was validated based on each partitions's generation expression
+ALTER TABLE gtest_parent ADD CONSTRAINT cc1 CHECK (f3 < 19); -- error
+ALTER TABLE gtest_parent ADD CONSTRAINT cc1 CHECK (f3 < 66); -- error
+ALTER TABLE gtest_parent ADD CONSTRAINT cc1 CHECK (f3 <> 33); -- error
+ALTER TABLE gtest_parent ADD CONSTRAINT cc CHECK (f3 < 67); -- ok
+ALTER TABLE gtest_parent DROP CONSTRAINT cc;
+
 -- alter generation expression of parent and all its children altogether
 ALTER TABLE gtest_parent ALTER COLUMN f3 SET EXPRESSION AS (f2 * 2);
 \d gtest_parent
@@ -551,7 +567,10 @@ SELECT tableoid::regclass, * FROM gtest_parent ORDER BY 1, 2, 3;
 
 -- generated columns in partition key (not allowed)
 CREATE TABLE gtest_part_key (f1 date NOT NULL, f2 bigint, f3 bigint GENERATED ALWAYS AS (f2 * 2) VIRTUAL) PARTITION BY RANGE (f3);
+CREATE TABLE gtest_part_key (f1 date NOT NULL, f2 bigint, f3 bigint GENERATED ALWAYS AS (f2 * 2) VIRTUAL) PARTITION BY RANGE ((f3));
 CREATE TABLE gtest_part_key (f1 date NOT NULL, f2 bigint, f3 bigint GENERATED ALWAYS AS (f2 * 2) VIRTUAL) PARTITION BY RANGE ((f3 * 3));
+CREATE TABLE gtest_part_key (f1 date NOT NULL, f2 bigint, f3 bigint GENERATED ALWAYS AS (f2 * 2) VIRTUAL) PARTITION BY RANGE ((gtest_part_key));
+CREATE TABLE gtest_part_key (f1 date NOT NULL, f2 bigint, f3 bigint GENERATED ALWAYS AS (f2 * 2) VIRTUAL) PARTITION BY RANGE ((gtest_part_key is not null));
 
 -- ALTER TABLE ... ADD COLUMN
 CREATE TABLE gtest25 (a int PRIMARY KEY);
@@ -803,6 +822,29 @@ CREATE TABLE gtest28b (LIKE gtest28a INCLUDING GENERATED);
 
 \d gtest28*
 
+-- rule actions referring to generated columns:
+-- NEW.b in a rule action should reflect the generated column's new value
+CREATE TABLE gtest_rule (a int, b int GENERATED ALWAYS AS (a * 2) VIRTUAL);
+CREATE TABLE gtest_rule_log (op text, old_b int, new_b int);
+CREATE RULE gtest_rule_upd AS ON UPDATE TO gtest_rule
+  DO ALSO INSERT INTO gtest_rule_log VALUES ('UPD', OLD.b, NEW.b);
+CREATE RULE gtest_rule_ins AS ON INSERT TO gtest_rule
+  DO ALSO INSERT INTO gtest_rule_log VALUES ('INS', NULL, NEW.b);
+INSERT INTO gtest_rule (a) VALUES (1);
+UPDATE gtest_rule SET a = 10;
+UPDATE gtest_rule SET a = (SELECT max(b) FROM gtest_rule);
+SELECT * FROM gtest_rule_log;
+DROP RULE gtest_rule_upd ON gtest_rule;
+DROP RULE gtest_rule_ins ON gtest_rule;
+DROP TABLE gtest_rule_log;
+
+-- rule quals referring to generated columns:
+-- NEW.b in the rule qual should reflect the generated column's new value
+CREATE RULE gtest_rule_qual AS ON UPDATE TO gtest_rule WHERE NEW.b > 100
+  DO INSTEAD NOTHING;
+UPDATE gtest_rule SET a = 100;
+SELECT * FROM gtest_rule;
+DROP TABLE gtest_rule;
 
 -- sanity check of system catalog
 SELECT attrelid, attname, attgenerated FROM pg_attribute WHERE attgenerated NOT IN ('', 's', 'v');
@@ -814,15 +856,19 @@ SELECT attrelid, attname, attgenerated FROM pg_attribute WHERE attgenerated NOT 
 -- these tests are specific to generated_virtual.sql
 --
 
+-- using user-defined type not yet supported
+CREATE TABLE gtest24xxx (a gtestdomain1, b gtestdomain1, c int GENERATED ALWAYS AS (greatest(a, b)) VIRTUAL);  -- error
+
 create table gtest32 (
   a int primary key,
   b int generated always as (a * 2),
   c int generated always as (10 + 10),
-  d int generated always as (coalesce(a, 100)),
-  e int
+  d int generated always as (coalesce(f, 100)),
+  e int,
+  f int
 );
 
-insert into gtest32 values (1), (2);
+insert into gtest32 (a, f) values (1, 1), (2, 2);
 analyze gtest32;
 
 -- Ensure that nullingrel bits are propagated into the generation expressions
@@ -860,11 +906,20 @@ select t2.* from gtest32 t1 left join gtest32 t2 on false;
 select t2.* from gtest32 t1 left join gtest32 t2 on false;
 
 explain (verbose, costs off)
-select * from gtest32 t group by grouping sets (a, b, c, d, e) having c = 20;
-select * from gtest32 t group by grouping sets (a, b, c, d, e) having c = 20;
+select * from gtest32 t group by grouping sets (a, b, c, d, e, f) having c = 20;
+select * from gtest32 t group by grouping sets (a, b, c, d, e, f) having c = 20;
 
 -- Ensure that the virtual generated columns in ALTER COLUMN TYPE USING expression are expanded
 alter table gtest32 alter column e type bigint using b;
+
+-- Ensure that virtual generated column references within SubLinks that should
+-- be transformed into joins can get expanded
+explain (costs off)
+select 1 from gtest32 t1 where exists
+  (select 1 from gtest32 t2 where t1.a > t2.a and t2.b = 2);
+
+select 1 from gtest32 t1 where exists
+  (select 1 from gtest32 t2 where t1.a > t2.a and t2.b = 2);
 
 drop table gtest32;
 
@@ -882,3 +937,43 @@ select * from gtest33 where b is null;
 
 reset constraint_exclusion;
 drop table gtest33;
+
+-- Ensure that EXCLUDED.<virtual-generated-column> in INSERT ... ON CONFLICT
+-- DO UPDATE is expanded to the generation expression, both for plain and
+-- partitioned target relations.
+create table gtest34 (id int primary key, a int,
+                      c int generated always as (a * 10) virtual);
+insert into gtest34 values (1, 5);
+insert into gtest34 values (1, 7)
+    on conflict (id) do update set a = excluded.c returning *;
+insert into gtest34 values (1, 2)
+    on conflict (id) do update set a = gtest34.c + excluded.c returning *;
+insert into gtest34 values (1, 3)
+    on conflict (id) do update set a = 999 where excluded.c > 20 returning *;
+drop table gtest34;
+
+create table gtest34p (id int primary key, a int,
+                       c int generated always as (a * 10) virtual)
+    partition by range (id);
+create table gtest34p_1 partition of gtest34p for values from (1) to (100);
+insert into gtest34p values (1, 5);
+insert into gtest34p values (1, 7)
+    on conflict (id) do update set a = excluded.c returning *;
+insert into gtest34p values (1, 2)
+    on conflict (id) do update set a = gtest34p.c + excluded.c returning *;
+drop table gtest34p;
+
+-- Ensure that virtual generated columns work with WHERE CURRENT OF
+create table gtest_cursor (id int primary key, a int, b int generated always as (a * 2) virtual);
+insert into gtest_cursor values (1, 10), (2, 20), (3, 30);
+
+begin;
+declare curs cursor for select * from gtest_cursor order by id for update;
+fetch 1 from curs;
+update gtest_cursor set a = 99 where current of curs;
+select * from gtest_cursor order by id;
+delete from gtest_cursor where current of curs;
+select * from gtest_cursor order by id;
+commit;
+
+drop table gtest_cursor;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -25,6 +25,12 @@ package com.splendiddata.sqlparser.enums;
 public enum PublicationObjSpecType {
     /** A table */
     PUBLICATIONOBJ_TABLE,
+    /**
+     * A table in the EXCEPT clause
+     * 
+     * @since 19beta1
+     */
+    PUBLICATIONOBJ_EXCEPT_TABLE,
     /** All tables in schema */
     PUBLICATIONOBJ_TABLES_IN_SCHEMA,
     /** All tables in first element of search_path */

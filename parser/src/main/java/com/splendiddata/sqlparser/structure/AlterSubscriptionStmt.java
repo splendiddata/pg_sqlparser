@@ -1,30 +1,27 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
+
+import com.splendiddata.sqlparser.ParserUtil;
+import com.splendiddata.sqlparser.enums.AlterSubscriptionType;
+import com.splendiddata.sqlparser.enums.NodeTag;
 
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
-
-import com.splendiddata.sqlparser.ParserUtil;
-import com.splendiddata.sqlparser.enums.AlterSubscriptionType;
-import com.splendiddata.sqlparser.enums.NodeTag;
 
 /**
  * Copied from /postgresql-10rc1/src/include/nodes/parsenodes.h
@@ -34,6 +31,7 @@ import com.splendiddata.sqlparser.enums.NodeTag;
  */
 @XmlRootElement(namespace = "parser")
 public class AlterSubscriptionStmt extends Node {
+
     /** ALTER_SUBSCRIPTION_OPTIONS, etc */
     @XmlAttribute
     public AlterSubscriptionType kind;
@@ -41,6 +39,14 @@ public class AlterSubscriptionStmt extends Node {
     /** Name of of the subscription */
     @XmlAttribute
     public String subname;
+
+    /**
+     * Server name of publisher
+     * 
+     * @since 19beta1
+     */
+    @XmlAttribute
+    public String servername;
 
     /** Connection string to publisher */
     @XmlAttribute
@@ -73,6 +79,7 @@ public class AlterSubscriptionStmt extends Node {
         super(original);
         this.kind = original.kind;
         this.subname = original.subname;
+        this.servername = original.servername;
         this.conninfo = original.conninfo;
         if (original.publication != null) {
             this.publication = original.publication.clone();
@@ -130,6 +137,7 @@ public class AlterSubscriptionStmt extends Node {
             separator = " with (";
             break;
         case ALTER_SUBSCRIPTION_REFRESH:
+        case ALTER_SUBSCRIPTION_REFRESH_PUBLICATION:
             result.append(" refresh publication");
             separator = " with (";
             break;
@@ -169,6 +177,9 @@ public class AlterSubscriptionStmt extends Node {
         case ALTER_SUBSCRIPTION_SKIP:
             result.append(" skip");
             separator = " (";
+            break;
+        case ALTER_SUBSCRIPTION_SERVER:
+            result.append(separator).append("server ").append(ParserUtil.identifierToSql(servername));
             break;
         default:
             return ParserUtil.reportUnknownValue(AlterSubscriptionType.class.getName(), kind, getClass());

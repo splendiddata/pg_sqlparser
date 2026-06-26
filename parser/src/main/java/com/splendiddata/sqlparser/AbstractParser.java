@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -435,7 +435,7 @@ public class AbstractParser extends AbstractCProgram {
     }
 
     /**
-     * Creates a List and adds the two values
+     * Creates a List and adds the three values
      *
      * @param value1
      * @param value2
@@ -453,7 +453,7 @@ public class AbstractParser extends AbstractCProgram {
     }
 
     /**
-     * Creates a List and adds the two values
+     * Creates a List and adds the four values
      *
      * @param value1
      * @param value2
@@ -473,14 +473,19 @@ public class AbstractParser extends AbstractCProgram {
     }
 
     /**
-     * TODO Please insert some explanation here
+     * Creates a List and adds the two Integer values
      *
-     * @param names2
-     * @return
+     * @param integer1
+     * @param integer2
+     * @return List&lt;Integer&gt; with two Integer values
+     * @since 19beta1
      */
-    @SuppressWarnings("rawtypes")
-    static Object lthird(List names2) {
-        throw new UnsupportedOperationException();
+    static List<Integer> list_make2_int(Integer integer1, Integer integer2) {
+        List<Integer> theList = new List<>();
+        theList.type = NodeTag.T_List;
+        theList.add(integer1);
+        theList.add(integer2);
+        return theList;
     }
 
     /**
@@ -624,6 +629,27 @@ public class AbstractParser extends AbstractCProgram {
     }
 
     /**
+     * Returns the content of the third list cell
+     * <p>
+     * See /postgresql-9.3.4/src/include/nodes/pg_list.h
+     * </p>
+     *
+     * @param <_T>
+     *            the type of list element to return
+     * @param list
+     *            May be null
+     * @return T the content of the second list cell or null if there isn't any
+     * @since 19beta1
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    static <_T extends Object> _T lthird(List list) {
+        if (list == null || list.size() < 3) {
+            return null;
+        }
+        return (_T) list.get(2);
+    }
+
+    /**
      * Extracts the integer value from linitial
      *
      * @param linitial
@@ -724,14 +750,13 @@ public class AbstractParser extends AbstractCProgram {
         constraint.initdeferred = ((cas_bits & PgSqlParser.CAS_INITIALLY_DEFERRED) != 0);
         constraint.skip_validation = ((cas_bits & PgSqlParser.CAS_NOT_VALID) != 0);
         constraint.is_no_inherit = ((cas_bits & PgSqlParser.CAS_NO_INHERIT) != 0);
-        
+
         if ((cas_bits & CAS_NOT_ENFORCED) != 0) {
             constraint.is_enforced = Boolean.FALSE;
             /*
-             * NB: The validated status is irrelevant when the constraint is set to
-             * NOT ENFORCED, but for consistency, it should be set accordingly.
-             * This ensures that if the constraint is later changed to ENFORCED, it
-             * will automatically be in the correct NOT VALIDATED state.
+             * NB: The validated status is irrelevant when the constraint is set to NOT ENFORCED, but for consistency,
+             * it should be set accordingly. This ensures that if the constraint is later changed to ENFORCED, it will
+             * automatically be in the correct NOT VALIDATED state.
              */
             constraint.skip_validation = true;
         }
@@ -767,7 +792,8 @@ public class AbstractParser extends AbstractCProgram {
      *            Not used - leftover from a C implementation
      */
     static void processCASbits(CreateTrigStmt createTriggerStmt, int cas_bits, Location location, String constrType,
-            Boolean deferrable, Boolean initdeferred, Boolean is_enforced, Boolean not_valid, Boolean no_inherit, core_yyscan_t yyscanner) {
+            Boolean deferrable, Boolean initdeferred, Boolean is_enforced, Boolean not_valid, Boolean no_inherit,
+            core_yyscan_t yyscanner) {
         if (log.isTraceEnabled()) {
             log.trace(new StringBuilder("@>processCASbits(createTriggerStmt=").append(createTriggerStmt)
                     .append(", cas_bits=").append(cas_bits).append(", location=").append(location)
@@ -805,7 +831,8 @@ public class AbstractParser extends AbstractCProgram {
      *            Not used - leftover from a C implementation
      */
     static void processCASbits(ATAlterConstraint atAlterConstraint, int cas_bits, Location location, String constrType,
-            Boolean deferrable, Boolean initdeferred, Boolean is_enforced, Boolean not_valid, Boolean no_inherit, core_yyscan_t yyscanner) {
+            Boolean deferrable, Boolean initdeferred, Boolean is_enforced, Boolean not_valid, Boolean no_inherit,
+            core_yyscan_t yyscanner) {
         if (log.isTraceEnabled()) {
             log.trace(new StringBuilder("@>processCASbits(atAlterConstraint=").append(atAlterConstraint)
                     .append(", cas_bits=").append(cas_bits).append(", location=").append(location)
@@ -816,7 +843,7 @@ public class AbstractParser extends AbstractCProgram {
                 & (AbstractParser.CAS_DEFERRABLE | AbstractParser.CAS_INITIALLY_DEFERRED)) != 0);
         atAlterConstraint.initdeferred = ((cas_bits & AbstractParser.CAS_INITIALLY_DEFERRED) != 0);
         atAlterConstraint.noinherit = ((cas_bits & PgSqlParser.CAS_NO_INHERIT) != 0);
-        
+
         if ((cas_bits & CAS_NOT_ENFORCED) != 0) {
             atAlterConstraint.is_enforced = Boolean.FALSE;
         }
@@ -1578,19 +1605,22 @@ public class AbstractParser extends AbstractCProgram {
      *            for the returned JsonIsPredicate
      * @param unique_keys
      *            for the returned JsonIsPredicate
+     * @param exprBaseType
+     *            since 19beta1
      * @param location
      *            from the parser
      * @return JsonIsPredicate with the specified properties
      * @since Postgres 16
      */
     protected JsonIsPredicate makeJsonIsPredicate(Node expr, JsonFormat format, JsonValueType item_type,
-            boolean unique_keys, Location location) {
+            boolean unique_keys, Oid exprBaseType, Location location) {
         JsonIsPredicate n = new JsonIsPredicate();
 
         n.expr = expr;
         n.format = format;
         n.item_type = item_type;
         n.unique_keys = unique_keys;
+        n.exprBaseType = exprBaseType;
         n.location = location;
 
         return n;

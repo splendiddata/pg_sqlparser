@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -18,6 +18,7 @@ import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.AlterPublicationAction;
 import com.splendiddata.sqlparser.enums.DefElemAction;
 import com.splendiddata.sqlparser.enums.NodeTag;
+import com.splendiddata.sqlparser.enums.PublicationObjSpecType;
 
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -31,33 +32,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * @since 5.0
  */
 @XmlRootElement(namespace = "parser")
-public class AlterPublicationStmt extends Node {
-    /** Name of of the publication */
-    @XmlAttribute
-    public String pubname;
-
-    /**
-     * parameters used for ALTER PUBLICATION ... WITH * List of DefElem nodes
-     */
-    @XmlElementWrapper(name = "options")
-    @XmlElement(name = "option")
-    public List<DefElem> options;
-
-    /*
-     * Parameters used for ALTER PUBLICATION ... ADD/DROP/SET publication objects.
-     */
-    /**
-     * Optional list of publication objects
-     * 
-     * @since Postgres 15
-     */
-    @XmlElementWrapper(name = "pubobjects")
-    @XmlElement(name = "pubobject")
-    public List<PublicationObjSpec> pubobjects;
-
-    /** Special publication for all tables in db */
-    @XmlAttribute
-    public boolean for_all_tables;
+public class AlterPublicationStmt extends AbstractPublicationStmt {
 
     /**
      * What action to perform with the given objects
@@ -100,26 +75,12 @@ public class AlterPublicationStmt extends Node {
      */
     public AlterPublicationStmt(AlterPublicationStmt original) {
         super(original);
-        this.pubname = original.pubname;
-        if (original.options != null) {
-            this.options = original.options.clone();
-        }
-        if (original.pubobjects != null) {
-            this.pubobjects = original.pubobjects.clone();
-        }
-        this.for_all_tables = original.for_all_tables;
         this.action = original.action;
     }
 
     @Override
     public AlterPublicationStmt clone() {
         AlterPublicationStmt clone = (AlterPublicationStmt) super.clone();
-        if (options != null) {
-            clone.options = options.clone();
-        }
-        if (pubobjects != null) {
-            clone.pubobjects = pubobjects.clone();
-        }
         return clone;
     }
 
@@ -142,10 +103,26 @@ public class AlterPublicationStmt extends Node {
                 return ParserUtil.reportUnknownValue("action: " + action.name(), this, getClass());
             }
             String separator = " ";
+            if (for_all_tables) {
+                result.append(separator).append("all tables");
+                separator = ", ";
+            }
+            if (for_all_sequences) {
+                result.append(separator).append("all sequences");
+            }
+            separator = " ";
             if (pubobjects != null) {
-                for (Node table : pubobjects) {
-                    result.append(separator).append(table);
-                    separator = ", ";
+                List<PublicationObjSpec> exclTables = new List<>();
+                for (PublicationObjSpec pubObject : pubobjects) {
+                    if (PublicationObjSpecType.PUBLICATIONOBJ_EXCEPT_TABLE.equals(pubObject.pubobjtype)) {
+                        exclTables.add(pubObject);
+                    } else {
+                        result.append(separator).append(pubObject);
+                        separator = ", ";
+                    }
+                }
+                if (!exclTables.isEmpty()) {
+                    result.append(" except ").append(exclTables);
                 }
             }
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -43,6 +43,13 @@ public class PublicationTable extends Node {
     public List<Value> columns;
 
     /**
+     * True if listed in the EXCEPT clause
+     * 
+     * @since 19beta1
+     */
+    public boolean except;
+
+    /**
      * Constructor
      */
     public PublicationTable() {
@@ -66,6 +73,8 @@ public class PublicationTable extends Node {
         if (toCopy.columns != null) {
             this.columns = toCopy.columns.clone();
         }
+        this.except = toCopy.except;
+
     }
 
     @Override
@@ -88,7 +97,7 @@ public class PublicationTable extends Node {
         StringBuilder result = new StringBuilder();
         result.append("table ");
         result.append(relation);
-        if (columns != null && ! columns.isEmpty()) {
+        if (columns != null && !columns.isEmpty()) {
             String sep = "(";
             for (Value column : columns) {
                 result.append(sep).append(column);

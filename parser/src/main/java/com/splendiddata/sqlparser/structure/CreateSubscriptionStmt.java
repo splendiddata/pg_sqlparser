@@ -1,29 +1,26 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
+
+import com.splendiddata.sqlparser.ParserUtil;
+import com.splendiddata.sqlparser.enums.NodeTag;
 
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
-
-import com.splendiddata.sqlparser.ParserUtil;
-import com.splendiddata.sqlparser.enums.NodeTag;
 
 /**
  * Copied from /postgresql-10rc1/src/include/nodes/parsenodes.h
@@ -37,6 +34,14 @@ public class CreateSubscriptionStmt extends Node {
     /** Name of of the subscription */
     @XmlAttribute
     public String subname;
+
+    /**
+     * Server name of publisher
+     * 
+     * @since 19beta1
+     */
+    @XmlAttribute
+    public String servername;
 
     /** Connection string to publisher */
     @XmlAttribute
@@ -68,6 +73,7 @@ public class CreateSubscriptionStmt extends Node {
     public CreateSubscriptionStmt(CreateSubscriptionStmt original) {
         super(original);
         this.subname = original.subname;
+        this.servername = original.servername;
         this.conninfo = original.conninfo;
         if (original.publication != null) {
             this.publication = original.publication.clone();
@@ -91,10 +97,16 @@ public class CreateSubscriptionStmt extends Node {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder("create subscription ").append(ParserUtil.identifierToSql(subname))
-                .append(" connection '").append(conninfo == null ? "null" : conninfo.replace("'", "''"))
-                .append("' publication ");
+        StringBuilder result = new StringBuilder("create subscription ").append(ParserUtil.identifierToSql(subname));
         String separator = "";
+        if (servername == null) {
+            result.append(" connection '").append(conninfo == null ? "null" : conninfo.replace("'", "''"));
+            separator = "'";
+        } else {
+            result.append(" server ").append(servername);
+        }
+        result.append(separator).append(" publication ");
+         separator = "";
         if (publication != null) {
             for (Value publ : publication) {
                 result.append(separator).append(ParserUtil.nameToSql(publ));

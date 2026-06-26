@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -71,6 +71,14 @@ public class UpdateStmt extends Stmt {
     public WithClause withClause;
 
     /**
+     * FOR PORTION OF clause
+     * 
+     * @since 19beta1
+     */
+    @XmlElement
+    public ForPortionOfClause forPortionOf;
+
+    /**
      * Constructor
      */
     public UpdateStmt() {
@@ -106,6 +114,9 @@ public class UpdateStmt extends Stmt {
         if (orig.withClause != null) {
             this.withClause = orig.withClause.clone();
         }
+        if (orig.forPortionOf != null) {
+            this.forPortionOf = orig.forPortionOf.clone();
+        }
     }
 
     @Override
@@ -132,6 +143,9 @@ public class UpdateStmt extends Stmt {
         if (withClause != null) {
             clone.withClause = withClause.clone();
         }
+        if (forPortionOf != null) {
+            clone.forPortionOf = forPortionOf.clone();
+        }
         return clone;
     }
 
@@ -142,9 +156,10 @@ public class UpdateStmt extends Stmt {
         if (withClause != null) {
             result.append(withClause).append(' ');
         }
-
-        result.append("update ").append(relation);
-
+        result.append("update ");
+        if (relation != null) {
+            result.append(relation.toString(forPortionOf));
+        }
         /*
          * Walk through the target list. MultipleAssigment lists will be (re)combined.
          */

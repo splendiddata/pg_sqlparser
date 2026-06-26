@@ -1,28 +1,24 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
 
-import jakarta.xml.bind.annotation.XmlAnyElement;
+import com.splendiddata.sqlparser.enums.NodeTag;
+
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
-
-import com.splendiddata.sqlparser.enums.NodeTag;
 
 /**
  * Copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
@@ -45,26 +41,35 @@ public class DeleteStmt extends Stmt {
     @XmlElement
     public Node whereClause;
 
-    /** list of expressions to return 
-    * 
-    * @deprecated since Postgres 18: Use {@link #returningClause} instead
-    */
-   @Deprecated(since = "Postgres 18", forRemoval = true)
-   @XmlElementWrapper(name = "returninglist")
-   @XmlElement(name = "returning")
-   public List<ResTarget> returningList;
+    /**
+     * list of expressions to return
+     * 
+     * @deprecated since Postgres 18: Use {@link #returningClause} instead
+     */
+    @Deprecated(since = "Postgres 18", forRemoval = true)
+    @XmlElementWrapper(name = "returninglist")
+    @XmlElement(name = "returning")
+    public List<ResTarget> returningList;
 
-   /**
-    * RETURNING clause
-    * @since Postgres 18
-    */
-   @XmlElement
-   public ReturningClause returningClause;
-   
-   
+    /**
+     * RETURNING clause
+     * 
+     * @since Postgres 18
+     */
+    @XmlElement
+    public ReturningClause returningClause;
+
     /** WITH clause */
     @XmlElement
     public WithClause withClause;
+
+    /**
+     * FOR PORTION OF clause
+     * 
+     * @since 19beta1
+     */
+    @XmlElement
+    public ForPortionOfClause forPortionOf;
 
     /**
      * Constructor
@@ -99,6 +104,9 @@ public class DeleteStmt extends Stmt {
         if (orig.withClause != null) {
             this.withClause = orig.withClause.clone();
         }
+        if (orig.forPortionOf != null) {
+            this.forPortionOf = orig.forPortionOf.clone();
+        }
     }
 
     @Override
@@ -122,6 +130,9 @@ public class DeleteStmt extends Stmt {
         if (withClause != null) {
             clone.withClause = withClause.clone();
         }
+        if (forPortionOf != null) {
+            clone.forPortionOf = forPortionOf.clone();
+        }
         return clone;
     }
 
@@ -133,7 +144,10 @@ public class DeleteStmt extends Stmt {
             result.append(withClause).append(' ');
         }
 
-        result.append("delete from ").append(relation);
+        result.append("delete");
+        if (relation != null) {
+            result.append(" from ").append(relation.toString(forPortionOf));
+        }
 
         if (usingClause != null) {
             String separator = " using ";

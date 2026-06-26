@@ -19,6 +19,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.FetchDirection;
+import com.splendiddata.sqlparser.enums.FetchDirectionKeywords;
 import com.splendiddata.sqlparser.enums.NodeTag;
 
 /**
@@ -45,6 +46,15 @@ public class FetchStmt extends Node {
     public boolean ismove;
 
     /**
+     * Set when a direction_keyword (e.g., FETCH FORWARD) is used, to distinguish it from a numeric variant (e.g., FETCH
+     * 1) for the purpose of query jumbling.
+     * 
+     * @since 19beta1
+     */
+    @XmlAttribute
+    public FetchDirectionKeywords direction_keyword;
+
+    /**
      * Constructor
      */
     public FetchStmt() {
@@ -63,6 +73,7 @@ public class FetchStmt extends Node {
         this.howMany = original.howMany;
         this.portalname = original.portalname;
         this.ismove = original.ismove;
+        this.direction_keyword = original.direction_keyword;
     }
 
     @Override

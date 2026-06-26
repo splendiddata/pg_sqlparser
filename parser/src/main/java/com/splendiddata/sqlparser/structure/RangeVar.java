@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -91,14 +91,56 @@ public class RangeVar extends Node {
         }
     }
 
+    /**
+     * To be used in " normal" statements, that do not have anything to do with a {@link ForPortionOfClause} object.
+     * 
+     * @see com.splendiddata.sqlparser.structure.Node#toString()
+     *
+     * @return String the qualified name and, if present, the alias
+     */
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
+        StringBuilder result = toStringPartOne();
 
+        if (alias != null) {
+            result.append(" as ").append(alias);
+        }
+        return result.toString();
+    }
+
+    /**
+     * If a FOR PORTION OF clause is present in a statement, then that clause must be injected between the definition of
+     * the RangeVar and the alias of the RangeVar (if any).
+     *
+     * @param forPortionOf
+     *            The ForPortionOfClause to string between the table and its alias. May be null, in which case just the
+     *            string representation of the relation and its alias (if any) is returned.
+     * @return String The qualified name followed (if present) by a for portion of clause, followed (if present) by the
+     *         alias.
+     * @since 19beta1
+     */
+    public String toString(ForPortionOfClause forPortionOf) {
+        StringBuilder result = toStringPartOne();
+        if (forPortionOf != null) {
+            result.append(" ").append(forPortionOf);
+        }
+        if (alias != null) {
+            result.append(" as ").append(alias);
+        }
+        return result.toString();
+    }
+
+    /**
+     * Creates a StringBuilder and strings the (qualified) relation name into it, but not the alias (if any).
+     *
+     * @return StringBuilder with the relation name
+     * @since 19beta1
+     */
+    private StringBuilder toStringPartOne() {
+        StringBuilder result = new StringBuilder();
         if (Boolean.FALSE.equals(inh)) {
             result.append("only ");
         }
-
         String separator = "";
         if (catalogname != null) {
             result.append(ParserUtil.identifierToSql(catalogname));
@@ -111,11 +153,7 @@ public class RangeVar extends Node {
         if (relname != null) {
             result.append(separator).append(ParserUtil.identifierToSql(relname));
         }
-
-        if (alias != null) {
-            result.append(" as ").append(alias);
-        }
-        return result.toString();
+        return result;
     }
 
     @Override

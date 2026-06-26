@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
- * This program is free software: You may redistribute and/or modify under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at Client's option) any
- * later version.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -23,6 +20,7 @@ import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 import com.splendiddata.sqlparser.ParserUtil;
+import com.splendiddata.sqlparser.enums.LockClauseStrength;
 import com.splendiddata.sqlparser.enums.NodeTag;
 import com.splendiddata.sqlparser.enums.OnConflictAction;
 
@@ -47,6 +45,14 @@ public class OnConflictClause extends Node {
     /** Optional index inference clause */
     @XmlElement
     public InferClause infer;
+
+    /**
+     * lock strength for DO SELECT
+     * 
+     * @since 19beta1
+     */
+    @XmlAttribute
+    public LockClauseStrength lockStrength;
 
     /** the target list (of ResTarget) */
     @XmlElementWrapper(name = "targetList")
@@ -76,6 +82,7 @@ public class OnConflictClause extends Node {
         if (orig.infer != null) {
             this.infer = orig.infer.clone();
         }
+        this.lockStrength = orig.lockStrength;
         if (orig.targetList != null) {
             this.targetList = orig.targetList.clone();
         }
@@ -103,7 +110,7 @@ public class OnConflictClause extends Node {
     public String toString() {
         StringBuilder result = new StringBuilder();
         String separator = "";
-        
+
         switch (action) {
         case ONCONFLICT_NONE:
             break;
@@ -124,6 +131,35 @@ public class OnConflictClause extends Node {
             result.append(separator).append("do update set ");
             separator = "";
             break;
+        case ONCONFLICT_SELECT:
+            result.append("on conflict ");
+            if (infer != null) {
+                result.append(infer);
+                separator = " ";
+            }
+            result.append(separator).append("do select");
+            if (lockStrength != null) {
+                switch (lockStrength) {
+                case LCS_NONE:
+                    break;
+                case LCS_FORKEYSHARE:
+                    result.append(" for key share");
+                    break;
+                case LCS_FORSHARE:
+                    result.append(" for share");
+                    break;
+                case LCS_FORNOKEYUPDATE:
+                    result.append(" for no key update");
+                    break;
+                case LCS_FORUPDATE:
+                    result.append(" for update");
+                    break;
+                default:
+                    result.append(ParserUtil.reportUnknownValue(lockStrength.getClass().getName(), lockStrength,
+                            this.getClass()));
+                    break;
+                }
+            }
         default:
             break;
 

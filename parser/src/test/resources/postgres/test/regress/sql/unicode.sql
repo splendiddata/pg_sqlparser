@@ -1,11 +1,3 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for syntax checking, not for the testing of a commandline paser.
- * So some statements that are expected to fail are removed.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
-
-
 SELECT getdatabaseencoding() <> 'UTF8' AS skip_test \gset
 \if :skip_test
 \quit
@@ -25,7 +17,7 @@ SELECT normalize(U&'\00E4\24D1c', NFD) = U&'\0061\0308\24D1c' COLLATE "C" AS tes
 SELECT normalize(U&'\0061\0308\24D1c', NFKC) = U&'\00E4bc' COLLATE "C" AS test_nfkc;
 SELECT normalize(U&'\00E4\24D1c', NFKD) = U&'\0061\0308bc' COLLATE "C" AS test_nfkd;
 
--- Deactivated for SplendidDataTest: SELECT "normalize"('abc', 'def');  -- run-time error
+SELECT "normalize"('abc', 'def');  -- run-time error
 
 SELECT U&'\00E4\24D1c' IS NORMALIZED AS test_default;
 SELECT U&'\00E4\24D1c' IS NFC NORMALIZED AS test_nfc;

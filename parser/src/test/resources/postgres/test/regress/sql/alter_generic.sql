@@ -1,3 +1,12 @@
+/*
+ * This file has been altered by SplendidData.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So input for the copy statements is removed.
+ * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
+ */
+
+
+
 --
 -- Test for ALTER some_object {RENAME TO, OWNER TO, SET SCHEMA}
 --
@@ -8,10 +17,10 @@
 
 \set regresslib :libdir '/regress' :dlsuffix
 
-CREATE FUNCTION test_opclass_options_func(internal)
-    RETURNS void
-    AS :'regresslib', 'test_opclass_options_func'
-    LANGUAGE C;
+-- Deactivated for SplendidDataTest: CREATE FUNCTION test_opclass_options_func(internal)
+-- Deactivated for SplendidDataTest:     RETURNS void
+-- Deactivated for SplendidDataTest:     AS :'regresslib', 'test_opclass_options_func'
+-- Deactivated for SplendidDataTest:     LANGUAGE C;
 
 -- Clean up in case a prior regression run failed
 SET client_min_messages TO 'warning';
@@ -458,6 +467,40 @@ ALTER OPERATOR FAMILY alt_opf19 USING btree ADD FUNCTION 5 (int4, int2) btint42c
 ALTER OPERATOR FAMILY alt_opf19 USING btree ADD FUNCTION 5 (int4) test_opclass_options_func(internal); -- Ok
 ALTER OPERATOR FAMILY alt_opf19 USING btree DROP FUNCTION 5 (int4, int4);
 DROP OPERATOR FAMILY alt_opf19 USING btree;
+
+--
+-- Property Graph
+--
+SET SESSION AUTHORIZATION regress_alter_generic_user1;
+CREATE PROPERTY GRAPH alt_graph1;
+CREATE PROPERTY GRAPH alt_graph2;
+CREATE PROPERTY GRAPH alt_graph3;
+
+ALTER PROPERTY GRAPH alt_graph1 RENAME TO alt_graph2; -- failed (name conflict)
+ALTER PROPERTY GRAPH alt_graph1 RENAME TO alt_graph4; -- OK
+ALTER PROPERTY GRAPH alt_graph2 OWNER TO regress_alter_generic_user2;  -- failed (no role membership)
+ALTER PROPERTY GRAPH alt_graph2 OWNER TO regress_alter_generic_user3;  -- OK
+ALTER PROPERTY GRAPH alt_graph4 SET SCHEMA alt_nsp2;  -- OK
+ALTER PROPERTY GRAPH alt_nsp2.alt_graph4 RENAME TO alt_graph2;  -- OK
+ALTER PROPERTY GRAPH alt_graph2 SET SCHEMA alt_nsp2;  -- failed (name conflict)
+
+SET SESSION AUTHORIZATION regress_alter_generic_user2;
+CREATE PROPERTY GRAPH alt_graph5;
+
+ALTER PROPERTY GRAPH alt_graph3 RENAME TO alt_graph5;  -- failed (not owner)
+ALTER PROPERTY GRAPH alt_graph5 RENAME TO alt_graph6;  -- OK
+ALTER PROPERTY GRAPH alt_graph3 OWNER TO regress_alter_generic_user2;  -- failed (not owner)
+ALTER PROPERTY GRAPH alt_graph6 OWNER TO regress_alter_generic_user3;  -- failed (no role membership)
+ALTER PROPERTY GRAPH alt_graph3 SET SCHEMA alt_nsp2;  -- failed (not owner)
+
+RESET SESSION AUTHORIZATION;
+
+SELECT nspname, relname, rolname
+  FROM pg_class c, pg_namespace n, pg_authid a
+  WHERE c.relnamespace = n.oid AND c.relowner = a.oid
+    AND n.nspname in ('alt_nsp1', 'alt_nsp2')
+    AND c.relkind = 'g'
+  ORDER BY nspname, relname;
 
 --
 -- Statistics
