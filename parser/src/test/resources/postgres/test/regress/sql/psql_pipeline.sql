@@ -1,10 +1,9 @@
 /*
- * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
-
-
+ * This file is completely commented out as it is there to test psql pipelines.
+ * It hardly has added value for testing sql.
+ *
+ *
+ 
 --
 -- Tests using psql pipelining
 --
@@ -13,7 +12,7 @@ CREATE TABLE psql_pipeline(a INTEGER PRIMARY KEY, s TEXT);
 
 -- Single query
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 'val1' \sendpipeline
+SELECT $1 \bind 'val1' \sendpipeline
 \endpipeline
 \startpipeline
 SELECT 'val1';
@@ -21,9 +20,9 @@ SELECT 'val1';
 
 -- Multiple queries
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 'val1' \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1, $2 \bind 'val2' 'val3' \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1, $2 \bind 'val2' 'val3' \sendpipeline
+SELECT $1 \bind 'val1' \sendpipeline
+SELECT $1, $2 \bind 'val2' 'val3' \sendpipeline
+SELECT $1, $2 \bind 'val2' 'val3' \sendpipeline
 SELECT 'val4';
 SELECT 'val5', 'val6';
 \endpipeline
@@ -38,10 +37,10 @@ SELECT 1; SELECT 2; SELECT 3
 -- Test \flush
 \startpipeline
 \flush
--- Deactivated for SplendidDataTest: SELECT $1 \bind 'val1' \sendpipeline
+SELECT $1 \bind 'val1' \sendpipeline
 \flush
--- Deactivated for SplendidDataTest: SELECT $1, $2 \bind 'val2' 'val3' \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1, $2 \bind 'val2' 'val3' \sendpipeline
+SELECT $1, $2 \bind 'val2' 'val3' \sendpipeline
+SELECT $1, $2 \bind 'val2' 'val3' \sendpipeline
 \flush
 SELECT 'val4';
 SELECT 'val5', 'val6';
@@ -52,12 +51,12 @@ SELECT 'val5', 'val6';
 \echo :PIPELINE_COMMAND_COUNT
 \echo :PIPELINE_SYNC_COUNT
 \echo :PIPELINE_RESULT_COUNT
--- Deactivated for SplendidDataTest: SELECT $1 \bind 'val1' \sendpipeline
+SELECT $1 \bind 'val1' \sendpipeline
 \syncpipeline
 \syncpipeline
--- Deactivated for SplendidDataTest: SELECT $1, $2 \bind 'val2' 'val3' \sendpipeline
+SELECT $1, $2 \bind 'val2' 'val3' \sendpipeline
 \syncpipeline
--- Deactivated for SplendidDataTest: SELECT $1, $2 \bind 'val4' 'val5' \sendpipeline
+SELECT $1, $2 \bind 'val4' 'val5' \sendpipeline
 \echo :PIPELINE_COMMAND_COUNT
 \echo :PIPELINE_SYNC_COUNT
 \echo :PIPELINE_RESULT_COUNT
@@ -75,7 +74,7 @@ SELECT 'val9';
 -- Query terminated with a semicolon replaces an unnamed prepared
 -- statement.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \parse ''
+SELECT $1 \parse ''
 SELECT 1;
 \bind_named ''
 \endpipeline
@@ -83,7 +82,7 @@ SELECT 1;
 -- Extended query is appended to pipeline by a semicolon after a
 -- newline.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1
+SELECT $1 \bind 1
 ;
 SELECT 2;
 \endpipeline
@@ -91,48 +90,48 @@ SELECT 2;
 -- \startpipeline should not have any effect if already in a pipeline.
 \startpipeline
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 'val1' \sendpipeline
+SELECT $1 \bind 'val1' \sendpipeline
 \endpipeline
 
 -- Convert an implicit transaction block to an explicit transaction block.
 \startpipeline
--- Deactivated for SplendidDataTest: INSERT INTO psql_pipeline VALUES ($1) \bind 1 \sendpipeline
--- Deactivated for SplendidDataTest: BEGIN \bind \sendpipeline
--- Deactivated for SplendidDataTest: INSERT INTO psql_pipeline VALUES ($1) \bind 2 \sendpipeline
--- Deactivated for SplendidDataTest: ROLLBACK \bind \sendpipeline
+INSERT INTO psql_pipeline VALUES ($1) \bind 1 \sendpipeline
+BEGIN \bind \sendpipeline
+INSERT INTO psql_pipeline VALUES ($1) \bind 2 \sendpipeline
+ROLLBACK \bind \sendpipeline
 \endpipeline
 
 -- Multiple explicit transactions
 \startpipeline
--- Deactivated for SplendidDataTest: BEGIN \bind \sendpipeline
--- Deactivated for SplendidDataTest: INSERT INTO psql_pipeline VALUES ($1) \bind 1 \sendpipeline
--- Deactivated for SplendidDataTest: ROLLBACK \bind \sendpipeline
--- Deactivated for SplendidDataTest: BEGIN \bind \sendpipeline
--- Deactivated for SplendidDataTest: INSERT INTO psql_pipeline VALUES ($1) \bind 1 \sendpipeline
--- Deactivated for SplendidDataTest: COMMIT \bind \sendpipeline
+BEGIN \bind \sendpipeline
+INSERT INTO psql_pipeline VALUES ($1) \bind 1 \sendpipeline
+ROLLBACK \bind \sendpipeline
+BEGIN \bind \sendpipeline
+INSERT INTO psql_pipeline VALUES ($1) \bind 1 \sendpipeline
+COMMIT \bind \sendpipeline
 \endpipeline
 
 -- Use \parse and \bind_named
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \parse ''
--- Deactivated for SplendidDataTest: SELECT $1, $2 \parse ''
--- Deactivated for SplendidDataTest: SELECT $2 \parse pipeline_1
--- Deactivated for SplendidDataTest: \bind_named '' 1 2 \sendpipeline
--- Deactivated for SplendidDataTest: \bind_named pipeline_1 2 \sendpipeline
+SELECT $1 \parse ''
+SELECT $1, $2 \parse ''
+SELECT $2 \parse pipeline_1
+\bind_named '' 1 2 \sendpipeline
+\bind_named pipeline_1 2 \sendpipeline
 \endpipeline
 
 -- \getresults displays all results preceding a \flushrequest.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 2 \sendpipeline
+SELECT $1 \bind 1 \sendpipeline
+SELECT $1 \bind 2 \sendpipeline
 \flushrequest
 \getresults
 \endpipeline
 
 -- \getresults displays all results preceding a \syncpipeline.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 2 \sendpipeline
+SELECT $1 \bind 1 \sendpipeline
+SELECT $1 \bind 2 \sendpipeline
 \syncpipeline
 \getresults
 \endpipeline
@@ -140,7 +139,7 @@ SELECT 2;
 -- \getresults immediately returns if there is no result to fetch.
 \startpipeline
 \getresults
--- Deactivated for SplendidDataTest: SELECT $1 \bind 2 \sendpipeline
+SELECT $1 \bind 2 \sendpipeline
 \getresults
 \flushrequest
 \endpipeline
@@ -148,42 +147,42 @@ SELECT 2;
 
 -- \getresults only fetches results preceding a \flushrequest.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 2 \sendpipeline
+SELECT $1 \bind 2 \sendpipeline
 \flushrequest
--- Deactivated for SplendidDataTest: SELECT $1 \bind 2 \sendpipeline
+SELECT $1 \bind 2 \sendpipeline
 \getresults
 \endpipeline
 
 -- \getresults only fetches results preceding a \syncpipeline.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 2 \sendpipeline
+SELECT $1 \bind 2 \sendpipeline
 \syncpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 2 \sendpipeline
+SELECT $1 \bind 2 \sendpipeline
 \getresults
 \endpipeline
 
 -- Use pipeline with chunked results for both \getresults and \endpipeline.
 \startpipeline
 \set FETCH_COUNT 10
--- Deactivated for SplendidDataTest: SELECT $1 \bind 2 \sendpipeline
+SELECT $1 \bind 2 \sendpipeline
 \flushrequest
 \getresults
--- Deactivated for SplendidDataTest: SELECT $1 \bind 2 \sendpipeline
+SELECT $1 \bind 2 \sendpipeline
 \endpipeline
 \unset FETCH_COUNT
 
 -- \getresults with specific number of requested results.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 2 \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 3 \sendpipeline
+SELECT $1 \bind 1 \sendpipeline
+SELECT $1 \bind 2 \sendpipeline
+SELECT $1 \bind 3 \sendpipeline
 \echo :PIPELINE_SYNC_COUNT
 \syncpipeline
 \echo :PIPELINE_SYNC_COUNT
 \echo :PIPELINE_RESULT_COUNT
 \getresults 1
 \echo :PIPELINE_RESULT_COUNT
--- Deactivated for SplendidDataTest: SELECT $1 \bind 4 \sendpipeline
+SELECT $1 \bind 4 \sendpipeline
 \getresults 3
 \echo :PIPELINE_RESULT_COUNT
 \endpipeline
@@ -192,7 +191,7 @@ SELECT 2;
 \startpipeline
 \syncpipeline
 \syncpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
+SELECT $1 \bind 1 \sendpipeline
 \flushrequest
 \getresults 2
 \getresults 1
@@ -200,9 +199,9 @@ SELECT 2;
 
 -- \getresults 0 should get all the results.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 2 \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 3 \sendpipeline
+SELECT $1 \bind 1 \sendpipeline
+SELECT $1 \bind 2 \sendpipeline
+SELECT $1 \bind 3 \sendpipeline
 \syncpipeline
 \getresults 0
 \endpipeline
@@ -217,16 +216,16 @@ SELECT 2;
 -- After an aborted pipeline, commands after a \syncpipeline should be
 -- displayed.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind \sendpipeline
+SELECT $1 \bind \sendpipeline
 \syncpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
+SELECT $1 \bind 1 \sendpipeline
 \endpipeline
 
 -- For an incorrect number of parameters, the pipeline is aborted and
 -- the following queries will not be executed.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT \bind 'val1' \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 'val1' \sendpipeline
+SELECT \bind 'val1' \sendpipeline
+SELECT $1 \bind 'val1' \sendpipeline
 \endpipeline
 
 -- Using a semicolon with a parameter triggers an error and aborts
@@ -239,29 +238,29 @@ SELECT 1;
 -- An explicit transaction with an error needs to be rollbacked after
 -- the pipeline.
 \startpipeline
--- Deactivated for SplendidDataTest: BEGIN \bind \sendpipeline
--- Deactivated for SplendidDataTest: INSERT INTO psql_pipeline VALUES ($1) \bind 1 \sendpipeline
--- Deactivated for SplendidDataTest: ROLLBACK \bind \sendpipeline
+BEGIN \bind \sendpipeline
+INSERT INTO psql_pipeline VALUES ($1) \bind 1 \sendpipeline
+ROLLBACK \bind \sendpipeline
 \endpipeline
 ROLLBACK;
 
 -- \watch is not allowed in a pipeline.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT \bind \sendpipeline
+SELECT \bind \sendpipeline
 \watch 1
 \endpipeline
 
 -- \gdesc should fail as synchronous commands are not allowed in a pipeline,
 -- and the pipeline should still be usable.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \gdesc
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
+SELECT $1 \bind 1 \gdesc
+SELECT $1 \bind 1 \sendpipeline
 \endpipeline
 
 -- \gset is not allowed in a pipeline, pipeline should still be usable.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 as i, $2 as j \parse ''
--- Deactivated for SplendidDataTest: SELECT $1 as k, $2 as l \parse 'second'
+SELECT $1 as i, $2 as j \parse ''
+SELECT $1 as k, $2 as l \parse 'second'
 \bind_named '' 1 2 \gset
 \bind_named second 1 2 \gset pref02_ \echo :pref02_i :pref02_j
 \bind_named '' 1 2 \sendpipeline
@@ -269,63 +268,63 @@ ROLLBACK;
 
 -- \g and \gx are not allowed, pipeline should still be usable.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \g
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \g (format=unaligned tuples_only=on)
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \gx
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \gx (format=unaligned tuples_only=on)
+SELECT $1 \bind 1 \g
+SELECT $1 \bind 1 \g (format=unaligned tuples_only=on)
+SELECT $1 \bind 1 \gx
+SELECT $1 \bind 1 \gx (format=unaligned tuples_only=on)
 \reset
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
+SELECT $1 \bind 1 \sendpipeline
 \endpipeline
 
 -- \g and \gx warnings should be emitted in an aborted pipeline, with
 -- pipeline still usable.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind \sendpipeline
+SELECT $1 \bind \sendpipeline
 \flushrequest
 \getresults
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \g
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \gx
+SELECT $1 \bind 1 \g
+SELECT $1 \bind 1 \gx
 \endpipeline
 
 -- \sendpipeline is not allowed outside of a pipeline
 \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
+SELECT $1 \bind 1 \sendpipeline
 \reset
 
 -- \sendpipeline is not allowed if not preceded by \bind or \bind_named
 \startpipeline
 \sendpipeline
--- Deactivated for SplendidDataTest: SELECT 1 \sendpipeline
+SELECT 1 \sendpipeline
 \endpipeline
 
 -- \gexec is not allowed, pipeline should still be usable.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT 'INSERT INTO psql_pipeline(a) SELECT generate_series(1, 10)' \parse 'insert_stmt'
+SELECT 'INSERT INTO psql_pipeline(a) SELECT generate_series(1, 10)' \parse 'insert_stmt'
 \bind_named insert_stmt \gexec
 \bind_named insert_stmt \sendpipeline
--- Deactivated for SplendidDataTest: SELECT COUNT(*) FROM psql_pipeline \bind \sendpipeline
+SELECT COUNT(*) FROM psql_pipeline \bind \sendpipeline
 \endpipeline
 
 -- After an error, pipeline is aborted and requires \syncpipeline to be
 -- reusable.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \parse a
+SELECT $1 \bind \sendpipeline
+SELECT $1 \bind 1 \sendpipeline
+SELECT $1 \parse a
 \bind_named a 1 \sendpipeline
 \close_prepared a
 \flushrequest
 \getresults
 -- Pipeline is aborted.
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \parse a
+SELECT $1 \bind 1 \sendpipeline
+SELECT $1 \parse a
 \bind_named a 1 \sendpipeline
 \close_prepared a
 -- Sync allows pipeline to recover.
 \syncpipeline
 \getresults
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \parse a
+SELECT $1 \bind 1 \sendpipeline
+SELECT $1 \parse a
 \bind_named a 1 \sendpipeline
 \close_prepared a
 \flushrequest
@@ -334,9 +333,9 @@ ROLLBACK;
 
 -- In an aborted pipeline, \getresults 1 aborts commands one at a time.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \parse a
+SELECT $1 \bind \sendpipeline
+SELECT $1 \bind 1 \sendpipeline
+SELECT $1 \parse a
 \bind_named a 1 \sendpipeline
 \syncpipeline
 \getresults 1
@@ -349,10 +348,10 @@ ROLLBACK;
 -- Test chunked results with an aborted pipeline.
 \startpipeline
 \set FETCH_COUNT 10
--- Deactivated for SplendidDataTest: SELECT $1 \bind \sendpipeline
+SELECT $1 \bind \sendpipeline
 \flushrequest
 \getresults
--- Deactivated for SplendidDataTest: SELECT $1 \bind \sendpipeline
+SELECT $1 \bind \sendpipeline
 \endpipeline
 \unset FETCH_COUNT
 
@@ -368,7 +367,7 @@ select 1;
 
 -- Error messages accumulate and are repeated.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT 1 \bind \sendpipeline
+SELECT 1 \bind \sendpipeline
 \gdesc
 \gdesc
 \endpipeline
@@ -383,67 +382,134 @@ select 1;
 -- commit the implicit transaction block. The first command after a
 -- sync will not be seen as belonging to a pipeline.
 \startpipeline
--- Deactivated for SplendidDataTest: SET LOCAL statement_timeout='1h' \bind \sendpipeline
--- Deactivated for SplendidDataTest: SHOW statement_timeout \bind \sendpipeline
+SET LOCAL statement_timeout='1h' \bind \sendpipeline
+SHOW statement_timeout \bind \sendpipeline
 \syncpipeline
--- Deactivated for SplendidDataTest: SHOW statement_timeout \bind \sendpipeline
--- Deactivated for SplendidDataTest: SET LOCAL statement_timeout='2h' \bind \sendpipeline
--- Deactivated for SplendidDataTest: SHOW statement_timeout \bind \sendpipeline
+SHOW statement_timeout \bind \sendpipeline
+SET LOCAL statement_timeout='2h' \bind \sendpipeline
+SHOW statement_timeout \bind \sendpipeline
 \endpipeline
 
 -- REINDEX CONCURRENTLY fails if not the first command in a pipeline.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
--- Deactivated for SplendidDataTest: REINDEX TABLE CONCURRENTLY psql_pipeline \bind \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 2 \sendpipeline
+SELECT $1 \bind 1 \sendpipeline
+REINDEX TABLE CONCURRENTLY psql_pipeline \bind \sendpipeline
+SELECT $1 \bind 2 \sendpipeline
 \endpipeline
 
 -- REINDEX CONCURRENTLY works if it is the first command in a pipeline.
 \startpipeline
--- Deactivated for SplendidDataTest: REINDEX TABLE CONCURRENTLY psql_pipeline \bind \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 2 \sendpipeline
+REINDEX TABLE CONCURRENTLY psql_pipeline \bind \sendpipeline
+SELECT $1 \bind 2 \sendpipeline
 \endpipeline
 
 -- Subtransactions are not allowed in a pipeline.
 \startpipeline
--- Deactivated for SplendidDataTest: SAVEPOINT a \bind \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
--- Deactivated for SplendidDataTest: ROLLBACK TO SAVEPOINT a \bind \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 2 \sendpipeline
+SAVEPOINT a \bind \sendpipeline
+SELECT $1 \bind 1 \sendpipeline
+ROLLBACK TO SAVEPOINT a \bind \sendpipeline
+SELECT $1 \bind 2 \sendpipeline
 \endpipeline
 
 -- LOCK fails as the first command in a pipeline, as not seen in an
 -- implicit transaction block.
 \startpipeline
--- Deactivated for SplendidDataTest: LOCK psql_pipeline \bind \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 2 \sendpipeline
+LOCK psql_pipeline \bind \sendpipeline
+SELECT $1 \bind 2 \sendpipeline
 \endpipeline
 
 -- LOCK succeeds as it is not the first command in a pipeline,
 -- seen in an implicit transaction block.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 1 \sendpipeline
--- Deactivated for SplendidDataTest: LOCK psql_pipeline \bind \sendpipeline
--- Deactivated for SplendidDataTest: SELECT $1 \bind 2 \sendpipeline
+SELECT $1 \bind 1 \sendpipeline
+LOCK psql_pipeline \bind \sendpipeline
+SELECT $1 \bind 2 \sendpipeline
 \endpipeline
 
 -- VACUUM works as the first command in a pipeline.
 \startpipeline
--- Deactivated for SplendidDataTest: VACUUM psql_pipeline \bind \sendpipeline
+VACUUM psql_pipeline \bind \sendpipeline
 \endpipeline
 
 -- VACUUM fails when not the first command in a pipeline.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT 1 \bind \sendpipeline
--- Deactivated for SplendidDataTest: VACUUM psql_pipeline \bind \sendpipeline
+SELECT 1 \bind \sendpipeline
+VACUUM psql_pipeline \bind \sendpipeline
 \endpipeline
 
 -- VACUUM works after a \syncpipeline.
 \startpipeline
--- Deactivated for SplendidDataTest: SELECT 1 \bind \sendpipeline
+SELECT 1 \bind \sendpipeline
 \syncpipeline
--- Deactivated for SplendidDataTest: VACUUM psql_pipeline \bind \sendpipeline
+VACUUM psql_pipeline \bind \sendpipeline
 \endpipeline
+
+-- Deferred constraint violation at commit time in a pipeline.
+CREATE TABLE psql_pipeline_defer (a INTEGER PRIMARY KEY DEFERRABLE INITIALLY DEFERRED);
+\startpipeline
+INSERT INTO psql_pipeline_defer VALUES ($1), ($1) RETURNING * \bind 1 \sendpipeline
+\endpipeline
+
+-- Same with \syncpipeline and commands after the failing sync.
+\startpipeline
+INSERT INTO psql_pipeline_defer VALUES ($1), ($1) \bind 1 \sendpipeline
+\syncpipeline
+SELECT $1 \bind 'after_sync_1' \sendpipeline
+\endpipeline
+
+-- More patterns with more \syncpipeline, more commands and \getresults
+\startpipeline
+INSERT INTO psql_pipeline_defer VALUES ($1), ($1) \bind 1 \sendpipeline
+INSERT INTO psql_pipeline_defer VALUES ($1), ($1) \bind 1 \sendpipeline
+\syncpipeline
+SELECT $1 \bind 'after_sync_1' \sendpipeline
+\getresults
+SELECT $1 \bind 'after_sync_2' \sendpipeline
+\endpipeline
+\startpipeline
+INSERT INTO psql_pipeline_defer VALUES ($1), ($1) \bind 1 \sendpipeline
+INSERT INTO psql_pipeline_defer VALUES ($1), ($1) \bind 1 \sendpipeline
+\syncpipeline
+\getresults
+SELECT $1 \bind 'after_sync_1' \sendpipeline
+\getresults
+SELECT $1 \bind 'after_sync_2' \sendpipeline
+INSERT INTO psql_pipeline_defer VALUES ($1), ($1) \bind 1 \sendpipeline
+INSERT INTO psql_pipeline_defer VALUES ($1), ($1) \bind 1 \sendpipeline
+SELECT $1 \bind 'after_sync_3' \sendpipeline
+SELECT $1 \bind 'after_sync_4' \sendpipeline
+SELECT $1 \bind 'after_sync_5' \sendpipeline
+\endpipeline
+
+-- Deferred error combined with a regular command error after the sync.
+\startpipeline
+INSERT INTO psql_pipeline_defer VALUES ($1), ($1) \bind 1 \sendpipeline
+\syncpipeline
+SELECT $1 \bind \sendpipeline
+SELECT $1 \bind 'after_error' \sendpipeline
+\endpipeline
+
+-- Empty sync segment followed by a deferred error.
+\startpipeline
+\syncpipeline
+INSERT INTO psql_pipeline_defer VALUES ($1), ($1) \bind 1 \sendpipeline
+\endpipeline
+
+-- Deferred error with \getresults reading results one at a time.
+\startpipeline
+INSERT INTO psql_pipeline_defer VALUES ($1), ($1) \bind 1 \sendpipeline
+SELECT $1 \bind 'partial' \sendpipeline
+\syncpipeline
+\getresults 1
+\getresults 1
+\getresults
+\endpipeline
+
+DROP TABLE psql_pipeline_defer;
 
 -- Clean up
 DROP TABLE psql_pipeline;
+
+*
+*/
+select 1;
