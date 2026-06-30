@@ -1,10 +1,8 @@
 /*
- * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
- 
- 
+ * This file is completely commented out as it is there to test psql.
+ * It hardly has added value for testing sql.
+ *
+ *
  
 
 --
@@ -32,41 +30,41 @@
 
 -- \g and \gx
 
--- Deactivated for SplendidDataTest: SELECT 1 as one, 2 as two \g
--- Deactivated for SplendidDataTest: \gx
--- Deactivated for SplendidDataTest: SELECT 3 as three, 4 as four \gx
--- Deactivated for SplendidDataTest: \g
+SELECT 1 as one, 2 as two \g
+\gx
+SELECT 3 as three, 4 as four \gx
+\g
 
 -- \gx should work in FETCH_COUNT mode too
 \set FETCH_COUNT 1
 
--- Deactivated for SplendidDataTest: SELECT 1 as one, 2 as two \g
--- Deactivated for SplendidDataTest: \gx
--- Deactivated for SplendidDataTest: SELECT 3 as three, 4 as four \gx
--- Deactivated for SplendidDataTest: \g
+SELECT 1 as one, 2 as two \g
+\gx
+SELECT 3 as three, 4 as four \gx
+\g
 
 \unset FETCH_COUNT
 
 -- \g/\gx with pset options
 
--- Deactivated for SplendidDataTest: SELECT 1 as one, 2 as two \g (format=csv csv_fieldsep='\t')
--- Deactivated for SplendidDataTest: \g
--- Deactivated for SplendidDataTest: SELECT 1 as one, 2 as two \gx (title='foo bar')
--- Deactivated for SplendidDataTest: \g
+SELECT 1 as one, 2 as two \g (format=csv csv_fieldsep='\t')
+\g
+SELECT 1 as one, 2 as two \gx (title='foo bar')
+\g
 
 -- \bind (extended query protocol)
 
--- Deactivated for SplendidDataTest: SELECT 1 \bind \g
--- Deactivated for SplendidDataTest: SELECT $1 \bind 'foo' \g
--- Deactivated for SplendidDataTest: SELECT $1, $2 \bind 'foo' 'bar' \g
+SELECT 1 \bind \g
+SELECT $1 \bind 'foo' \g
+SELECT $1, $2 \bind 'foo' 'bar' \g
 
 -- errors
 -- parse error
--- Deactivated for SplendidDataTest: SELECT foo \bind \g
+SELECT foo \bind \g
 -- tcop error
--- Deactivated for SplendidDataTest: SELECT 1 \; SELECT 2 \bind \g
+SELECT 1 \; SELECT 2 \bind \g
 -- bind error
--- Deactivated for SplendidDataTest: SELECT $1, $2 \bind 'foo' \g
+SELECT $1, $2 \bind 'foo' \g
 
 -- \gset
 
@@ -85,7 +83,7 @@ select 97 as "EOF", 'ok' as _foo \gset IGNORE
 select 1 as x, 2 as y \gset pref01_ \\ \echo :pref01_x
 select 3 as x, 4 as y \gset pref01_ \echo :pref01_x \echo :pref01_y
 select 5 as x, 6 as y \gset pref01_ \\ \g \echo :pref01_x :pref01_y
--- Deactivated for SplendidDataTest: select 7 as x, 8 as y \g \gset pref01_ \echo :pref01_x :pref01_y
+select 7 as x, 8 as y \g \gset pref01_ \echo :pref01_x :pref01_y
 
 -- NULL should unset the variable
 \set var2 xyz
@@ -97,7 +95,7 @@ select 10 as test01, 20 as test02 from generate_series(1,3) \gset
 select 10 as test01, 20 as test02 from generate_series(1,0) \gset
 
 -- \gset returns no tuples
--- Deactivated for SplendidDataTest: select a from generate_series(1, 10) as a where a = 11 \gset
+select a from generate_series(1, 10) as a where a = 11 \gset
 \echo :ROW_COUNT
 
 -- \gset should work in FETCH_COUNT mode too
@@ -112,44 +110,44 @@ select 10 as test01, 20 as test02 from generate_series(1,0) \gset
 
 -- \gdesc
 
--- Deactivated for SplendidDataTest: SELECT
--- Deactivated for SplendidDataTest:     NULL AS zero,
--- Deactivated for SplendidDataTest:     1 AS one,
--- Deactivated for SplendidDataTest:     2.0 AS two,
--- Deactivated for SplendidDataTest:     'three' AS three,
--- Deactivated for SplendidDataTest:     $1 AS four,
--- Deactivated for SplendidDataTest:     sin($2) as five,
--- Deactivated for SplendidDataTest:     'foo'::varchar(4) as six,
--- Deactivated for SplendidDataTest:     CURRENT_DATE AS now
+SELECT
+    NULL AS zero,
+    1 AS one,
+    2.0 AS two,
+    'three' AS three,
+    $1 AS four,
+    sin($2) as five,
+    'foo'::varchar(4) as six,
+    CURRENT_DATE AS now
 \gdesc
 
 -- should work with tuple-returning utilities, such as EXECUTE
--- Deactivated for SplendidDataTest: PREPARE test AS SELECT 1 AS first, 2 AS second;
--- Deactivated for SplendidDataTest: EXECUTE test \gdesc
--- Deactivated for SplendidDataTest: EXPLAIN EXECUTE test \gdesc
+PREPARE test AS SELECT 1 AS first, 2 AS second;
+EXECUTE test \gdesc
+EXPLAIN EXECUTE test \gdesc
 
 -- should fail cleanly - syntax error
--- Deactivated for SplendidDataTest: SELECT 1 + \gdesc
+SELECT 1 + \gdesc
 
 -- check behavior with empty results
--- Deactivated for SplendidDataTest: SELECT \gdesc
--- Deactivated for SplendidDataTest: CREATE TABLE bububu(a int) \gdesc
+SELECT \gdesc
+CREATE TABLE bububu(a int) \gdesc
 
 -- subject command should not have executed
--- Deactivated for SplendidDataTest: TABLE bububu;  -- fail
+TABLE bububu;  -- fail
 
 -- query buffer should remain unchanged
--- Deactivated for SplendidDataTest: SELECT 1 AS x, 'Hello', 2 AS y, true AS "dirty\name"
+SELECT 1 AS x, 'Hello', 2 AS y, true AS "dirty\name"
 \gdesc
 \g
 
 -- all on one line
--- Deactivated for SplendidDataTest: SELECT 3 AS x, 'Hello', 4 AS y, true AS "dirty\name" \gdesc \g
+SELECT 3 AS x, 'Hello', 4 AS y, true AS "dirty\name" \gdesc \g
 
 -- test for server bug #17983 with empty statement in aborted transaction
 set search_path = default;
 begin;
--- Deactivated for SplendidDataTest: bogus;
+bogus;
 ;
 \gdesc
 rollback;
@@ -157,22 +155,22 @@ rollback;
 -- \gexec
 
 create temporary table gexec_test(a int, b text, c date, d float);
--- Deactivated for SplendidDataTest: select format('create index on gexec_test(%I)', attname)
--- Deactivated for SplendidDataTest: from pg_attribute
--- Deactivated for SplendidDataTest: where attrelid = 'gexec_test'::regclass and attnum > 0
--- Deactivated for SplendidDataTest: rder by attnum
+select format('create index on gexec_test(%I)', attname)
+from pg_attribute
+where attrelid = 'gexec_test'::regclass and attnum > 0
+order by attnum
 \gexec
 
 -- \gexec should work in FETCH_COUNT mode too
 -- (though the fetch limit applies to the executed queries not the meta query)
 \set FETCH_COUNT 1
 
--- Deactivated for SplendidDataTest: select 'select 1 as ones', 'select x.y, x.y*2 as double from generate_series(1,4) as x(y)'
--- Deactivated for SplendidDataTest: union all
--- Deactivated for SplendidDataTest: select 'drop table gexec_test', NULL
--- Deactivated for SplendidDataTest: union all
--- Deactivated for SplendidDataTest: select 'drop table gexec_test', 'select ''2000-01-01''::date as party_over'
--- Deactivated for SplendidDataTest: \gexec
+select 'select 1 as ones', 'select x.y, x.y*2 as double from generate_series(1,4) as x(y)'
+union all
+select 'drop table gexec_test', NULL
+union all
+select 'drop table gexec_test', 'select ''2000-01-01''::date as party_over'
+\gexec
 
 \unset FETCH_COUNT
 
@@ -193,10 +191,10 @@ create temporary table gexec_test(a int, b text, c date, d float);
 
 -- test multi-line headers, wrapping, and newline indicators
 -- in aligned, unaligned, and wrapped formats
--- Deactivated for SplendidDataTest: prepare q as select array_to_string(array_agg(repeat('x',2*n)),E'\n') as "ab
+prepare q as select array_to_string(array_agg(repeat('x',2*n)),E'\n') as "ab
 
--- Deactivated for SplendidDataTest: c", array_to_string(array_agg(repeat('y',20-2*n)),E'\n') as "a
--- Deactivated for SplendidDataTest: bc" from generate_series(1,10) as n(n) group by n>1 order by n>1;
+c", array_to_string(array_agg(repeat('y',20-2*n)),E'\n') as "a
+bc" from generate_series(1,10) as n(n) group by n>1 order by n>1;
 
 \pset linestyle ascii
 
@@ -205,54 +203,54 @@ create temporary table gexec_test(a int, b text, c date, d float);
 
 \pset border 0
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 2
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset expanded on
 \pset columns 20
 
 \pset border 0
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 2
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset linestyle old-ascii
 
@@ -261,54 +259,54 @@ create temporary table gexec_test(a int, b text, c date, d float);
 
 \pset border 0
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 2
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset expanded on
 \pset columns 20
 
 \pset border 0
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 2
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 deallocate q;
 
@@ -322,81 +320,81 @@ prepare q as select repeat('x',2*n) as "0123456789abcdef", repeat('y',20-2*n) as
 
 \pset border 0
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 2
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset expanded on
 \pset columns 30
 
 \pset border 0
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 2
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset expanded on
 \pset columns 20
 
 \pset border 0
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 2
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset linestyle old-ascii
 
@@ -405,55 +403,66 @@ prepare q as select repeat('x',2*n) as "0123456789abcdef", repeat('y',20-2*n) as
 
 \pset border 0
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 2
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset expanded on
 
 \pset border 0
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 2
 \pset format unaligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format aligned
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset format wrapped
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 deallocate q;
+
+-- expanded output with short-width columns
+\pset border 2
+\pset expanded on
+create table psql_short_tab(a int, b int);
+insert into psql_short_tab values(10,20),(30,40);
+\pset format aligned
+select * from psql_short_tab;
+\pset format wrapped
+select * from psql_short_tab;
+drop table psql_short_tab;
 
 \pset linestyle ascii
 \pset border 1
@@ -571,23 +580,23 @@ prepare q as
 
 \pset expanded off
 \pset border 0
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 2
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset expanded on
 \pset border 0
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 2
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 deallocate q;
 
@@ -613,10 +622,10 @@ prepare q as
   from generate_series(1,2) as n;
 
 \pset expanded off
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset expanded on
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 deallocate q;
 
@@ -662,24 +671,24 @@ prepare q as
 
 \pset expanded off
 \pset border 0
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset tableattr foobar
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset tableattr
 
 \pset expanded on
 \pset border 0
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset tableattr foobar
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset tableattr
 
 deallocate q;
@@ -707,29 +716,29 @@ prepare q as
 
 \pset expanded off
 \pset border 0
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 2
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 3
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset expanded on
 \pset border 0
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 2
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 3
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 deallocate q;
 
@@ -756,36 +765,36 @@ prepare q as
 
 \pset expanded off
 \pset border 0
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 2
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 3
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset tableattr lr
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset tableattr
 
 \pset expanded on
 \pset border 0
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 2
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 3
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset tableattr lr
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 \pset tableattr
 
 deallocate q;
@@ -813,25 +822,25 @@ prepare q as
 
 \pset expanded off
 \pset border 0
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 2
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset expanded on
 \pset border 0
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 1
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
 \pset border 2
--- Deactivated for SplendidDataTest: execute q;
+execute q;
 
--- Deactivated for SplendidDataTest: deallocate q;
+deallocate q;
 
 -- check ambiguous format requests
 
@@ -868,8 +877,8 @@ drop table psql_serial_tab;
   select 'okay';
   select 'still okay';
 \else
--- Deactivated for SplendidDataTest:   not okay;
--- Deactivated for SplendidDataTest:   still not okay
+  not okay;
+  still not okay
 \endif
 
 -- at this point query buffer should still have last valid line
@@ -877,80 +886,80 @@ drop table psql_serial_tab;
 
 -- \if should work okay on part of a query
 select
--- Deactivated for SplendidDataTest:   \if true
--- Deactivated for SplendidDataTest:     42
--- Deactivated for SplendidDataTest:   \else
--- Deactivated for SplendidDataTest:     (bogus
--- Deactivated for SplendidDataTest:   \endif
+  \if true
+    42
+  \else
+    (bogus
+  \endif
   forty_two;
 
--- Deactivated for SplendidDataTest: select \if false \\ (bogus \else \\ 42 \endif \\ forty_two;
+select \if false \\ (bogus \else \\ 42 \endif \\ forty_two;
 
 -- test a large nested if using a variety of true-equivalents
--- Deactivated for SplendidDataTest: \if true
--- Deactivated for SplendidDataTest: 	\if 1
--- Deactivated for SplendidDataTest: 		\if yes
--- Deactivated for SplendidDataTest: 			\if on
--- Deactivated for SplendidDataTest: 				\echo 'all true'
--- Deactivated for SplendidDataTest: 			\else
--- Deactivated for SplendidDataTest: 				\echo 'should not print #1-1'
--- Deactivated for SplendidDataTest: 			\endif
--- Deactivated for SplendidDataTest: 		\else
--- Deactivated for SplendidDataTest: 			\echo 'should not print #1-2'
--- Deactivated for SplendidDataTest: 		\endif
--- Deactivated for SplendidDataTest: -- Deactivated for SplendidDataTest: 	\else
--- Deactivated for SplendidDataTest: 		\echo 'should not print #1-3'
--- Deactivated for SplendidDataTest: 	\endif
--- Deactivated for SplendidDataTest: \else
--- Deactivated for SplendidDataTest: 	\echo 'should not print #1-4'
--- Deactivated for SplendidDataTest: \endif
+\if true
+	\if 1
+		\if yes
+			\if on
+				\echo 'all true'
+			\else
+				\echo 'should not print #1-1'
+			\endif
+		\else
+			\echo 'should not print #1-2'
+		\endif
+	\else
+		\echo 'should not print #1-3'
+	\endif
+\else
+	\echo 'should not print #1-4'
+\endif
 
 -- test a variety of false-equivalents in an if/elif/else structure
--- Deactivated for SplendidDataTest: \if false
--- Deactivated for SplendidDataTest: 	\echo 'should not print #2-1'
--- Deactivated for SplendidDataTest: \elif 0
--- Deactivated for SplendidDataTest: 	\echo 'should not print #2-2'
--- Deactivated for SplendidDataTest: \elif no
--- Deactivated for SplendidDataTest: 	\echo 'should not print #2-3'
--- Deactivated for SplendidDataTest: \elif off
--- Deactivated for SplendidDataTest: 	\echo 'should not print #2-4'
--- Deactivated for SplendidDataTest: \else
--- Deactivated for SplendidDataTest: 	\echo 'all false'
--- Deactivated for SplendidDataTest: \endif
+\if false
+	\echo 'should not print #2-1'
+\elif 0
+	\echo 'should not print #2-2'
+\elif no
+	\echo 'should not print #2-3'
+\elif off
+	\echo 'should not print #2-4'
+\else
+	\echo 'all false'
+\endif
 
 -- test true-false elif after initial true branch
--- Deactivated for SplendidDataTest: \if true
--- Deactivated for SplendidDataTest: 	\echo 'should print #2-5'
--- Deactivated for SplendidDataTest: \elif true
--- Deactivated for SplendidDataTest: 	\echo 'should not print #2-6'
--- Deactivated for SplendidDataTest: \elif false
--- Deactivated for SplendidDataTest: 	\echo 'should not print #2-7'
--- Deactivated for SplendidDataTest: \else
--- Deactivated for SplendidDataTest: 	\echo 'should not print #2-8'
--- Deactivated for SplendidDataTest: \endif
+\if true
+	\echo 'should print #2-5'
+\elif true
+	\echo 'should not print #2-6'
+\elif false
+	\echo 'should not print #2-7'
+\else
+	\echo 'should not print #2-8'
+\endif
 
 -- test simple true-then-else
--- Deactivated for SplendidDataTest: \if true
--- Deactivated for SplendidDataTest: 	\echo 'first thing true'
--- Deactivated for SplendidDataTest: \else
--- Deactivated for SplendidDataTest: 	\echo 'should not print #3-1'
--- Deactivated for SplendidDataTest: \endif
+\if true
+	\echo 'first thing true'
+\else
+	\echo 'should not print #3-1'
+\endif
 
 -- test simple false-true-else
--- Deactivated for SplendidDataTest: \if false
--- Deactivated for SplendidDataTest: 	\echo 'should not print #4-1'
--- Deactivated for SplendidDataTest: \elif true
--- Deactivated for SplendidDataTest: 	\echo 'second thing true'
--- Deactivated for SplendidDataTest: \else
--- Deactivated for SplendidDataTest: 	\echo 'should not print #5-1'
--- Deactivated for SplendidDataTest: \endif
+\if false
+	\echo 'should not print #4-1'
+\elif true
+	\echo 'second thing true'
+\else
+	\echo 'should not print #5-1'
+\endif
 
 -- invalid boolean expressions are false
--- Deactivated for SplendidDataTest: \if invalid boolean expression
--- Deactivated for SplendidDataTest: 	\echo 'will not print #6-1'
--- Deactivated for SplendidDataTest: \else
--- Deactivated for SplendidDataTest: 	\echo 'will print anyway #6-2'
--- Deactivated for SplendidDataTest: \endif
+\if invalid boolean expression
+	\echo 'will not print #6-1'
+\else
+	\echo 'will print anyway #6-2'
+\endif
 
 -- test un-matched endif
 \endif
@@ -973,17 +982,17 @@ select
 \elif
 \endif
 
--- Deactivated for SplendidDataTest: -- test if-endif matching in a false branch
--- Deactivated for SplendidDataTest: \if false
--- Deactivated for SplendidDataTest:     \if false
--- Deactivated for SplendidDataTest:         \echo 'should not print #7-1'
--- Deactivated for SplendidDataTest:     \else
--- Deactivated for SplendidDataTest:         \echo 'should not print #7-2'
--- Deactivated for SplendidDataTest:     \endif
--- Deactivated for SplendidDataTest:     \echo 'should not print #7-3'
--- Deactivated for SplendidDataTest: \else
--- Deactivated for SplendidDataTest:     \echo 'should print #7-4'
--- Deactivated for SplendidDataTest: \endif
+-- test if-endif matching in a false branch
+\if false
+    \if false
+        \echo 'should not print #7-1'
+    \else
+        \echo 'should not print #7-2'
+    \endif
+    \echo 'should not print #7-3'
+\else
+    \echo 'should print #7-4'
+\endif
 
 -- show that vars and backticks are not expanded when ignoring extra args
 \set foo bar
@@ -992,85 +1001,88 @@ select
 
 -- show that vars and backticks are not expanded and commands are ignored
 -- when in a false if-branch
--- Deactivated for SplendidDataTest: \set try_to_quit '\\q'
--- Deactivated for SplendidDataTest: \if false
--- Deactivated for SplendidDataTest: 	:try_to_quit
--- Deactivated for SplendidDataTest: 	\echo `nosuchcommand` :foo :'foo' :"foo"
--- Deactivated for SplendidDataTest: 	\pset fieldsep | `nosuchcommand` :foo :'foo' :"foo"
--- Deactivated for SplendidDataTest: 	\a
--- Deactivated for SplendidDataTest: 	\C arg1
--- Deactivated for SplendidDataTest: 	\c arg1 arg2 arg3 arg4
--- Deactivated for SplendidDataTest: 	\cd arg1
--- Deactivated for SplendidDataTest: 	\conninfo
--- Deactivated for SplendidDataTest: 	\copy arg1 arg2 arg3 arg4 arg5 arg6
--- Deactivated for SplendidDataTest: 	\copyright
--- Deactivated for SplendidDataTest: 	SELECT 1 as one, 2, 3 \crosstabview
--- Deactivated for SplendidDataTest: 	\dt arg1
--- Deactivated for SplendidDataTest: 	\e arg1 arg2
--- Deactivated for SplendidDataTest: 	\ef whole_line
--- Deactivated for SplendidDataTest: 	\ev whole_line
--- Deactivated for SplendidDataTest: 	\echo arg1 arg2 arg3 arg4 arg5
--- Deactivated for SplendidDataTest: 	\echo arg1
--- Deactivated for SplendidDataTest: 	\encoding arg1
--- Deactivated for SplendidDataTest: 	\errverbose
--- Deactivated for SplendidDataTest: 	\f arg1
--- Deactivated for SplendidDataTest: 	\g arg1
--- Deactivated for SplendidDataTest: 	\gx arg1
--- Deactivated for SplendidDataTest: 	\gexec
--- Deactivated for SplendidDataTest: 	SELECT 1 AS one \gset
--- Deactivated for SplendidDataTest: 	\h
--- Deactivated for SplendidDataTest: 	\?
--- Deactivated for SplendidDataTest: 	\html
--- Deactivated for SplendidDataTest: 	\i arg1
--- Deactivated for SplendidDataTest: 	\ir arg1
--- Deactivated for SplendidDataTest: 	\l arg1
--- Deactivated for SplendidDataTest: 	\lo arg1 arg2
--- Deactivated for SplendidDataTest: 	\lo_list
--- Deactivated for SplendidDataTest: 	\o arg1
--- Deactivated for SplendidDataTest: 	\p
--- Deactivated for SplendidDataTest: 	\password arg1
--- Deactivated for SplendidDataTest: 	\prompt arg1 arg2
--- Deactivated for SplendidDataTest: 	\pset arg1 arg2
--- Deactivated for SplendidDataTest: 	\q
--- Deactivated for SplendidDataTest: 	\reset
--- Deactivated for SplendidDataTest: 	\s arg1
--- Deactivated for SplendidDataTest: 	\set arg1 arg2 arg3 arg4 arg5 arg6 arg7
--- Deactivated for SplendidDataTest: 	\setenv arg1 arg2
--- Deactivated for SplendidDataTest: 	\sf whole_line
--- Deactivated for SplendidDataTest: 	\sv whole_line
--- Deactivated for SplendidDataTest: 	\t arg1
--- Deactivated for SplendidDataTest: 	\T arg1
--- Deactivated for SplendidDataTest: 	\timing arg1
--- Deactivated for SplendidDataTest: 	\unset arg1
--- Deactivated for SplendidDataTest: 	\w arg1
--- Deactivated for SplendidDataTest: 	\watch arg1 arg2
--- Deactivated for SplendidDataTest: 	\x arg1
--- Deactivated for SplendidDataTest: 	-- \else here is eaten as part of OT_FILEPIPE argument
--- Deactivated for SplendidDataTest: 	\w |/no/such/file \else
--- Deactivated for SplendidDataTest: 	-- \endif here is eaten as part of whole-line argument
--- Deactivated for SplendidDataTest: 	\! whole_line \endif
--- Deactivated for SplendidDataTest: 	\z
--- Deactivated for SplendidDataTest: \else
--- Deactivated for SplendidDataTest: 	\echo 'should print #8-1'
--- Deactivated for SplendidDataTest: \endif
+\set try_to_quit '\\q'
+\if false
+	:try_to_quit
+	\echo `nosuchcommand` :foo :'foo' :"foo"
+	\pset fieldsep | `nosuchcommand` :foo :'foo' :"foo"
+	\a
+	SELECT $1 \bind 1 \g
+	\C arg1
+	\c arg1 arg2 arg3 arg4
+	\cd arg1
+	\conninfo
+	\copy arg1 arg2 arg3 arg4 arg5 arg6
+	\copyright
+	SELECT 1 as one, 2, 3 \crosstabview
+	\dt arg1
+	\e arg1 arg2
+	\ef whole_line
+	\ev whole_line
+	\echo arg1 arg2 arg3 arg4 arg5
+	\echo arg1
+	\encoding arg1
+	\errverbose
+	\f arg1
+	\g arg1
+	\gx arg1
+	\gexec
+	SELECT 1 AS one \gset
+	\h
+	\?
+	\html
+	\i arg1
+	\ir arg1
+	\l arg1
+	\lo arg1 arg2
+	\lo_list
+	\o arg1
+	\p
+	\password arg1
+	\prompt arg1 arg2
+	\pset arg1 arg2
+	\q
+	\reset
+	\restrict test
+	\s arg1
+	\set arg1 arg2 arg3 arg4 arg5 arg6 arg7
+	\setenv arg1 arg2
+	\sf whole_line
+	\sv whole_line
+	\t arg1
+	\T arg1
+	\timing arg1
+	\unrestrict not_valid
+	\unset arg1
+	\w arg1
+	\watch arg1 arg2
+	\x arg1
+	-- \else here is eaten as part of OT_FILEPIPE argument
+	\w |/no/such/file \else
+	-- \endif here is eaten as part of whole-line argument
+	\! whole_line \endif
+	\z
+\else
+	\echo 'should print #8-1'
+\endif
 
 -- :{?...} defined variable test
--- Deactivated for SplendidDataTest: \set i 1
--- Deactivated for SplendidDataTest: \if :{?i}
--- Deactivated for SplendidDataTest:   \echo '#9-1 ok, variable i is defined'
--- Deactivated for SplendidDataTest: \else
--- Deactivated for SplendidDataTest:   \echo 'should not print #9-2'
--- Deactivated for SplendidDataTest: \endif
+\set i 1
+\if :{?i}
+  \echo '#9-1 ok, variable i is defined'
+\else
+  \echo 'should not print #9-2'
+\endif
 
--- Deactivated for SplendidDataTest: \if :{?no_such_variable}
--- Deactivated for SplendidDataTest:   \echo 'should not print #10-1'
--- Deactivated for SplendidDataTest: \else
--- Deactivated for SplendidDataTest:   \echo '#10-2 ok, variable no_such_variable is not defined'
--- Deactivated for SplendidDataTest: \endif
+\if :{?no_such_variable}
+  \echo 'should not print #10-1'
+\else
+  \echo '#10-2 ok, variable no_such_variable is not defined'
+\endif
 
--- Deactivated for SplendidDataTest: SELECT :{?i} AS i_is_defined;
+SELECT :{?i} AS i_is_defined;
 
--- Deactivated for SplendidDataTest: SELECT NOT :{?no_such_var} AS no_such_var_is_not_defined;
+SELECT NOT :{?no_such_var} AS no_such_var_is_not_defined;
 
 -- SHOW_CONTEXT
 
@@ -1098,12 +1110,12 @@ end $$;
 -- test printing and clearing the query buffer
 SELECT 1;
 \p
--- Deactivated for SplendidDataTest: SELECT 2 \r
+SELECT 2 \r
 \p
--- Deactivated for SplendidDataTest: SELECT 3 \p
--- Deactivated for SplendidDataTest: UNION SELECT 4 \p
--- Deactivated for SplendidDataTest: UNION SELECT 5
--- Deactivated for SplendidDataTest: ORDER BY 1;
+SELECT 3 \p
+UNION SELECT 4 \p
+UNION SELECT 5
+ORDER BY 1;
 \r
 \p
 
@@ -1116,7 +1128,7 @@ SELECT 1 AS stuff UNION SELECT 2;
 \echo 'number of rows:' :ROW_COUNT
 
 -- syntax error
--- Deactivated for SplendidDataTest: SELECT 1 UNION;
+SELECT 1 UNION;
 \echo 'error:' :ERROR
 \echo 'error code:' :SQLSTATE
 \echo 'number of rows:' :ROW_COUNT
@@ -1142,7 +1154,7 @@ DROP TABLE this_table_does_not_exist;
 
 -- nondefault verbosity error settings (except verbose, which is too unstable)
 \set VERBOSITY terse
--- Deactivated for SplendidDataTest: SELECT 1 UNION;
+SELECT 1 UNION;
 \echo 'error:' :ERROR
 \echo 'error code:' :SQLSTATE
 \echo 'last error message:' :LAST_ERROR_MESSAGE
@@ -1156,20 +1168,20 @@ SELECT 1/0;
 \set VERBOSITY default
 
 -- working \gdesc
--- Deactivated for SplendidDataTest: SELECT 3 AS three, 4 AS four \gdesc
+SELECT 3 AS three, 4 AS four \gdesc
 \echo 'error:' :ERROR
 \echo 'error code:' :SQLSTATE
 \echo 'number of rows:' :ROW_COUNT
 
 -- \gdesc with an error
--- Deactivated for SplendidDataTest: SELECT 4 AS \gdesc
+SELECT 4 AS \gdesc
 \echo 'error:' :ERROR
 \echo 'error code:' :SQLSTATE
 \echo 'number of rows:' :ROW_COUNT
 \echo 'last error message:' :LAST_ERROR_MESSAGE
 \echo 'last error code:' :LAST_ERROR_SQLSTATE
 
--- check row count for a cursor-fetched query
+-- check row count for a query with chunked results
 \set FETCH_COUNT 10
 select unique2 from tenk1 order by unique2 limit 19;
 \echo 'error:' :ERROR
@@ -1407,7 +1419,7 @@ SELECT 1 AS one \; SELECT warn('1.5') \; SELECT 2 AS two ;
 SELECT 3 AS three \; SELECT warn('3.5') \; SELECT 4 AS four \gset
 \echo :three :four
 -- syntax error stops all processing
--- Deactivated for SplendidDataTest: SELECT 5 \; SELECT 6 + \; SELECT warn('6.5') \; SELECT 7 ;
+SELECT 5 \; SELECT 6 + \; SELECT warn('6.5') \; SELECT 7 ;
 -- with aborted transaction, stop on first error
 BEGIN \; SELECT 8 AS eight \; SELECT 9/0 AS nine \; ROLLBACK \; SELECT 10 AS ten ;
 -- close previously aborted transaction
@@ -1425,9 +1437,9 @@ COPY psql_comics TO STDOUT \;
 TRUNCATE psql_comics \;
 DROP TABLE psql_comics \;
 SELECT 'ok' AS "done" ;
--- Deactivated for SplendidDataTest: Moe
--- Deactivated for SplendidDataTest: Susie
--- Deactivated for SplendidDataTest: \.
+Moe
+Susie
+\.
 
 \set SHOW_ALL_RESULTS off
 SELECT 1 AS one \; SELECT warn('1.5') \; SELECT 2 AS two ;
@@ -1446,11 +1458,11 @@ CREATE TEMPORARY TABLE reload_output(
   line text
 );
 
--- Deactivated for SplendidDataTest: SELECT 1 AS a \g :g_out_file
+SELECT 1 AS a \g :g_out_file
 COPY reload_output(line) FROM :'g_out_file';
--- Deactivated for SplendidDataTest: SELECT 2 AS b\; SELECT 3 AS c\; SELECT 4 AS d \g :g_out_file
+SELECT 2 AS b\; SELECT 3 AS c\; SELECT 4 AS d \g :g_out_file
 COPY reload_output(line) FROM :'g_out_file';
--- Deactivated for SplendidDataTest: COPY (SELECT 'foo') TO STDOUT \; COPY (SELECT 'bar') TO STDOUT \g :g_out_file
+COPY (SELECT 'foo') TO STDOUT \; COPY (SELECT 'bar') TO STDOUT \g :g_out_file
 COPY reload_output(line) FROM :'g_out_file';
 
 SELECT line FROM reload_output ORDER BY lineno;
@@ -1487,7 +1499,7 @@ TRUNCATE TABLE reload_output;
 -- The data goes to :o_out_file with no status generated.
 COPY (SELECT 'foo1') TO STDOUT \; COPY (SELECT 'bar1') TO STDOUT;
 -- Combination of \o and \g file with multiple COPY queries.
--- Deactivated for SplendidDataTest: COPY (SELECT 'foo2') TO STDOUT \; COPY (SELECT 'bar2') TO STDOUT \g :g_out_file
+COPY (SELECT 'foo2') TO STDOUT \; COPY (SELECT 'bar2') TO STDOUT \g :g_out_file
 \o
 
 -- Check the contents of the files generated.
@@ -1897,3 +1909,8 @@ CREATE TABLE defprivs (a int);
 \z defprivs
 \pset null ''
 DROP TABLE defprivs;
+
+*
+*
+*/
+select true;
