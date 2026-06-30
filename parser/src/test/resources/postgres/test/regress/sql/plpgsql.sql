@@ -2032,11 +2032,9 @@ begin
 end $$ language plpgsql;
 select namedparmcursor_test7();
 
--- check that line comments work correctly within the argument list (there
--- is some special handling of this case in the code: the newline after the
--- comment must be preserved when the argument-evaluating query is
--- constructed, otherwise the comment effectively comments out the next
--- argument, too)
+-- check that line comments work correctly within the argument list
+-- (this used to require a special hack in the code; it no longer does,
+-- but let's keep the test anyway)
 create function namedparmcursor_test8() returns int4 as $$
 declare
   c1 cursor (p1 int, p2 int) for
@@ -3503,7 +3501,7 @@ select * from tftest(10);
 
 drop function tftest(int);
 
-create or replace function rttest()
+create function rttest()
 returns setof int as $$
 declare rc int;
 begin
@@ -3523,6 +3521,28 @@ end;
 $$ language plpgsql;
 
 select * from rttest();
+
+-- check some error cases, too
+
+create or replace function rttest()
+returns setof int as $$
+begin
+  return query select 10 into no_such_table;
+end;
+$$ language plpgsql;
+
+select * from rttest();
+
+create or replace function rttest()
+returns setof int as $$
+begin
+  return query execute 'select 10 into no_such_table';
+end;
+$$ language plpgsql;
+
+select * from rttest();
+
+select * from no_such_table;
 
 drop function rttest();
 

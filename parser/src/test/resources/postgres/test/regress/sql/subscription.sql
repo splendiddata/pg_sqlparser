@@ -65,7 +65,14 @@ ALTER SUBSCRIPTION regress_testsub3 REFRESH PUBLICATION;
 
 DROP SUBSCRIPTION regress_testsub3;
 
--- fail - invalid connection string
+-- fail, connection string does not parse
+CREATE SUBSCRIPTION regress_testsub5 CONNECTION 'i_dont_exist=param' PUBLICATION testpub;
+
+-- fail, connection string parses, but doesn't work (and does so without
+-- connecting, so this is reliable and safe)
+CREATE SUBSCRIPTION regress_testsub5 CONNECTION 'port=-1' PUBLICATION testpub;
+
+-- fail - invalid connection string during ALTER
 ALTER SUBSCRIPTION regress_testsub CONNECTION 'foobar';
 
 \dRs+
@@ -73,6 +80,9 @@ ALTER SUBSCRIPTION regress_testsub CONNECTION 'foobar';
 ALTER SUBSCRIPTION regress_testsub SET PUBLICATION testpub2, testpub3 WITH (refresh = false);
 ALTER SUBSCRIPTION regress_testsub CONNECTION 'dbname=regress_doesnotexist2';
 ALTER SUBSCRIPTION regress_testsub SET (slot_name = 'newname');
+
+-- fail
+ALTER SUBSCRIPTION regress_testsub SET (slot_name = '');
 
 -- fail
 ALTER SUBSCRIPTION regress_doesnotexist CONNECTION 'dbname=regress_doesnotexist2';
@@ -176,9 +186,6 @@ ALTER SUBSCRIPTION regress_testsub DROP PUBLICATION testpub, testpub1, testpub2 
 
 -- fail - publication does not exist in subscription
 ALTER SUBSCRIPTION regress_testsub DROP PUBLICATION testpub3 WITH (refresh = false);
-
--- fail - do not support copy_data option
-ALTER SUBSCRIPTION regress_testsub DROP PUBLICATION testpub1 WITH (refresh = false, copy_data = true);
 
 -- ok - delete publications
 ALTER SUBSCRIPTION regress_testsub DROP PUBLICATION testpub1, testpub2 WITH (refresh = false);

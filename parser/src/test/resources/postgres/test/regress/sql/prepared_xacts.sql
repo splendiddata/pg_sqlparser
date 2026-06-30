@@ -1,3 +1,16 @@
+/*
+ * This file has been altered by SplendidData.
+ * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
+ * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
+ */
+
+
+
+-- Deactivated for SplendidDataTest:SELECT current_setting('max_prepared_transactions')::integer < 2 AS skip_test \gset
+\if :skip_test
+\quit
+\endif
+
 --
 -- PREPARED TRANSACTIONS (two-phase commit)
 --
@@ -88,6 +101,12 @@ SELECT gid FROM pg_prepared_xacts;
 -- Clean up
 DROP TABLE pxtest1;
 
+-- Test detection of session-level and xact-level locks on same object
+BEGIN;
+SELECT pg_advisory_lock(1);
+SELECT pg_advisory_xact_lock_shared(1);
+PREPARE TRANSACTION 'foo6';  -- fails
+
 -- Test subtransactions
 BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
   CREATE TABLE pxtest2 (a int);
@@ -154,5 +173,5 @@ SELECT gid FROM pg_prepared_xacts;
 
 -- Clean up
 DROP TABLE pxtest2;
-DROP TABLE pxtest3;  -- will still be there if prepared xacts are disabled
+-- pxtest3 was already dropped
 DROP TABLE pxtest4;

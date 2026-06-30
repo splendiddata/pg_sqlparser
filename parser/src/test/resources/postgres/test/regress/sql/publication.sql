@@ -76,13 +76,17 @@ CREATE PUBLICATION testpub_forparted;
 CREATE PUBLICATION testpub_forparted1;
 RESET client_min_messages;
 CREATE TABLE testpub_parted1 (LIKE testpub_parted);
+CREATE TABLE testpub_parted2 (LIKE testpub_parted);
 ALTER PUBLICATION testpub_forparted1 SET (publish='insert');
+ALTER TABLE testpub_parted ATTACH PARTITION testpub_parted1 FOR VALUES IN (1);
+ALTER TABLE testpub_parted ATTACH PARTITION testpub_parted2 FOR VALUES IN (2);
 -- works despite missing REPLICA IDENTITY, because updates are not replicated
 UPDATE testpub_parted1 SET a = 1;
-ALTER TABLE testpub_parted ATTACH PARTITION testpub_parted1 FOR VALUES IN (1);
 -- only parent is listed as being in publication, not the partition
 ALTER PUBLICATION testpub_forparted ADD TABLE testpub_parted;
 \dRp+ testpub_forparted
+-- works despite missing REPLICA IDENTITY, because no actual update happened
+UPDATE testpub_parted SET a = 1 WHERE false;
 -- should now fail, because parent's publication replicates updates
 UPDATE testpub_parted1 SET a = 1;
 ALTER TABLE testpub_parted DETACH PARTITION testpub_parted1;
@@ -90,8 +94,31 @@ ALTER TABLE testpub_parted DETACH PARTITION testpub_parted1;
 UPDATE testpub_parted1 SET a = 1;
 ALTER PUBLICATION testpub_forparted SET (publish_via_partition_root = true);
 \dRp+ testpub_forparted
-DROP TABLE testpub_parted1;
+-- still fail, because parent's publication replicates updates
+UPDATE testpub_parted2 SET a = 2;
+ALTER PUBLICATION testpub_forparted DROP TABLE testpub_parted;
+-- works again, because update is no longer replicated
+UPDATE testpub_parted2 SET a = 2;
+-- publication includes both the parent table and the child table
+ALTER PUBLICATION testpub_forparted ADD TABLE testpub_parted, testpub_parted2;
+-- only parent is listed as being in publication, not the partition
+SELECT * FROM pg_publication_tables;
+DROP TABLE testpub_parted1, testpub_parted2;
 DROP PUBLICATION testpub_forparted, testpub_forparted1;
+
+-- Test cache invalidation FOR ALL TABLES publication
+SET client_min_messages = 'ERROR';
+CREATE TABLE testpub_tbl4(a int);
+INSERT INTO testpub_tbl4 values(1);
+UPDATE testpub_tbl4 set a = 2;
+CREATE PUBLICATION testpub_foralltables FOR ALL TABLES;
+RESET client_min_messages;
+-- fail missing REPLICA IDENTITY
+UPDATE testpub_tbl4 set a = 3;
+DROP PUBLICATION testpub_foralltables;
+-- should pass after dropping the publication
+UPDATE testpub_tbl4 set a = 3;
+DROP TABLE testpub_tbl4;
 
 -- fail - view
 CREATE PUBLICATION testpub_fortbl FOR TABLE testpub_view;
@@ -123,6 +150,19 @@ ALTER PUBLICATION testpub_default DROP TABLE testpub_tbl1, pub_test.testpub_nopk
 ALTER PUBLICATION testpub_default DROP TABLE pub_test.testpub_nopk;
 
 \d+ testpub_tbl1
+
+-- verify relation cache invalidation when a primary key is added using
+-- an existing index
+CREATE TABLE pub_test.testpub_addpk (id int not null, data int);
+ALTER PUBLICATION testpub_default ADD TABLE pub_test.testpub_addpk;
+INSERT INTO pub_test.testpub_addpk VALUES(1, 11);
+CREATE UNIQUE INDEX testpub_addpk_id_idx ON pub_test.testpub_addpk(id);
+-- fail:
+UPDATE pub_test.testpub_addpk SET id = 2;
+ALTER TABLE pub_test.testpub_addpk ADD PRIMARY KEY USING INDEX testpub_addpk_id_idx;
+-- now it should work:
+UPDATE pub_test.testpub_addpk SET id = 2;
+DROP TABLE pub_test.testpub_addpk;
 
 -- permissions
 SET ROLE regress_publication_user2;
@@ -175,6 +215,41 @@ DROP PUBLICATION testpub_fortbl;
 
 DROP SCHEMA pub_test CASCADE;
 
+-- Test that the INSERT ON CONFLICT command correctly checks REPLICA IDENTITY
+-- when the target table is published.
+CREATE TABLE testpub_insert_onconfl_no_ri (a int unique, b int);
+CREATE TABLE testpub_insert_onconfl_parted (a int unique, b int) PARTITION by RANGE (a);
+CREATE TABLE testpub_insert_onconfl_part_no_ri PARTITION OF testpub_insert_onconfl_parted FOR VALUES FROM (1) TO (10);
+
+SET client_min_messages = 'ERROR';
+CREATE PUBLICATION pub1 FOR ALL TABLES;
+RESET client_min_messages;
+
+-- fail - missing REPLICA IDENTITY
+INSERT INTO testpub_insert_onconfl_no_ri VALUES (1, 1) ON CONFLICT (a) DO UPDATE SET b = 2;
+
+-- ok - no updates
+INSERT INTO testpub_insert_onconfl_no_ri VALUES (1, 1) ON CONFLICT DO NOTHING;
+
+-- fail - missing REPLICA IDENTITY in partition testpub_insert_onconfl_no_ri
+INSERT INTO testpub_insert_onconfl_parted VALUES (1, 1) ON CONFLICT (a) DO UPDATE SET b = 2;
+
+-- ok - no updates
+INSERT INTO testpub_insert_onconfl_parted VALUES (1, 1) ON CONFLICT DO NOTHING;
+
+DROP PUBLICATION pub1;
+DROP TABLE testpub_insert_onconfl_no_ri;
+DROP TABLE testpub_insert_onconfl_parted;
+
 RESET SESSION AUTHORIZATION;
 DROP ROLE regress_publication_user, regress_publication_user2;
 DROP ROLE regress_publication_user_dummy;
+
+-- stage objects for pg_dump tests
+CREATE SCHEMA pubme CREATE TABLE t0 (c int, d int) CREATE TABLE t1 (c int);
+SET client_min_messages = 'ERROR';
+CREATE PUBLICATION dump_pub_1ct FOR TABLE ONLY pubme.t0;
+CREATE PUBLICATION dump_pub_2ct FOR TABLE ONLY pubme.t0, pubme.t1;
+CREATE PUBLICATION dump_pub_all FOR TABLE ONLY pubme.t0, pubme.t1
+  WITH (publish_via_partition_root = true);
+RESET client_min_messages;

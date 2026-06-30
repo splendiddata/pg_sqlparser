@@ -25,6 +25,7 @@ select '{}'::textmultirange;
 select '  {}  '::textmultirange;
 select ' { empty, empty }  '::textmultirange;
 select ' {( " a " " a ", " z " " z " )  }'::textmultirange;
+select textrange('\\\\', repeat('a', 200))::textmultirange;
 select '{(,z)}'::textmultirange;
 select '{(a,)}'::textmultirange;
 select '{[,z]}'::textmultirange;
@@ -63,7 +64,7 @@ select '{(a,a)}'::textmultirange;
 select textmultirange();
 select textmultirange(textrange('a', 'c'));
 select textmultirange(textrange('a', 'c'), textrange('f', 'g'));
-select textmultirange(textrange('a', 'c'), textrange('b', 'd'));
+select textmultirange(textrange('\\\\', repeat('a', 200)), textrange('c', 'd'));
 
 --
 -- test casts, both a built-in range type and a user-defined one:
@@ -76,6 +77,13 @@ select 'empty'::textrange::textmultirange;
 select textrange('a', 'c')::textmultirange;
 select textrange('a', null)::textmultirange;
 select textrange(null, null)::textmultirange;
+
+--
+-- test unnest(multirange) function
+--
+select unnest(int4multirange(int4range('5', '6'), int4range('1', '2')));
+select unnest(textmultirange(textrange('a', 'b'), textrange('d', 'e')));
+select unnest(textmultirange(textrange('\\\\', repeat('a', 200)), textrange('c', 'd')));
 
 --
 -- create some test data and test the operators
@@ -435,7 +443,25 @@ SET enable_seqscan    = t;
 SET enable_indexscan  = f;
 SET enable_bitmapscan = f;
 
+select count(*) from test_multirange_gist where mr = '{}'::int4multirange;
 select count(*) from test_multirange_gist where mr @> 'empty'::int4range;
+select count(*) from test_multirange_gist where mr && 'empty'::int4range;
+select count(*) from test_multirange_gist where mr <@ 'empty'::int4range;
+select count(*) from test_multirange_gist where mr << 'empty'::int4range;
+select count(*) from test_multirange_gist where mr >> 'empty'::int4range;
+select count(*) from test_multirange_gist where mr &< 'empty'::int4range;
+select count(*) from test_multirange_gist where mr &> 'empty'::int4range;
+select count(*) from test_multirange_gist where mr -|- 'empty'::int4range;
+select count(*) from test_multirange_gist where mr @> '{}'::int4multirange;
+select count(*) from test_multirange_gist where mr @> '{}'::int4multirange;
+select count(*) from test_multirange_gist where mr && '{}'::int4multirange;
+select count(*) from test_multirange_gist where mr <@ '{}'::int4multirange;
+select count(*) from test_multirange_gist where mr << '{}'::int4multirange;
+select count(*) from test_multirange_gist where mr >> '{}'::int4multirange;
+select count(*) from test_multirange_gist where mr &< '{}'::int4multirange;
+select count(*) from test_multirange_gist where mr &> '{}'::int4multirange;
+select count(*) from test_multirange_gist where mr -|- '{}'::int4multirange;
+
 select count(*) from test_multirange_gist where mr = int4multirange(int4range(10,20), int4range(30,40), int4range(50,60));
 select count(*) from test_multirange_gist where mr @> 10;
 select count(*) from test_multirange_gist where mr @> int4range(10,20);
@@ -460,6 +486,25 @@ select count(*) from test_multirange_gist where mr -|- int4multirange(int4range(
 SET enable_seqscan    = f;
 SET enable_indexscan  = t;
 SET enable_bitmapscan = f;
+
+select count(*) from test_multirange_gist where mr = '{}'::int4multirange;
+select count(*) from test_multirange_gist where mr @> 'empty'::int4range;
+select count(*) from test_multirange_gist where mr && 'empty'::int4range;
+select count(*) from test_multirange_gist where mr <@ 'empty'::int4range;
+select count(*) from test_multirange_gist where mr << 'empty'::int4range;
+select count(*) from test_multirange_gist where mr >> 'empty'::int4range;
+select count(*) from test_multirange_gist where mr &< 'empty'::int4range;
+select count(*) from test_multirange_gist where mr &> 'empty'::int4range;
+select count(*) from test_multirange_gist where mr -|- 'empty'::int4range;
+select count(*) from test_multirange_gist where mr @> '{}'::int4multirange;
+select count(*) from test_multirange_gist where mr @> '{}'::int4multirange;
+select count(*) from test_multirange_gist where mr && '{}'::int4multirange;
+select count(*) from test_multirange_gist where mr <@ '{}'::int4multirange;
+select count(*) from test_multirange_gist where mr << '{}'::int4multirange;
+select count(*) from test_multirange_gist where mr >> '{}'::int4multirange;
+select count(*) from test_multirange_gist where mr &< '{}'::int4multirange;
+select count(*) from test_multirange_gist where mr &> '{}'::int4multirange;
+select count(*) from test_multirange_gist where mr -|- '{}'::int4multirange;
 
 select count(*) from test_multirange_gist where mr @> 'empty'::int4range;
 select count(*) from test_multirange_gist where mr = int4multirange(int4range(10,20), int4range(30,40), int4range(50,60));
@@ -621,10 +666,27 @@ create type textrange2 as range(subtype=text, multirange_type_name=_textrange1, 
 
 select multirange_of_text(textrange2('a','Z'));  -- should fail
 select multirange_of_text(textrange1('a','Z')) @> 'b'::text;
+select unnest(multirange_of_text(textrange1('a','b'), textrange1('d','e')));
 select _textrange1(textrange2('a','z')) @> 'b'::text;
 
 drop type textrange1;
 drop type textrange2;
+
+--
+-- CREATE TYPE checks for CREATE on multirange schema
+--
+create role regress_mr;
+create schema mr_sch;
+set role regress_mr;
+create type mytype as range (subtype=int4, multirange_type_name=mr_sch.mr_type);
+reset role;
+grant create on schema mr_sch to regress_mr;
+set role regress_mr;
+create type mytype as range (subtype=int4, multirange_type_name=mr_sch.mr_type);
+reset role;
+drop type mytype;
+drop schema mr_sch;
+drop role regress_mr;
 
 --
 -- Test polymorphic type system
@@ -719,6 +781,9 @@ create type two_ints_range as range (subtype = two_ints);
 select *, row_to_json(upper(t)) as u from
   (values (two_ints_multirange(two_ints_range(row(1,2), row(3,4)))),
           (two_ints_multirange(two_ints_range(row(5,6), row(7,8))))) v(t);
+
+-- this must be rejected to avoid self-inclusion issues:
+alter type two_ints add attribute c two_ints_multirange;
 
 drop type two_ints cascade;
 

@@ -1,3 +1,12 @@
+/*
+ * This file has been altered by SplendidData.
+ * It is only used for syntax checking, not for the testing of a commandline paser.
+ * So input for the copy statements is removed.
+ * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
+ */
+
+
+
 CREATE TABLE xmltest (
     id int,
     data xml
@@ -5,7 +14,14 @@ CREATE TABLE xmltest (
 
 INSERT INTO xmltest VALUES (1, '<value>one</value>');
 INSERT INTO xmltest VALUES (2, '<value>two</value>');
-INSERT INTO xmltest VALUES (3, '<wrong');
+INSERT INTO xmltest VALUES (3, '<value>three</wrong>  ');
+
+-- If no XML data could be inserted, skip the tests as the server has been
+-- compiled without libxml support.
+-- Deactivated for SplendidDataTest: SELECT count(*) = 0 AS skip_test FROM xmltest \gset
+\if :skip_test
+\quit
+\endif
 
 SELECT * FROM xmltest;
 
@@ -23,7 +39,7 @@ SELECT xmlconcat(xmlcomment('hello'),
 
 SELECT xmlconcat('hello', 'you');
 SELECT xmlconcat(1, 2);
-SELECT xmlconcat('bad', '<syntax');
+SELECT xmlconcat('bad', '<wrong></syntax>  ');
 SELECT xmlconcat('<foo/>', NULL, '<?xml version="1.1" standalone="no"?><bar/>');
 SELECT xmlconcat('<?xml version="1.1"?><foo/>', NULL, '<?xml version="1.1" standalone="no"?><bar/>');
 SELECT xmlconcat(NULL);
@@ -68,17 +84,17 @@ SELECT xmlparse(content '<invalidentity>&</invalidentity>');
 SELECT xmlparse(content '<undefinedentity>&idontexist;</undefinedentity>');
 SELECT xmlparse(content '<invalidns xmlns=''&lt;''/>');
 SELECT xmlparse(content '<relativens xmlns=''relative''/>');
-SELECT xmlparse(content '<twoerrors>&idontexist;</unbalanced>');
+SELECT xmlparse(content '<twoerrors>&idontexist;</unbalanced>  ');
 SELECT xmlparse(content '<nosuchprefix:tag/>');
 
-SELECT xmlparse(document '   ');
+SELECT xmlparse(document '!');
 SELECT xmlparse(document 'abc');
 SELECT xmlparse(document '<abc>x</abc>');
-SELECT xmlparse(document '<invalidentity>&</abc>');
-SELECT xmlparse(document '<undefinedentity>&idontexist;</abc>');
+SELECT xmlparse(document '<invalidentity>&</abc>  ');
+SELECT xmlparse(document '<undefinedentity>&idontexist;</abc>  ');
 SELECT xmlparse(document '<invalidns xmlns=''&lt;''/>');
 SELECT xmlparse(document '<relativens xmlns=''relative''/>');
-SELECT xmlparse(document '<twoerrors>&idontexist;</unbalanced>');
+SELECT xmlparse(document '<twoerrors>&idontexist;</unbalanced>  ');
 SELECT xmlparse(document '<nosuchprefix:tag/>');
 
 
@@ -196,6 +212,7 @@ SELECT xpath('count(//*)=3', '<root><sub/><sub/></root>');
 SELECT xpath('name(/*)', '<root><sub/><sub/></root>');
 SELECT xpath('/nosuchtag', '<root/>');
 SELECT xpath('root', '<root/>');
+SELECT xpath('//namespace::foo', '<root xmlns:foo="http://127.0.0.1"/>');
 
 -- Round-trip non-ASCII data through xpath().
 DO $$
@@ -234,9 +251,9 @@ END
 $$;
 
 -- Test xmlexists and xpath_exists
-SELECT xmlexists('//town[text() = ''Toronto'']' PASSING BY REF '<towns><town>Bidford-on-Avon</town><town>Cwmbran</town><town>Bristol</town></towns>');
-SELECT xmlexists('//town[text() = ''Cwmbran'']' PASSING BY REF '<towns><town>Bidford-on-Avon</town><town>Cwmbran</town><town>Bristol</town></towns>');
-SELECT xmlexists('count(/nosuchtag)' PASSING BY REF '<root/>');
+-- Deactivated for SplendidDataTest: SELECT xmlexists('//town[text() = ''Toronto'']' PASSING BY REF '<towns><town>Bidford-on-Avon</town><town>Cwmbran</town><town>Bristol</town></towns>');
+-- Deactivated for SplendidDataTest: SELECT xmlexists('//town[text() = ''Cwmbran'']' PASSING BY REF '<towns><town>Bidford-on-Avon</town><town>Cwmbran</town><town>Bristol</town></towns>');
+-- Deactivated for SplendidDataTest: SELECT xmlexists('count(/nosuchtag)' PASSING BY REF '<root/>');
 SELECT xpath_exists('//town[text() = ''Toronto'']','<towns><town>Bidford-on-Avon</town><town>Cwmbran</town><town>Bristol</town></towns>'::xml);
 SELECT xpath_exists('//town[text() = ''Cwmbran'']','<towns><town>Bidford-on-Avon</town><town>Cwmbran</town><town>Bristol</town></towns>'::xml);
 SELECT xpath_exists('count(/nosuchtag)', '<root/>'::xml);
@@ -247,9 +264,9 @@ INSERT INTO xmltest VALUES (6, '<myns:menu xmlns:myns="http://myns.com"><myns:be
 INSERT INTO xmltest VALUES (7, '<myns:menu xmlns:myns="http://myns.com"><myns:beers><myns:name>Molson</myns:name><myns:cost>free</myns:cost><myns:name>Carling</myns:name><myns:cost>lots</myns:cost></myns:beers></myns:menu>'::xml);
 
 SELECT COUNT(id) FROM xmltest WHERE xmlexists('/menu/beer' PASSING data);
-SELECT COUNT(id) FROM xmltest WHERE xmlexists('/menu/beer' PASSING BY REF data BY REF);
-SELECT COUNT(id) FROM xmltest WHERE xmlexists('/menu/beers' PASSING BY REF data);
-SELECT COUNT(id) FROM xmltest WHERE xmlexists('/menu/beers/name[text() = ''Molson'']' PASSING BY REF data);
+-- Deactivated for SplendidDataTest: SELECT COUNT(id) FROM xmltest WHERE xmlexists('/menu/beer' PASSING BY REF data BY REF);
+-- Deactivated for SplendidDataTest: SELECT COUNT(id) FROM xmltest WHERE xmlexists('/menu/beers' PASSING BY REF data);
+-- Deactivated for SplendidDataTest: SELECT COUNT(id) FROM xmltest WHERE xmlexists('/menu/beers/name[text() = ''Molson'']' PASSING BY REF data);
 
 SELECT COUNT(id) FROM xmltest WHERE xpath_exists('/menu/beer',data);
 SELECT COUNT(id) FROM xmltest WHERE xpath_exists('/menu/beers',data);
@@ -260,7 +277,7 @@ SELECT COUNT(id) FROM xmltest WHERE xpath_exists('/myns:menu/myns:beers/myns:nam
 
 CREATE TABLE query ( expr TEXT );
 INSERT INTO query VALUES ('/menu/beers/cost[text() = ''lots'']');
-SELECT COUNT(id) FROM xmltest, query WHERE xmlexists(expr PASSING BY REF data);
+-- Deactivated for SplendidDataTest: SELECT COUNT(id) FROM xmltest, query WHERE xmlexists(expr PASSING BY REF data);
 
 -- Test xml_is_well_formed and variants
 
@@ -384,18 +401,23 @@ SELECT * FROM xmltableview1;
 EXPLAIN (COSTS OFF) SELECT * FROM xmltableview1;
 EXPLAIN (COSTS OFF, VERBOSE) SELECT * FROM xmltableview1;
 
+-- errors
+SELECT * FROM XMLTABLE (ROW () PASSING null COLUMNS v1 timestamp) AS f (v1, v2);
+
 -- XMLNAMESPACES tests
 SELECT * FROM XMLTABLE(XMLNAMESPACES('http://x.y' AS zz),
                       '/zz:rows/zz:row'
                       PASSING '<rows xmlns="http://x.y"><row><a>10</a></row></rows>'
                       COLUMNS a int PATH 'zz:a');
 
-CREATE VIEW xmltableview2 AS SELECT * FROM XMLTABLE(XMLNAMESPACES('http://x.y' AS zz),
-                      '/zz:rows/zz:row'
+CREATE VIEW xmltableview2 AS SELECT * FROM XMLTABLE(XMLNAMESPACES('http://x.y' AS "Zz"),
+                      '/Zz:rows/Zz:row'
                       PASSING '<rows xmlns="http://x.y"><row><a>10</a></row></rows>'
-                      COLUMNS a int PATH 'zz:a');
+                      COLUMNS a int PATH 'Zz:a');
 
 SELECT * FROM xmltableview2;
+
+\sv xmltableview2
 
 SELECT * FROM XMLTABLE(XMLNAMESPACES(DEFAULT 'http://x.y'),
                       '/rows/row'

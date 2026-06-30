@@ -95,8 +95,16 @@ CREATE TABLE test_like_5c (LIKE test_like_4 INCLUDING ALL)
   INHERITS (test_like_5, test_like_5x);
 \d test_like_5c
 
+-- Test updating of column numbers in statistics expressions (bug #18468)
+CREATE TABLE test_like_6 (a int, c text, b text);
+CREATE STATISTICS ext_stat ON (a || b) FROM test_like_6;
+ALTER TABLE test_like_6 DROP COLUMN c;
+CREATE TABLE test_like_6c (LIKE test_like_6 INCLUDING ALL);
+\d+ test_like_6c
+
 DROP TABLE test_like_4, test_like_4a, test_like_4b, test_like_4c, test_like_4d;
 DROP TABLE test_like_5, test_like_5x, test_like_5c;
+DROP TABLE test_like_6, test_like_6c;
 
 CREATE TABLE inhg (x text, LIKE inhx INCLUDING INDEXES, y text); /* copies indexes */
 INSERT INTO inhg VALUES (5, 10);
@@ -215,3 +223,29 @@ DROP SEQUENCE ctlseq1;
 DROP TYPE ctlty1;
 DROP VIEW ctlv1;
 DROP TABLE IF EXISTS ctlt4, ctlt10, ctlt11, ctlt11a, ctlt12;
+
+-- LIKE ... INCLUDING STATISTICS with dropped columns in the parent,
+-- so stxkeys attnums are not contiguous.
+CREATE TABLE ctl_stats3_parent (a int, b int, c int);
+ALTER TABLE ctl_stats3_parent DROP COLUMN b;
+CREATE STATISTICS ctl_stats3_stat ON a, c FROM ctl_stats3_parent;
+CREATE TABLE ctl_stats3_child (LIKE ctl_stats3_parent INCLUDING STATISTICS);
+CREATE TABLE ctl_stats4_parent (a int, b int, c int, d int);
+ALTER TABLE ctl_stats4_parent DROP COLUMN b;
+CREATE STATISTICS ctl_stats4_stat ON a, c FROM ctl_stats4_parent;
+CREATE TABLE ctl_stats4_child (LIKE ctl_stats4_parent INCLUDING STATISTICS);
+SELECT s.stxrelid::regclass AS relation,
+       array_agg(a.attname ORDER BY u.ord) AS stats_columns
+FROM pg_statistic_ext s
+CROSS JOIN LATERAL
+  unnest(s.stxkeys::int2[]) WITH ORDINALITY AS u(attnum, ord)
+JOIN pg_attribute a
+  ON a.attrelid = s.stxrelid AND a.attnum = u.attnum
+WHERE s.stxrelid IN ('ctl_stats3_child'::regclass,
+                     'ctl_stats4_child'::regclass)
+GROUP BY s.stxrelid
+ORDER BY s.stxrelid::regclass::text;
+DROP TABLE ctl_stats3_parent;
+DROP TABLE ctl_stats3_child;
+DROP TABLE ctl_stats4_parent;
+DROP TABLE ctl_stats4_child;

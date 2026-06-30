@@ -32,13 +32,13 @@ create unique index pkeys_i on pkeys (pkey1, pkey2);
 -- 	(fkey3)		--> fkeys2 (pkey23)
 --
 create trigger check_fkeys_pkey_exist
-	before insert or update on fkeys
+	after insert or update on fkeys
 	for each row
 	execute function
 	check_primary_key ('fkey1', 'fkey2', 'pkeys', 'pkey1', 'pkey2');
 
 create trigger check_fkeys_pkey2_exist
-	before insert or update on fkeys
+	after insert or update on fkeys
 	for each row
 	execute function check_primary_key ('fkey3', 'fkeys2', 'pkey23');
 
@@ -47,7 +47,7 @@ create trigger check_fkeys_pkey2_exist
 -- 	(fkey21, fkey22)	--> pkeys (pkey1, pkey2)
 --
 create trigger check_fkeys2_pkey_exist
-	before insert or update on fkeys2
+	after insert or update on fkeys2
 	for each row
 	execute procedure
 	check_primary_key ('fkey21', 'fkey22', 'pkeys', 'pkey1', 'pkey2');
@@ -63,7 +63,7 @@ COMMENT ON TRIGGER check_fkeys2_pkey_exist ON fkeys2 IS NULL;
 -- 		fkeys (fkey1, fkey2) and fkeys2 (fkey21, fkey22)
 --
 create trigger check_pkeys_fkey_cascade
-	before delete or update on pkeys
+	after delete or update on pkeys
 	for each row
 	execute procedure
 	check_foreign_key (2, 'cascade', 'pkey1', 'pkey2',
@@ -75,7 +75,7 @@ create trigger check_pkeys_fkey_cascade
 -- 		fkeys (fkey3)
 --
 create trigger check_fkeys2_fkey_restrict
-	before delete or update on fkeys2
+	after delete or update on fkeys2
 	for each row
 	execute procedure check_foreign_key (1, 'restrict', 'pkey23', 'fkeys', 'fkey3');
 
@@ -664,7 +664,7 @@ CREATE TRIGGER z_min_update
 BEFORE UPDATE ON min_updates_test
 FOR EACH ROW EXECUTE PROCEDURE suppress_redundant_updates_trigger();
 
--- Deactivated for SplendidDataTest: \set QUIET false
+\set QUIET false
 
 UPDATE min_updates_test SET f1 = f1;
 
@@ -672,7 +672,7 @@ UPDATE min_updates_test SET f2 = f2 + 1;
 
 UPDATE min_updates_test SET f3 = 2 WHERE f3 is null;
 
--- Deactivated for SplendidDataTest: \set QUIET true
+\set QUIET true
 
 SELECT * FROM min_updates_test;
 
@@ -804,7 +804,7 @@ FOR EACH STATEMENT EXECUTE PROCEDURE view_trigger('after_view_upd_stmt');
 CREATE TRIGGER after_del_stmt_trig AFTER DELETE ON main_view
 FOR EACH STATEMENT EXECUTE PROCEDURE view_trigger('after_view_del_stmt');
 
--- Deactivated for SplendidDataTest: \set QUIET false
+\set QUIET false
 
 -- Insert into view using trigger
 INSERT INTO main_view VALUES (20, 30);
@@ -826,15 +826,15 @@ UPDATE main_view SET b = 0 WHERE false;
 DELETE FROM main_view WHERE a IN (20,21);
 DELETE FROM main_view WHERE a = 31 RETURNING a, b;
 
--- Deactivated for SplendidDataTest: \set QUIET true
+\set QUIET true
 
 -- Describe view should list triggers
--- Deactivated for SplendidDataTest: \d main_view
+\d main_view
 
 -- Test dropping view triggers
 DROP TRIGGER instead_of_insert_trig ON main_view;
 DROP TRIGGER instead_of_delete_trig ON main_view;
--- Deactivated for SplendidDataTest: \d+ main_view
+\d+ main_view
 DROP VIEW main_view;
 
 --
@@ -935,7 +935,7 @@ $$;
 CREATE TRIGGER city_update_trig INSTEAD OF UPDATE ON city_view
 FOR EACH ROW EXECUTE PROCEDURE city_update();
 
--- Deactivated for SplendidDataTest: \set QUIET false
+\set QUIET false
 
 -- INSERT .. RETURNING
 INSERT INTO city_view(city_name) VALUES('Tokyo') RETURNING *;
@@ -959,7 +959,7 @@ UPDATE city_view v1 SET country_name = v2.country_name FROM city_view v2
 -- DELETE .. RETURNING
 DELETE FROM city_view WHERE city_name = 'Birmingham' RETURNING *;
 
--- Deactivated for SplendidDataTest: \set QUIET true
+\set QUIET true
 
 -- read-only view with WHERE clause
 CREATE VIEW european_city_view AS
@@ -972,13 +972,13 @@ AS 'begin RETURN NULL; end';
 CREATE TRIGGER no_op_trig INSTEAD OF INSERT OR UPDATE OR DELETE
 ON european_city_view FOR EACH ROW EXECUTE PROCEDURE no_op_trig_fn();
 
--- Deactivated for SplendidDataTest: \set QUIET false
+\set QUIET false
 
 INSERT INTO european_city_view VALUES (0, 'x', 10000, 'y', 'z');
 UPDATE european_city_view SET population = 10000;
 DELETE FROM european_city_view;
 
--- Deactivated for SplendidDataTest: \set QUIET true
+\set QUIET true
 
 -- rules bypassing no-op triggers
 CREATE RULE european_city_insert_rule AS ON INSERT TO european_city_view
@@ -997,7 +997,7 @@ RETURNING NEW.*;
 CREATE RULE european_city_delete_rule AS ON DELETE TO european_city_view
 DO INSTEAD DELETE FROM city_view WHERE city_id = OLD.city_id RETURNING *;
 
--- Deactivated for SplendidDataTest: \set QUIET false
+\set QUIET false
 
 -- INSERT not limited by view's WHERE clause, but UPDATE AND DELETE are
 INSERT INTO european_city_view(city_name, country_name)
@@ -1021,7 +1021,7 @@ UPDATE city_view v SET population = 599657
     RETURNING co.country_id, v.country_name,
               v.city_id, v.city_name, v.population;
 
--- Deactivated for SplendidDataTest: \set QUIET true-- Deactivated for SplendidDataTest: 
+\set QUIET true
 
 SELECT * FROM city_view;
 
@@ -1436,6 +1436,11 @@ create trigger trg1 after insert on trigpart3 for each row execute procedure tri
 alter table trigpart attach partition trigpart3 FOR VALUES FROM (2000) to (3000); -- fail
 drop table trigpart3;
 
+-- check display of unrelated triggers
+create trigger samename after delete on trigpart execute function trigger_nothing();
+create trigger samename after delete on trigpart1 execute function trigger_nothing();
+\d trigpart1
+
 drop table trigpart;
 drop function trigger_nothing();
 
@@ -1835,15 +1840,77 @@ create table parent (a int) partition by list (a);
 create table child1 partition of parent for values in (1);
 create trigger tg after insert on parent
   for each row execute procedure trig_nothing();
+create trigger tg_stmt after insert on parent
+  for statement execute procedure trig_nothing();
 select tgrelid::regclass, tgname, tgenabled from pg_trigger
   where tgrelid in ('parent'::regclass, 'child1'::regclass)
-  order by tgrelid::regclass::text;
-alter table only parent enable always trigger tg;
+  order by tgrelid::regclass::text, tgname;
+alter table only parent enable always trigger tg;	-- no recursion because ONLY
+alter table parent enable always trigger tg_stmt;	-- no recursion because statement trigger
 select tgrelid::regclass, tgname, tgenabled from pg_trigger
   where tgrelid in ('parent'::regclass, 'child1'::regclass)
-  order by tgrelid::regclass::text;
+  order by tgrelid::regclass::text, tgname;
+-- The following is a no-op for the parent trigger but not so
+-- for the child trigger, so recursion should be applied.
+alter table parent enable always trigger tg;
+select tgrelid::regclass, tgname, tgenabled from pg_trigger
+  where tgrelid in ('parent'::regclass, 'child1'::regclass)
+  order by tgrelid::regclass::text, tgname;
+-- This variant malfunctioned in some releases.
+alter table parent disable trigger user;
+select tgrelid::regclass, tgname, tgenabled from pg_trigger
+  where tgrelid in ('parent'::regclass, 'child1'::regclass)
+  order by tgrelid::regclass::text, tgname;
 drop table parent, child1;
 
+-- Check processing of foreign key triggers
+create table parent (a int primary key, f int references parent)
+  partition by list (a);
+create table child1 partition of parent for values in (1);
+select tgrelid::regclass, rtrim(tgname, '0123456789') as tgname,
+  tgfoid::regproc, tgenabled
+  from pg_trigger where tgrelid in ('parent'::regclass, 'child1'::regclass)
+  order by tgrelid::regclass::text, tgfoid;
+-- Before v15, this has no effect because parent has no triggers:
+alter table parent disable trigger all;
+select tgrelid::regclass, rtrim(tgname, '0123456789') as tgname,
+  tgfoid::regproc, tgenabled
+  from pg_trigger where tgrelid in ('parent'::regclass, 'child1'::regclass)
+  order by tgrelid::regclass::text, tgfoid;
+drop table parent, child1;
+
+-- Verify that firing state propagates correctly on creation, too
+CREATE TABLE trgfire (i int) PARTITION BY RANGE (i);
+CREATE TABLE trgfire1 PARTITION OF trgfire FOR VALUES FROM (1) TO (10);
+CREATE OR REPLACE FUNCTION tgf() RETURNS trigger LANGUAGE plpgsql
+  AS $$ begin raise exception 'except'; end $$;
+CREATE TRIGGER tg AFTER INSERT ON trgfire FOR EACH ROW EXECUTE FUNCTION tgf();
+INSERT INTO trgfire VALUES (1);
+ALTER TABLE trgfire DISABLE TRIGGER tg;
+INSERT INTO trgfire VALUES (1);
+CREATE TABLE trgfire2 PARTITION OF trgfire FOR VALUES FROM (10) TO (20);
+INSERT INTO trgfire VALUES (11);
+CREATE TABLE trgfire3 (LIKE trgfire);
+ALTER TABLE trgfire ATTACH PARTITION trgfire3 FOR VALUES FROM (20) TO (30);
+INSERT INTO trgfire VALUES (21);
+CREATE TABLE trgfire4 PARTITION OF trgfire FOR VALUES FROM (30) TO (40) PARTITION BY LIST (i);
+CREATE TABLE trgfire4_30 PARTITION OF trgfire4 FOR VALUES IN (30);
+INSERT INTO trgfire VALUES (30);
+CREATE TABLE trgfire5 (LIKE trgfire) PARTITION BY LIST (i);
+CREATE TABLE trgfire5_40 PARTITION OF trgfire5 FOR VALUES IN (40);
+ALTER TABLE trgfire ATTACH PARTITION trgfire5 FOR VALUES FROM (40) TO (50);
+INSERT INTO trgfire VALUES (40);
+SELECT tgrelid::regclass, tgenabled FROM pg_trigger
+  WHERE tgrelid::regclass IN (SELECT oid from pg_class where relname LIKE 'trgfire%')
+  ORDER BY tgrelid::regclass::text;
+ALTER TABLE trgfire ENABLE TRIGGER tg;
+INSERT INTO trgfire VALUES (1);
+INSERT INTO trgfire VALUES (11);
+INSERT INTO trgfire VALUES (21);
+INSERT INTO trgfire VALUES (30);
+INSERT INTO trgfire VALUES (40);
+DROP TABLE trgfire;
+DROP FUNCTION tgf();
 
 --
 -- Test the interaction between transition tables and both kinds of
@@ -1979,6 +2046,11 @@ copy parent (a, b) from stdin;
 -- Deactivated for SplendidDataTest: CCC	42
 -- Deactivated for SplendidDataTest: \.
 
+-- check detach/reattach behavior; statement triggers with transition tables
+-- should not prevent a table from becoming a partition again
+alter table parent detach partition child1;
+alter table parent attach partition child1 for values in ('AAA');
+
 -- DML affecting parent sees tuples collected from children even if
 -- there is no transition table trigger on the children
 drop trigger child1_insert_trig on child1;
@@ -2055,6 +2127,52 @@ drop trigger child_row_trig on child;
 alter table parent attach partition child for values in ('AAA');
 
 drop table child, parent;
+
+--
+-- Verify access of transition tables with UPDATE triggers and tuples
+-- moved across partitions.
+--
+create or replace function dump_update_new() returns trigger language plpgsql as
+$$
+  begin
+    raise notice 'trigger = %, new table = %', TG_NAME,
+                 (select string_agg(new_table::text, ', ' order by a) from new_table);
+    return null;
+  end;
+$$;
+create or replace function dump_update_old() returns trigger language plpgsql as
+$$
+  begin
+    raise notice 'trigger = %, old table = %', TG_NAME,
+                 (select string_agg(old_table::text, ', ' order by a) from old_table);
+    return null;
+  end;
+$$;
+create table trans_tab_parent (a text) partition by list (a);
+create table trans_tab_child1 partition of trans_tab_parent for values in ('AAA1', 'AAA2');
+create table trans_tab_child2 partition of trans_tab_parent for values in ('BBB1', 'BBB2');
+create trigger trans_tab_parent_update_trig
+  after update on trans_tab_parent referencing old table as old_table
+  for each statement execute procedure dump_update_old();
+create trigger trans_tab_parent_insert_trig
+  after insert on trans_tab_parent referencing new table as new_table
+  for each statement execute procedure dump_insert();
+create trigger trans_tab_parent_delete_trig
+  after delete on trans_tab_parent referencing old table as old_table
+  for each statement execute procedure dump_delete();
+insert into trans_tab_parent values ('AAA1'), ('BBB1');
+-- should not trigger access to new table when moving across partitions.
+update trans_tab_parent set a = 'BBB2' where a = 'AAA1';
+drop trigger trans_tab_parent_update_trig on trans_tab_parent;
+create trigger trans_tab_parent_update_trig
+  after update on trans_tab_parent referencing new table as new_table
+  for each statement execute procedure dump_update_new();
+-- should not trigger access to old table when moving across partitions.
+update trans_tab_parent set a = 'AAA2' where a = 'BBB1';
+delete from trans_tab_parent;
+-- clean up
+drop table trans_tab_parent, trans_tab_child1, trans_tab_child2;
+drop function dump_update_new, dump_update_old;
 
 --
 -- Verify behavior of statement triggers on (non-partition)
@@ -2151,6 +2269,11 @@ create index on parent(b);
 copy parent (a, b) from stdin;
 -- Deactivated for SplendidDataTest: DDD	42
 -- Deactivated for SplendidDataTest: \.
+
+-- check disinherit/reinherit behavior; statement triggers with transition
+-- tables should not prevent a table from becoming an inheritance child again
+alter table child1 no inherit parent;
+alter table child1 inherit parent;
 
 -- DML affecting parent sees tuples collected from children even if
 -- there is no transition table trigger on the children
@@ -2348,6 +2471,20 @@ select * from trig_table;
 drop table refd_table, trig_table;
 
 --
+-- Test that we can drop a not-yet-fired deferred trigger
+--
+
+create table refd_table (id int primary key);
+create table trig_table (fk int references refd_table initially deferred);
+
+begin;
+insert into trig_table values (1);
+drop table refd_table cascade;
+commit;
+
+drop table trig_table;
+
+--
 -- self-referential FKs are even more fun
 --
 
@@ -2478,6 +2615,11 @@ create trigger aft_row after insert or update on trigger_parted
 create table trigger_parted_p1 partition of trigger_parted for values in (1)
   partition by list (a);
 create table trigger_parted_p1_1 partition of trigger_parted_p1 for values in (1);
+create table trigger_parted_p2 partition of trigger_parted for values in (2)
+  partition by list (a);
+create table trigger_parted_p2_2 partition of trigger_parted_p2 for values in (2);
+alter table only trigger_parted_p2 disable trigger aft_row;
+alter table trigger_parted_p2_2 enable always trigger aft_row;
 
 -- verify transition table conversion slot's lifetime
 -- https://postgr.es/m/39a71864-b120-5a5c-8cc5-c632b6f16761@amazon.com
@@ -2492,7 +2634,7 @@ insert into convslot_test_child(col1) values ('1');
 insert into convslot_test_parent(col1) values ('3');
 insert into convslot_test_child(col1) values ('3');
 
-create or replace function trigger_function1()
+create function convslot_trig1()
 returns trigger
 language plpgsql
 AS $$
@@ -2503,7 +2645,7 @@ raise notice 'trigger = %, old_table = %',
 return null;
 end; $$;
 
-create or replace function trigger_function2()
+create function convslot_trig2()
 returns trigger
 language plpgsql
 AS $$
@@ -2516,11 +2658,11 @@ end; $$;
 
 create trigger but_trigger after update on convslot_test_child
 referencing new table as new_table
-for each statement execute function trigger_function2();
+for each statement execute function convslot_trig2();
 
 update convslot_test_parent set col1 = col1 || '1';
 
-create or replace function trigger_function3()
+create function convslot_trig3()
 returns trigger
 language plpgsql
 AS $$
@@ -2534,12 +2676,45 @@ end; $$;
 
 create trigger but_trigger2 after update on convslot_test_child
 referencing old table as old_table new table as new_table
-for each statement execute function trigger_function3();
+for each statement execute function convslot_trig3();
 update convslot_test_parent set col1 = col1 || '1';
 
 create trigger bdt_trigger after delete on convslot_test_child
 referencing old table as old_table
-for each statement execute function trigger_function1();
+for each statement execute function convslot_trig1();
 delete from convslot_test_parent;
 
 drop table convslot_test_child, convslot_test_parent;
+drop function convslot_trig1();
+drop function convslot_trig2();
+drop function convslot_trig3();
+
+-- Bug #17607: variant of above in which trigger function raises an error;
+-- we don't see any ill effects unless trigger tuple requires mapping
+
+create table convslot_test_parent (id int primary key, val int)
+partition by range (id);
+
+create table convslot_test_part (val int, id int not null);
+
+alter table convslot_test_parent
+  attach partition convslot_test_part for values from (1) to (1000);
+
+create function convslot_trig4() returns trigger as
+$$begin raise exception 'BOOM!'; end$$ language plpgsql;
+
+create trigger convslot_test_parent_update
+    after update on convslot_test_parent
+    referencing old table as old_rows new table as new_rows
+    for each statement execute procedure convslot_trig4();
+
+insert into convslot_test_parent (id, val) values (1, 2);
+
+begin;
+savepoint svp;
+update convslot_test_parent set val = 3;  -- error expected
+rollback to savepoint svp;
+rollback;
+
+drop table convslot_test_parent;
+drop function convslot_trig4();

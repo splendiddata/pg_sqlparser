@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -96,6 +96,9 @@ public class TypeCast extends Expr {
                 return new StringBuilder().append(arg).append("::").append("\"char\"").toString();
             }
             if (NodeTag.T_Integer.equals(((A_Const) arg).val.type) && ((A_Const) arg).val.val.ival < 0) {
+                return new StringBuilder().append('(').append(arg).append(')').append("::").append(typeName).toString();
+            }
+            if (NodeTag.T_Float.equals(((A_Const)arg).val.type) && ((A_Const) arg).val.val.str.startsWith("-")) {
                 return new StringBuilder().append('(').append(arg).append(')').append("::").append(typeName).toString();
             }
         }

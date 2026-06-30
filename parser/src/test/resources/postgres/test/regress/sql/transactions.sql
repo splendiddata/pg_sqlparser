@@ -366,10 +366,10 @@ drop function inverse(int);
 begin;
 
 savepoint x;
-create table abc (a int);
-insert into abc values (5);
-insert into abc values (10);
-declare foo cursor for select * from abc;
+create table trans_abc (a int);
+insert into trans_abc values (5);
+insert into trans_abc values (10);
+declare foo cursor for select * from trans_abc;
 fetch from foo;
 rollback to x;
 
@@ -379,11 +379,11 @@ commit;
 
 begin;
 
-create table abc (a int);
-insert into abc values (5);
-insert into abc values (10);
-insert into abc values (15);
-declare foo cursor for select * from abc;
+create table trans_abc (a int);
+insert into trans_abc values (5);
+insert into trans_abc values (10);
+insert into trans_abc values (15);
+declare foo cursor for select * from trans_abc;
 
 fetch from foo;
 
@@ -429,7 +429,7 @@ DROP FUNCTION invert(x float8);
 
 -- Tests for AND CHAIN
 
-CREATE TABLE abc (a int);
+CREATE TABLE trans_abc (a int);
 
 -- set nondefault value so we have something to override below
 SET default_transaction_read_only = on;
@@ -438,19 +438,19 @@ START TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ WRITE, DEFERRABLE;
 SHOW transaction_isolation;
 SHOW transaction_read_only;
 SHOW transaction_deferrable;
-INSERT INTO abc VALUES (1);
-INSERT INTO abc VALUES (2);
+INSERT INTO trans_abc VALUES (1);
+INSERT INTO trans_abc VALUES (2);
 COMMIT AND CHAIN;  -- TBLOCK_END
 SHOW transaction_isolation;
 SHOW transaction_read_only;
 SHOW transaction_deferrable;
-INSERT INTO abc VALUES ('error');
-INSERT INTO abc VALUES (3);  -- check it's really aborted
+INSERT INTO trans_abc VALUES ('error');
+INSERT INTO trans_abc VALUES (3);  -- check it's really aborted
 COMMIT AND CHAIN;  -- TBLOCK_ABORT_END
 SHOW transaction_isolation;
 SHOW transaction_read_only;
 SHOW transaction_deferrable;
-INSERT INTO abc VALUES (4);
+INSERT INTO trans_abc VALUES (4);
 COMMIT;
 
 START TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ WRITE, DEFERRABLE;
@@ -458,15 +458,26 @@ SHOW transaction_isolation;
 SHOW transaction_read_only;
 SHOW transaction_deferrable;
 SAVEPOINT x;
-INSERT INTO abc VALUES ('error');
+INSERT INTO trans_abc VALUES ('error');
 COMMIT AND CHAIN;  -- TBLOCK_ABORT_PENDING
 SHOW transaction_isolation;
 SHOW transaction_read_only;
 SHOW transaction_deferrable;
-INSERT INTO abc VALUES (5);
+INSERT INTO trans_abc VALUES (5);
 COMMIT;
 
 START TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ WRITE, DEFERRABLE;
+SHOW transaction_isolation;
+SHOW transaction_read_only;
+SHOW transaction_deferrable;
+SAVEPOINT x;
+COMMIT AND CHAIN;  -- TBLOCK_SUBCOMMIT
+SHOW transaction_isolation;
+SHOW transaction_read_only;
+SHOW transaction_deferrable;
+COMMIT;
+
+START TRANSACTION ISOLATION LEVEL READ COMMITTED, READ WRITE, DEFERRABLE;
 SHOW transaction_isolation;
 SHOW transaction_read_only;
 SHOW transaction_deferrable;
@@ -482,12 +493,12 @@ START TRANSACTION ISOLATION LEVEL SERIALIZABLE, READ WRITE, NOT DEFERRABLE;
 SHOW transaction_isolation;
 SHOW transaction_read_only;
 SHOW transaction_deferrable;
-INSERT INTO abc VALUES (6);
+INSERT INTO trans_abc VALUES (6);
 ROLLBACK AND CHAIN;  -- TBLOCK_ABORT_PENDING
 SHOW transaction_isolation;
 SHOW transaction_read_only;
 SHOW transaction_deferrable;
-INSERT INTO abc VALUES ('error');
+INSERT INTO trans_abc VALUES ('error');
 ROLLBACK AND CHAIN;  -- TBLOCK_ABORT_END
 SHOW transaction_isolation;
 SHOW transaction_read_only;
@@ -498,11 +509,11 @@ ROLLBACK;
 COMMIT AND CHAIN;  -- error
 ROLLBACK AND CHAIN;  -- error
 
-SELECT * FROM abc ORDER BY 1;
+SELECT * FROM trans_abc ORDER BY 1;
 
 RESET default_transaction_read_only;
 
-DROP TABLE abc;
+DROP TABLE trans_abc;
 
 
 -- Test assorted behaviors around the implicit transaction block created
@@ -567,7 +578,7 @@ SHOW transaction_read_only;
 -- Deactivated for SplendidDataTest: SET TRANSACTION READ ONLY\; ROLLBACK AND CHAIN;  -- error
 SHOW transaction_read_only;
 
-CREATE TABLE abc (a int);
+CREATE TABLE trans_abc (a int);
 
 -- COMMIT/ROLLBACK + COMMIT/ROLLBACK AND CHAIN
 -- Deactivated for SplendidDataTest: INSERT INTO abc VALUES (7)\; COMMIT\; INSERT INTO abc VALUES (8)\; COMMIT AND CHAIN;  -- 7 commit, 8 error
@@ -592,14 +603,14 @@ SET default_transaction_isolation = 'read committed';
 -- Deactivated for SplendidDataTest: START TRANSACTION ISOLATION LEVEL REPEATABLE READ\; INSERT INTO abc VALUES (17)\; COMMIT\; INSERT INTO abc VALUES (18)\; COMMIT AND CHAIN;  -- 17 commit, 18 error
 SHOW transaction_isolation;  -- out of transaction block
 
--- Deactivated for SplendidDataTest: START TRANSACTION ISOLATION LEVEL REPEATABLE READ\; INSERT INTO abc VALUES (19)\; ROLLBACK\; INSERT INTO abc VALUES (20)\; ROLLBACK AND CHAIN;  -- 19 rollback, 20 error
+-- Deactivated for SplendidDataTest: START TRANSACTION ISOLATION LEVEL REPEATABLE READ\; INSERT INTO trans_abc VALUES (19)\; ROLLBACK\; INSERT INTO trans_abc VALUES (20)\; ROLLBACK AND CHAIN;  -- 19 rollback, 20 error
 SHOW transaction_isolation;  -- out of transaction block
 
 RESET default_transaction_isolation;
 
-SELECT * FROM abc ORDER BY 1;
+SELECT * FROM trans_abc ORDER BY 1;
 
-DROP TABLE abc;
+DROP TABLE trans_abc;
 
 
 -- Test for successful cleanup of an aborted transaction at session exit.

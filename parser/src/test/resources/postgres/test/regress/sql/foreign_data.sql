@@ -62,6 +62,11 @@ CREATE FUNCTION invalid_fdw_handler() RETURNS int LANGUAGE SQL AS 'SELECT 1;';
 CREATE FOREIGN DATA WRAPPER test_fdw HANDLER invalid_fdw_handler;  -- ERROR
 CREATE FOREIGN DATA WRAPPER test_fdw HANDLER test_fdw_handler HANDLER invalid_fdw_handler;  -- ERROR
 CREATE FOREIGN DATA WRAPPER test_fdw HANDLER test_fdw_handler;
+
+-- should preserve dependency on test_fdw_handler
+ALTER FOREIGN DATA WRAPPER test_fdw VALIDATOR postgresql_fdw_validator;
+DROP FUNCTION test_fdw_handler(); -- ERROR
+
 DROP FOREIGN DATA WRAPPER test_fdw;
 
 -- ALTER FOREIGN DATA WRAPPER
@@ -376,10 +381,12 @@ COMMENT ON COLUMN ft1.c1 IS NULL;
 ALTER FOREIGN TABLE ft1 ADD COLUMN c4 integer;
 ALTER FOREIGN TABLE ft1 ADD COLUMN c5 integer DEFAULT 0;
 ALTER FOREIGN TABLE ft1 ADD COLUMN c6 integer;
+ALTER FOREIGN TABLE ft1 ADD COLUMN IF NOT EXISTS c6 integer;
 ALTER FOREIGN TABLE ft1 ADD COLUMN c7 integer NOT NULL;
 ALTER FOREIGN TABLE ft1 ADD COLUMN c8 integer;
 ALTER FOREIGN TABLE ft1 ADD COLUMN c9 integer;
 ALTER FOREIGN TABLE ft1 ADD COLUMN c10 integer OPTIONS (p1 'v1');
+ALTER FOREIGN TABLE ft1 ADD c11 integer;
 
 ALTER FOREIGN TABLE ft1 ALTER COLUMN c4 SET DEFAULT 0;
 ALTER FOREIGN TABLE ft1 ALTER COLUMN c5 DROP DEFAULT;
@@ -412,8 +419,12 @@ ALTER FOREIGN TABLE ft1 OPTIONS (DROP delimiter, SET quote '~', ADD escape '@');
 ALTER FOREIGN TABLE ft1 DROP COLUMN no_column;                  -- ERROR
 ALTER FOREIGN TABLE ft1 DROP COLUMN IF EXISTS no_column;
 ALTER FOREIGN TABLE ft1 DROP COLUMN c9;
+ALTER FOREIGN TABLE ft1 DROP c11;
+ALTER FOREIGN TABLE ft1 ADD COLUMN c11 serial;
 ALTER FOREIGN TABLE ft1 SET SCHEMA foreign_schema;
 ALTER FOREIGN TABLE ft1 SET TABLESPACE ts;                      -- ERROR
+ALTER FOREIGN TABLE foreign_schema.ft1 SET TABLESPACE ts;       -- ERROR
+ALTER SEQUENCE foreign_schema.ft1_c11_seq SET SCHEMA public;    -- ERROR
 ALTER FOREIGN TABLE foreign_schema.ft1 RENAME c1 TO foreign_column_1;
 ALTER FOREIGN TABLE foreign_schema.ft1 RENAME TO foreign_table_1;
 \d foreign_schema.foreign_table_1
@@ -421,10 +432,12 @@ ALTER FOREIGN TABLE foreign_schema.ft1 RENAME TO foreign_table_1;
 -- alter noexisting table
 ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 ADD COLUMN c4 integer;
 ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 ADD COLUMN c6 integer;
+ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 ADD COLUMN IF NOT EXISTS c6 integer;
 ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 ADD COLUMN c7 integer NOT NULL;
 ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 ADD COLUMN c8 integer;
 ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 ADD COLUMN c9 integer;
 ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 ADD COLUMN c10 integer OPTIONS (p1 'v1');
+ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 ADD c11 integer;
 
 ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 ALTER COLUMN c6 SET NOT NULL;
 ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 ALTER COLUMN c7 DROP NOT NULL;
@@ -438,8 +451,10 @@ ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 DROP CONSTRAINT IF EXISTS no_cons
 ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 DROP CONSTRAINT ft1_c1_check;
 ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 OWNER TO regress_test_role;
 ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 OPTIONS (DROP delimiter, SET quote '~', ADD escape '@');
+ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 DROP COLUMN no_column;
 ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 DROP COLUMN IF EXISTS no_column;
 ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 DROP COLUMN c9;
+ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 DROP c11;
 ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 SET SCHEMA foreign_schema;
 ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 RENAME c1 TO foreign_column_1;
 ALTER FOREIGN TABLE IF EXISTS doesnt_exist_ft1 RENAME TO foreign_table_1;
@@ -631,19 +646,19 @@ CREATE TABLE fd_pt1 (
 );
 CREATE FOREIGN TABLE ft2 () INHERITS (fd_pt1)
   SERVER s0 OPTIONS (delimiter ',', quote '"', "be quoted" 'value');
--- Deactivated for SplendidDataTest: \d+ pt1
--- Deactivated for SplendidDataTest: \d+ ft2-- Deactivated for SplendidDataTest: 
+\d+ fd_pt1
+\d+ ft2
 DROP FOREIGN TABLE ft2;
--- Deactivated for SplendidDataTest: \d+ pt1
+\d+ fd_pt1
 CREATE FOREIGN TABLE ft2 (
 	c1 integer NOT NULL,
 	c2 text,
 	c3 date
 ) SERVER s0 OPTIONS (delimiter ',', quote '"', "be quoted" 'value');
--- Deactivated for SplendidDataTest: \d+ ft2
+\d+ ft2
 ALTER FOREIGN TABLE ft2 INHERIT fd_pt1;
--- Deactivated for SplendidDataTest: \d+ fd_pt1
--- Deactivated for SplendidDataTest: \d+ ft2
+\d+ fd_pt1
+\d+ ft2
 CREATE TABLE ct3() INHERITS(ft2);
 CREATE FOREIGN TABLE ft3 (
 	c1 integer NOT NULL,
@@ -651,9 +666,9 @@ CREATE FOREIGN TABLE ft3 (
 	c3 date
 ) INHERITS(ft2)
   SERVER s0;
--- Deactivated for SplendidDataTest: \d+ ft2
--- Deactivated for SplendidDataTest: \d+ ct3
--- Deactivated for SplendidDataTest: \d+ ft3
+\d+ ft2
+\d+ ct3
+\d+ ft3
 
 -- add attributes recursively
 ALTER TABLE fd_pt1 ADD COLUMN c4 integer;
@@ -661,10 +676,10 @@ ALTER TABLE fd_pt1 ADD COLUMN c5 integer DEFAULT 0;
 ALTER TABLE fd_pt1 ADD COLUMN c6 integer;
 ALTER TABLE fd_pt1 ADD COLUMN c7 integer NOT NULL;
 ALTER TABLE fd_pt1 ADD COLUMN c8 integer;
--- Deactivated for SplendidDataTest: \d+ pt1
--- Deactivated for SplendidDataTest: \d+ ft2
--- Deactivated for SplendidDataTest: \d+ ct3
--- Deactivated for SplendidDataTest: \d+ ft3
+\d+ fd_pt1
+\d+ ft2
+\d+ ct3
+\d+ ft3
 
 -- alter attributes recursively
 ALTER TABLE fd_pt1 ALTER COLUMN c4 SET DEFAULT 0;
@@ -678,8 +693,8 @@ ALTER TABLE fd_pt1 ALTER COLUMN c1 SET STATISTICS 10000;
 ALTER TABLE fd_pt1 ALTER COLUMN c1 SET (n_distinct = 100);
 ALTER TABLE fd_pt1 ALTER COLUMN c8 SET STATISTICS -1;
 ALTER TABLE fd_pt1 ALTER COLUMN c8 SET STORAGE EXTERNAL;
--- Deactivated for SplendidDataTest: \d+ pt1
--- Deactivated for SplendidDataTest: \d+ ft2
+\d+ fd_pt1
+\d+ ft2
 
 -- drop attributes recursively
 ALTER TABLE fd_pt1 DROP COLUMN c4;
@@ -687,8 +702,8 @@ ALTER TABLE fd_pt1 DROP COLUMN c5;
 ALTER TABLE fd_pt1 DROP COLUMN c6;
 ALTER TABLE fd_pt1 DROP COLUMN c7;
 ALTER TABLE fd_pt1 DROP COLUMN c8;
--- Deactivated for SplendidDataTest: \d+ fd_pt1
--- Deactivated for SplendidDataTest: \d+ ft2
+\d+ fd_pt1
+\d+ ft2
 
 -- add constraints recursively
 ALTER TABLE fd_pt1 ADD CONSTRAINT fd_pt1chk1 CHECK (c1 > 0) NO INHERIT;
@@ -699,8 +714,8 @@ SELECT relname, conname, contype, conislocal, coninhcount, connoinherit
   WHERE pc.relname = 'fd_pt1'
   ORDER BY 1,2;
 -- child does not inherit NO INHERIT constraints
--- Deactivated for SplendidDataTest: \d+ fd_pt1
--- Deactivated for SplendidDataTest: \d+ ft2
+\d+ fd_pt1
+\d+ ft2
 DROP FOREIGN TABLE ft2; -- ERROR
 DROP FOREIGN TABLE ft2 CASCADE;
 CREATE FOREIGN TABLE ft2 (
@@ -713,8 +728,8 @@ ALTER FOREIGN TABLE ft2 INHERIT fd_pt1;                            -- ERROR
 ALTER FOREIGN TABLE ft2 ADD CONSTRAINT fd_pt1chk2 CHECK (c2 <> '');
 ALTER FOREIGN TABLE ft2 INHERIT fd_pt1;
 -- child does not inherit NO INHERIT constraints
--- Deactivated for SplendidDataTest: \d+ pt1
--- Deactivated for SplendidDataTest: \d+ ft2
+\d+ fd_pt1
+\d+ ft2
 
 -- drop constraints recursively
 ALTER TABLE fd_pt1 DROP CONSTRAINT fd_pt1chk1 CASCADE;
@@ -723,12 +738,12 @@ ALTER TABLE fd_pt1 DROP CONSTRAINT fd_pt1chk2 CASCADE;
 -- NOT VALID case
 INSERT INTO fd_pt1 VALUES (1, 'fd_pt1'::text, '1994-01-01'::date);
 ALTER TABLE fd_pt1 ADD CONSTRAINT fd_pt1chk3 CHECK (c2 <> '') NOT VALID;
--- Deactivated for SplendidDataTest: \d+ fd_pt1
--- Deactivated for SplendidDataTest: \d+ ft2
+\d+ fd_pt1
+\d+ ft2
 -- VALIDATE CONSTRAINT need do nothing on foreign tables
 ALTER TABLE fd_pt1 VALIDATE CONSTRAINT fd_pt1chk3;
--- Deactivated for SplendidDataTest: \d+ fd_pt1
--- Deactivated for SplendidDataTest: \d+ ft2
+\d+ fd_pt1
+\d+ ft2
 
 -- changes name of an attribute recursively
 ALTER TABLE fd_pt1 RENAME COLUMN c1 TO f1;
@@ -736,8 +751,8 @@ ALTER TABLE fd_pt1 RENAME COLUMN c2 TO f2;
 ALTER TABLE fd_pt1 RENAME COLUMN c3 TO f3;
 -- changes name of a constraint recursively
 ALTER TABLE fd_pt1 RENAME CONSTRAINT fd_pt1chk3 TO f2_check;
--- Deactivated for SplendidDataTest: \d+ fd_pt1
--- Deactivated for SplendidDataTest: \d+ ft2
+\d+ fd_pt1
+\d+ ft2
 
 -- TRUNCATE doesn't work on foreign tables, either directly or recursively
 TRUNCATE ft2;  -- ERROR

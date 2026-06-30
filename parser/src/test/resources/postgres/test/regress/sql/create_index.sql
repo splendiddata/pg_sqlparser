@@ -51,6 +51,10 @@ CREATE INDEX six ON shighway USING btree (name text_ops);
 COMMENT ON INDEX six_wrong IS 'bad index';
 COMMENT ON INDEX six IS 'good index';
 COMMENT ON INDEX six IS NULL;
+SELECT obj_description('six'::regclass, 'pg_class') IS NULL AS six_comment_is_null;
+COMMENT ON INDEX six IS 'add the comment back';
+COMMENT ON INDEX six IS ''; -- empty string removes the comment, same as NULL
+SELECT obj_description('six'::regclass, 'pg_class') IS NULL AS six_comment_is_null;
 
 --
 -- BTREE ascending/descending cases
@@ -264,6 +268,10 @@ EXPLAIN (COSTS OFF)
 SELECT circle_center(f1), round(radius(f1)) as radius FROM gcircle_tbl ORDER BY f1 <-> '(200,300)'::point LIMIT 10;
 SELECT circle_center(f1), round(radius(f1)) as radius FROM gcircle_tbl ORDER BY f1 <-> '(200,300)'::point LIMIT 10;
 
+EXPLAIN (COSTS OFF)
+SELECT point(x,x), (SELECT f1 FROM gpolygon_tbl ORDER BY f1 <-> point(x,x) LIMIT 1) as c FROM generate_series(0,10,1) x;
+SELECT point(x,x), (SELECT f1 FROM gpolygon_tbl ORDER BY f1 <-> point(x,x) LIMIT 1) as c FROM generate_series(0,10,1) x;
+
 -- Now check the results from bitmap indexscan
 SET enable_seqscan = OFF;
 SET enable_indexscan = OFF;
@@ -379,6 +387,9 @@ CREATE INDEX hash_txt_index ON hash_txt_heap USING hash (random text_ops);
 
 CREATE INDEX hash_f8_index ON hash_f8_heap USING hash (random float8_ops) WITH (fillfactor=60);
 
+CREATE INDEX hash_i4_partial_index ON hash_i4_heap USING hash (seqno)
+  WHERE seqno = 9999;
+
 CREATE UNLOGGED TABLE unlogged_hash_table (id int4);
 CREATE INDEX unlogged_hash_index ON unlogged_hash_table USING hash (id int4_ops);
 DROP TABLE unlogged_hash_table;
@@ -490,11 +501,22 @@ CREATE INDEX CONCURRENTLY concur_index4 on concur_heap(f2) WHERE f1='a';
 CREATE INDEX CONCURRENTLY concur_index5 on concur_heap(f2) WHERE f1='x';
 -- here we also check that you can default the index name
 CREATE INDEX CONCURRENTLY on concur_heap((f2||f1));
-
 -- You can't do a concurrent index build in a transaction
 BEGIN;
 CREATE INDEX CONCURRENTLY concur_index7 ON concur_heap(f1);
 COMMIT;
+-- test where predicate is able to do a transactional update during
+-- a concurrent build before switching pg_index state flags.
+CREATE FUNCTION predicate_stable() RETURNS bool IMMUTABLE
+LANGUAGE plpgsql AS $$
+BEGIN
+  EXECUTE 'SELECT txid_current()';
+  RETURN true;
+END; $$;
+CREATE INDEX CONCURRENTLY concur_index8 ON concur_heap (f1)
+  WHERE predicate_stable();
+DROP INDEX concur_index8;
+DROP FUNCTION predicate_stable();
 
 -- But you can do a regular index build in a transaction
 BEGIN;
@@ -604,7 +626,7 @@ DROP TABLE cwi_test;
 CREATE TABLE syscol_table (a INT);
 
 -- System columns cannot be indexed
-CREATE INDEX ON syscolcol_table (ctid);
+CREATE INDEX ON syscol_table (ctid);
 
 -- nor used in expressions
 CREATE INDEX ON syscol_table ((ctid >= '(1000,0)'));
@@ -886,6 +908,15 @@ REINDEX TABLE CONCURRENTLY concur_replident;
 SELECT indexrelid::regclass, indisreplident FROM pg_index
   WHERE indrelid = 'concur_replident'::regclass;
 DROP TABLE concur_replident;
+-- Check that opclass parameters are preserved
+CREATE TABLE concur_appclass_tab(i tsvector, j tsvector, k tsvector);
+CREATE INDEX concur_appclass_ind on concur_appclass_tab
+  USING gist (i tsvector_ops (siglen='1000'), j tsvector_ops (siglen='500'));
+CREATE INDEX concur_appclass_ind_2 on concur_appclass_tab
+  USING gist (k tsvector_ops (siglen='300'), j tsvector_ops);
+REINDEX TABLE CONCURRENTLY concur_appclass_tab;
+\d concur_appclass_tab
+DROP TABLE concur_appclass_tab;
 
 -- Partitions
 -- Create some partitioned tables
