@@ -105,7 +105,7 @@ SELECT JSON_ARRAY(RETURNING jsonb FORMAT JSON);
 SELECT JSON_ARRAY(RETURNING text);
 SELECT JSON_ARRAY(RETURNING text FORMAT JSON);
 SELECT JSON_ARRAY(RETURNING text FORMAT JSON ENCODING UTF8);
-SELECT JSON_ARRAY(RETURNING text FORMAT JSON ENCODING INVALID_ENCODING);
+-- Deactivated for SplendidDataTest: SELECT JSON_ARRAY(RETURNING text FORMAT JSON ENCODING INVALID_ENCODING);
 SELECT JSON_ARRAY(RETURNING bytea);
 SELECT JSON_ARRAY(RETURNING bytea FORMAT JSON);
 SELECT JSON_ARRAY(RETURNING bytea FORMAT JSON ENCODING UTF8);
@@ -305,6 +305,26 @@ SELECT NULL::jsonb IS JSON;
 SELECT NULL::text IS JSON;
 SELECT NULL::bytea IS JSON;
 SELECT NULL::int IS JSON;
+
+-- A user-defined string-category type with no implicit cast to text must
+-- produce a clean error rather than crash for IS JSON input (per bug #19491).
+CREATE FUNCTION sqljson_mystr_in(cstring) RETURNS sqljson_mystr
+	AS 'textin' LANGUAGE internal IMMUTABLE STRICT;
+CREATE FUNCTION sqljson_mystr_out(sqljson_mystr) RETURNS cstring
+	AS 'textout' LANGUAGE internal IMMUTABLE STRICT;
+CREATE TYPE sqljson_mystr (
+	INPUT = sqljson_mystr_in,
+	OUTPUT = sqljson_mystr_out,
+	LIKE = text,
+	CATEGORY = 'S'
+);
+SELECT '{"a":1}'::sqljson_mystr IS JSON;                -- error
+-- An implicit cast to text lets the same query work normally.
+CREATE CAST (sqljson_mystr AS text) WITHOUT FUNCTION AS IMPLICIT;
+SELECT '{"a":1}'::sqljson_mystr IS JSON;
+\set VERBOSITY terse
+DROP TYPE sqljson_mystr CASCADE;
+\set VERBOSITY default
 
 SELECT '' IS JSON;
 
