@@ -38,7 +38,7 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<sonar.exclusions>file:**/generated-sources/**</sonar.exclusions>
-		<log4j.version>2.25.2</log4j.version>
+		<log4j.version>2.26.0</log4j.version>
 		<javafx.version>11.0.2</javafx.version>
 		<!-- Beware! jupitor.version 5.14.1 is the newest one that still runs in Java 11 -->
 		<jupiter.version>5.14.1</jupiter.version>
@@ -92,7 +92,7 @@
 			<dependency>
 				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-plugin-api</artifactId>
-				<version>3.9.11</version>
+				<version>3.9.16</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven.plugin-tools</groupId>
@@ -108,24 +108,24 @@
 			<dependency>
 				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-core</artifactId>
-				<version>3.9.11</version>
+				<version>3.9.16</version>
 			</dependency>
 
 			<dependency>
 				<groupId>com.github.javaparser</groupId>
 				<artifactId>javaparser-core</artifactId>
-				<version>3.27.1</version>
+				<version>3.28.2</version>
 			</dependency>
 
 			<dependency>
 				<groupId>jakarta.xml.bind</groupId>
 				<artifactId>jakarta.xml.bind-api</artifactId>
-				<version>4.0.4</version>
+				<version>4.0.5</version>
 			</dependency>
 			<dependency>
 				<groupId>org.glassfish.jaxb</groupId>
 				<artifactId>jaxb-runtime</artifactId>
-				<version>4.0.6</version>
+				<version>4.0.9</version>
 			</dependency>
 
 			<dependency>
@@ -156,18 +156,18 @@
 			<dependency>
 				<groupId>org.checkerframework</groupId>
 				<artifactId>checker-qual</artifactId>
-				<version>3.47.0</version>
+				<version>4.2.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-model</artifactId>
-				<version>3.9.7</version>
+				<version>3.9.16</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-artifact</artifactId>
-				<version>3.9.7</version>
+				<version>3.9.16</version>
 				<scope>provided</scope>
 			</dependency>
 		</dependencies>
@@ -184,7 +184,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.14.1</version>
+					<version>3.15.0</version>
 					<configuration>
 						<release>${java.version}</release>
 						<compilerArgs>
@@ -200,7 +200,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>exec-maven-plugin</artifactId>
-					<version>3.6.2</version>
+					<version>3.6.3</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
@@ -215,7 +215,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
-					<version>3.9.0</version>
+					<version>3.11.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -233,7 +233,7 @@
 				<plugin>
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>0.8.14</version>
+					<version>0.8.15</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -243,7 +243,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-site-plugin</artifactId>
-					<version>3.21.0</version>
+					<version>3.22.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -253,7 +253,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>3.5.4</version>
+					<version>3.5.6</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -276,12 +276,12 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
-					<version>3.3.1</version>
+					<version>3.5.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.6.2</version>
+					<version>3.6.3</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -338,7 +338,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.3.1</version>
+				<version>3.4.0</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -369,7 +369,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.6.3</version>
+				<version>3.10.0</version>
 				<configuration>
 					<show>public</show>
 					<failOnError>false</failOnError>
@@ -392,7 +392,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-report-plugin</artifactId>
-				<version>3.5.4</version>
+				<version>3.5.6</version>
 				<configuration>
 					<!-- place your configuration here -->
 				</configuration>
@@ -420,7 +420,7 @@
 						</reports>
 					</reportSet>
 					<reportSet>
-						<id>aggreagte</id>
+						<id>aggregate</id>
 						<reports>
 							<report>report-aggregate</report>
 						</reports>
@@ -431,9 +431,10 @@
 	</reporting>
 
 	<distributionManagement>
-		<site>
-			<id>www.splendiddata.com</id>
-			<url>scp://www.splediddata.com/www/docs/pg_sqlparser/</url>
-		</site>
+		<repository>
+			<id>github</id>
+			<name>GitHub Splendid Data Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com//splendiddata/pg_sqlparser</url>
+		</repository>
 	</distributionManagement>
 </project>
