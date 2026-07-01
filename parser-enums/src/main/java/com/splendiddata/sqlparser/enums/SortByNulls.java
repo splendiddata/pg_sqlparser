@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -22,9 +22,7 @@ package com.splendiddata.sqlparser.enums;
  * /postgresql-9.3.4/src/include/nodes/parsenodes.h
  * 
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
-
 public enum SortByNulls {
     SORTBY_NULLS_DEFAULT(""),
     SORTBY_NULLS_FIRST(" nulls first"),

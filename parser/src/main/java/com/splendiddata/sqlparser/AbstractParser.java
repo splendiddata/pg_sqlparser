@@ -75,7 +75,6 @@ import com.splendiddata.sqlparser.structure.core_yyscan_t;
  * Just a base class for the PgSqlParser, implementing some functions that are not generated.
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 public class AbstractParser extends AbstractCProgram {
     /*
@@ -478,7 +477,7 @@ public class AbstractParser extends AbstractCProgram {
      * @param integer1
      * @param integer2
      * @return List&lt;Integer&gt; with two Integer values
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     static List<Integer> list_make2_int(Integer integer1, Integer integer2) {
         List<Integer> theList = new List<>();
@@ -639,7 +638,7 @@ public class AbstractParser extends AbstractCProgram {
      * @param list
      *            May be null
      * @return T the content of the second list cell or null if there isn't any
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     static <_T extends Object> _T lthird(List list) {
@@ -1056,7 +1055,6 @@ public class AbstractParser extends AbstractCProgram {
      * @param col_cell
      *            The ListCell that has a pointer to the next cell (or null if there isn't any)
      * @return ListCell<T> the next ListCell or null if there isn't any
-     * @since 8.0 - Postgres version 13
      */
     static <T> ListCell<T> lnext(List<T> lst, ListCell<T> col_cell) {
         return col_cell.next;
@@ -1364,7 +1362,6 @@ public class AbstractParser extends AbstractCProgram {
      * @param Location
      *            the location within the query
      * @return DefElem created from the arguments
-     * @since 5.0
      */
     protected DefElem makeDefElem(String name, Node arg, Location location) {
         DefElem res = new DefElem();
@@ -1394,7 +1391,6 @@ public class AbstractParser extends AbstractCProgram {
      * @param Location
      *            the location within the query
      * @return DefElem freshly created
-     * @since 5.0
      */
     protected DefElem makeDefElemExtended(String nameSpace, String name, Node arg, DefElemAction defaction,
             Location location) {
@@ -1418,7 +1414,6 @@ public class AbstractParser extends AbstractCProgram {
      * @param def
      *            The DefElem to extract an integer from
      * @return int The integer value of the def
-     * @since 6.0 - Postgres version 11
      */
     protected int defGetInt32(DefElem def) {
         if (def.arg == null) {
@@ -1449,7 +1444,6 @@ public class AbstractParser extends AbstractCProgram {
      * @param va_cols
      *            List of column names
      * @return VacuumRelation freshly created
-     * @since 6.0 - Postgres version 11
      */
     protected VacuumRelation makeVacuumRelation(RangeVar relation, Oid oid, List<Value> va_cols) {
         VacuumRelation v = new VacuumRelation();
@@ -1606,7 +1600,7 @@ public class AbstractParser extends AbstractCProgram {
      * @param unique_keys
      *            for the returned JsonIsPredicate
      * @param exprBaseType
-     *            since 19beta1
+     *            since Postgres 19beta1
      * @param location
      *            from the parser
      * @return JsonIsPredicate with the specified properties

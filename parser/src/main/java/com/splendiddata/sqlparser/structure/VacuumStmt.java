@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -33,15 +33,12 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * </p>
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public class VacuumStmt extends Node {
 
     /**
      * list of DefElem nodes
-     * 
-     * @since 7.0 - Postgres 12. Used to be an ored integer
      */
     @XmlElementWrapper(name = "options")
     @XmlElement(name = "option")
@@ -49,8 +46,6 @@ public class VacuumStmt extends Node {
 
     /**
      * list of VacuumRelation, or NIL for all
-     * 
-     * @since 6.0 - Postgres version 11
      */
     @XmlElementWrapper(name = "rels")
     @XmlElement(name = "rel")
@@ -58,8 +53,6 @@ public class VacuumStmt extends Node {
 
     /**
      * true for VACUUM, false for ANALYZE
-     * 
-     * @since 7.0 - Postgres 12
      */
     @XmlAttribute
     public boolean is_vacuumcmd;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -30,7 +30,6 @@ import com.splendiddata.sqlparser.enums.NodeTag;
  * Copied from /postgresql-12beta2/src/include/nodes/parsenodes.h, but the unused fields left out.
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public class CommonTableExpr extends Node {
@@ -45,8 +44,6 @@ public class CommonTableExpr extends Node {
 
     /**
      * is this an optimization fence?
-     * 
-     * @since 7.0 - Postgres 12
      */
     @XmlAttribute
     public CTEMaterialize ctematerialized;

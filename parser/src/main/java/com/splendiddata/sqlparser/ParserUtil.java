@@ -41,7 +41,6 @@ import com.splendiddata.sqlparser.structure.Value;
  * Some utility routines for the parser
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 public final class ParserUtil {
     private static final Logger log = LogManager.getLogger(ParserUtil.class);
@@ -169,7 +168,6 @@ public final class ParserUtil {
      * @param name
      *            as interpreted by the sql parser
      * @return String period separated qualified name
-     * @since 5.0
      */
     @SuppressWarnings("unchecked")
     public static String nameToSql(Node name) {
@@ -358,7 +356,6 @@ public final class ParserUtil {
      *            The word that is to be put between the element and the qualified object name. Think of "on" for a rule
      *            or a trigger, or "on domain" for a constraint on a domain
      * @return String The name in an sql format
-     * @since 5.0
      */
     public static String elementOnObjectNameToSql(List<Node> nameList, String objectElementSeparator) {
         if (nameList == null) {

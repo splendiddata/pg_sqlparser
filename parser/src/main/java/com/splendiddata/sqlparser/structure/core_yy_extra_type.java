@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -23,7 +23,6 @@ import com.splendiddata.sqlparser.enums.BackslashQuoteType;
  * Copied from /postgresql-9.3.4/src/include/parser/scanner.h#core_yy_extra_type
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 public class core_yy_extra_type {
     /**
@@ -42,8 +41,6 @@ public class core_yy_extra_type {
     public StringBuilder literalbuf = new StringBuilder();
     /**
      * start cond. before end quote
-     * 
-     * @since 8.0 - Postgres version 13
      */
     public int state_before_str_stop;
     /** depth of nesting in slash-star comments */
@@ -52,8 +49,6 @@ public class core_yy_extra_type {
     public String dolqstart;
     /**
      * one-element stack for PUSH_YYLLOC()
-     * 
-     * @since 8.0 - Postgres version 13
      */
     public long save_yylloc;
 
@@ -68,8 +63,7 @@ public class core_yy_extra_type {
     public static final BackslashQuoteType backslash_quote = BackslashQuoteType.BACKSLASH_QUOTE_SAFE_ENCODING;
 
     /**
-     * TODO Please insert some explanation here
-     *
+     * Sets some initial content
      */
     public void initialize() {
         saw_non_ascii = false;

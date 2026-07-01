@@ -15,10 +15,10 @@
 package com.splendiddata.sqlparser.enums;
 
 /**
- * Copied from /postgresql-19beta1/src/include/nodes/parsenodes.h
+ * Copied from /postgresql-Postgres 19beta1/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 19beta1
+ * @since Postgres 19beta1
  */
 public enum GraphElementPatternKind {
     VERTEX_PATTERN,

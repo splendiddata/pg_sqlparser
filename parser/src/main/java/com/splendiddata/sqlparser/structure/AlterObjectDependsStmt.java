@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -26,7 +26,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * Initially copied from /postgresql-9.6.1/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 4.0, Postgres version 9.6
  */
 @XmlRootElement(namespace = "parser")
 public class AlterObjectDependsStmt extends Node {
@@ -40,8 +39,6 @@ public class AlterObjectDependsStmt extends Node {
 
     /**
      * name of the object
-     * 
-     * @since 5.0
      */
     @XmlElement
     public Node object;
@@ -52,8 +49,6 @@ public class AlterObjectDependsStmt extends Node {
 
     /**
      * set true to remove dep rather than add
-     * 
-     * @since 8.0 - Postgres version 13
      */
     public boolean remove;
 

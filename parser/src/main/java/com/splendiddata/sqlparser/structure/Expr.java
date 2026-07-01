@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -25,7 +25,6 @@ import com.splendiddata.sqlparser.enums.NodeTag;
  * Base class for expressions
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public abstract class Expr extends Node {

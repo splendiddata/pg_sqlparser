@@ -34,7 +34,6 @@ import com.splendiddata.sqlparser.enums.OnConflictAction;
  * </p>
  * 
  * @author Splendid Data Product Development B.V.
- * @since 3.0.0
  */
 @XmlRootElement(namespace = "parser")
 public class OnConflictClause extends Node {
@@ -49,7 +48,7 @@ public class OnConflictClause extends Node {
     /**
      * lock strength for DO SELECT
      * 
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     @XmlAttribute
     public LockClauseStrength lockStrength;

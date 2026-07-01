@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -18,7 +18,6 @@ package com.splendiddata.sqlparser.enums;
  * Copied from /postgresql-9.5beta2/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 3.0.0
  */
 public enum AlterTableType {
     /** add column */
@@ -41,8 +40,6 @@ public enum AlterTableType {
     AT_SetExpression,
     /**
      * alter column drop expression
-     * 
-     * @since 8.0 - Postgres 13
      */
     AT_DropExpression,
     /** alter column set statistics */
@@ -171,14 +168,10 @@ public enum AlterTableType {
     AT_GenericOptions,
     /**
      * ATTACH PARTITION
-     * 
-     * @since 5.0
      */
     AT_AttachPartition,
     /**
      * DETACH PARTITION
-     * 
-     * @since 5.0
      */
     AT_DetachPartition,
     /**
@@ -201,20 +194,14 @@ public enum AlterTableType {
     AT_MergePartitions,
     /**
      * ADD IDENTITY
-     * 
-     * @since 5.0
      */
     AT_AddIdentity,
     /**
      * SET identity column options
-     * 
-     * @since 5.0
      */
     AT_SetIdentity,
     /**
      * DROP IDENTITY
-     * 
-     * @since 5.0
      */
     AT_DropIdentity;
 

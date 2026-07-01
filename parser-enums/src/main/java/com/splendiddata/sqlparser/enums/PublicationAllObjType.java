@@ -15,11 +15,11 @@
 package com.splendiddata.sqlparser.enums;
 
 /**
- * Copied from /postgresql-19beta1/src/include/nodes/parsenodes.h
+ * Copied from /postgresql-Postgres 19beta1/src/include/nodes/parsenodes.h
  * <p>Types of objects supported by FOR ALL publications
  *
  * @author Splendid Data Product Development B.V.
- * @since 19beta1
+ * @since Postgres 19beta1
  */
 public enum PublicationAllObjType {
     PUBLICATION_ALL_TABLES,

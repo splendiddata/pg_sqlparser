@@ -28,7 +28,6 @@ import com.splendiddata.sqlparser.enums.MinMaxOp;
  * Copied from /postgresql-9.3.4/src/include/nodes/primnodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public class MinMaxExpr extends Expr {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -28,7 +28,6 @@ import java.nio.file.Path;
  * Reads a Java source file and keeps track of some qualities
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 public class JavaSourceReader implements Closeable {
     private final BufferedReader in;

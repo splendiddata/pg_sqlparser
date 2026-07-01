@@ -18,7 +18,6 @@ package com.splendiddata.sqlparser.enums;
  * Type of node, originally copied from /postgresql-9.3.4/src/include/nodes/nodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 public enum NodeTag {
     T_Invalid,
@@ -30,7 +29,6 @@ public enum NodeTag {
     T_ExprContext,
     T_ProjectionInfo,
     T_JunkFilter,
-    /** @since 6.0 - Postgres version 11 */
     T_OnConflictSetState,
     T_ResultRelInfo,
     T_EState,
@@ -41,7 +39,6 @@ public enum NodeTag {
      */
     T_Plan,
     T_Result,
-    /** @since 6.0 - Postgres version 11 */
     T_ProjectSet,
     T_ModifyTable,
     T_Append,
@@ -51,7 +48,6 @@ public enum NodeTag {
     T_BitmapOr,
     T_Scan,
     T_SeqScan,
-    /** @since 6.0 - Postgres version 11 */
     T_SampleScan,
     T_IndexScan,
     T_IndexOnlyScan,
@@ -61,14 +57,11 @@ public enum NodeTag {
     T_SubqueryScan,
     T_FunctionScan,
     T_ValuesScan,
-    /** @since 6.0 - Postgres version 11 */
     T_TableFuncScan,
     T_CteScan,
-    /** @since 6.0 - Postgres version 11 */
     T_NamedTuplestoreScan,
     T_WorkTableScan,
     T_ForeignScan,
-    /** @since 6.0 - Postgres version 11 */
     T_CustomScan,
     T_Join,
     T_NestLoop,
@@ -80,9 +73,7 @@ public enum NodeTag {
     T_Agg,
     T_WindowAgg,
     T_Unique,
-    /** @since 6.0 - Postgres version 11 */
     T_Gather,
-    /** @since 6.0 - Postgres version 11 */
     T_GatherMerge,
     T_Hash,
     T_SetOp,
@@ -91,13 +82,9 @@ public enum NodeTag {
     /* these aren't subclasses of Plan: */
     T_NestLoopParam,
     T_PlanRowMark,
-    /** @since 6.0 - Postgres version 11 */
     T_PartitionPruneInfo,
-    /** @since 6.0 - Postgres version 11 */
     T_PartitionedRelPruneInfo,
-    /** @since 6.0 - Postgres version 11 */
     T_PartitionPruneStepOp,
-    /** @since 6.0 - Postgres version 11 */
     T_PartitionPruneStepCombine,
     T_PlanInvalItem,
 
@@ -108,7 +95,6 @@ public enum NodeTag {
      */
     T_PlanState,
     T_ResultState,
-    /** @since 6.0 - Postgres version 11 */
     T_ProjectSetState,
     T_ModifyTableState,
     T_AppendState,
@@ -118,7 +104,6 @@ public enum NodeTag {
     T_BitmapOrState,
     T_ScanState,
     T_SeqScanState,
-    /** @since 6.0 - Postgres version 11 */
     T_SampleScanState,
     T_IndexScanState,
     T_IndexOnlyScanState,
@@ -127,15 +112,12 @@ public enum NodeTag {
     T_TidScanState,
     T_SubqueryScanState,
     T_FunctionScanState,
-    /** @since 6.0 - Postgres version 11 */
     T_TableFuncScanState,
     T_ValuesScanState,
     T_CteScanState,
-    /** @since 6.0 - Postgres version 11 */
     T_NamedTuplestoreScanState,
     T_WorkTableScanState,
     T_ForeignScanState,
-    /** @since 6.0 - Postgres version 11 */
     T_CustomScanState,
     T_JoinState,
     T_NestLoopState,
@@ -147,9 +129,7 @@ public enum NodeTag {
     T_AggState,
     T_WindowAggState,
     T_UniqueState,
-    /** @since 6.0 - Postgres version 11 */
     T_GatherState,
-    /** @since 6.0 - Postgres version 11 */
     T_GatherMergeState,
     T_HashState,
     T_SetOpState,
@@ -161,7 +141,6 @@ public enum NodeTag {
      */
     T_Alias,
     T_RangeVar,
-    /** @since 6.0 - Postgres version 11 */
     T_TableFunc,
     T_Expr,
     T_Var,
@@ -196,7 +175,6 @@ public enum NodeTag {
     T_RowCompareExpr,
     T_CoalesceExpr,
     T_MinMaxExpr,
-    /** @since 5.0 */
     T_SQLValueFunction,
     T_XmlExpr,
     T_NullTest,
@@ -205,15 +183,12 @@ public enum NodeTag {
     T_CoerceToDomainValue,
     T_SetToDefault,
     T_CurrentOfExpr,
-    /** @since 6.0 - Postgres version 11 */
     T_NextValueExpr,
-    /** @since 6.0 - Postgres version 11 */
     T_InferenceElem,
     T_TargetEntry,
     T_RangeTblRef,
     T_JoinExpr,
     T_FromExpr,
-    /** @since 6.0 - Postgres version 11 */
     T_OnConflictExpr,
     T_IntoClause,
     /** @since Postgres 15 */
@@ -237,75 +212,12 @@ public enum NodeTag {
      * shared with other parts of the executor, as for example with AggrefExprState, which nodeAgg.c has to modify.
      */
     T_ExprState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_GenericExprState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_WholeRowVarExprState,
     T_AggrefExprState,
     T_WindowFuncExprState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_ArrayRefExprState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_FuncExprState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_ScalarArrayOpExprState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
     T_BoolExprState,
-    /** @since 6.0 - Postgres version 11 */
     T_SetExprState,
     T_SubPlanState,
     T_AlternativeSubPlanState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_FieldSelectState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_FieldStoreState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_CoerceViaIOState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_ArrayCoerceExprState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_ConvertRowtypeExprState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_CaseExprState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_CaseWhenState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_ArrayExprState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_RowExprState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_RowCompareExprState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_CoalesceExprState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_MinMaxExprState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_XmlExprState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_NullTestState,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_CoerceToDomainState,
     T_DomainConstraintState,
 
     /*
@@ -315,7 +227,6 @@ public enum NodeTag {
     T_PlannerGlobal,
     T_RelOptInfo,
     T_IndexOptInfo,
-    /** @since 6.0 - Postgres version 11 */
     T_ForeignKeyOptInfo,
     T_ParamPathInfo,
     T_Path,
@@ -324,10 +235,8 @@ public enum NodeTag {
     T_BitmapAndPath,
     T_BitmapOrPath,
     T_TidPath,
-    /** @since 6.0 - Postgres version 11 */
     T_SubqueryScanPath,
     T_ForeignPath,
-    /** @since 6.0 - Postgres version 11 */
     T_CustomPath,
     T_NestPath,
     T_MergePath,
@@ -337,59 +246,36 @@ public enum NodeTag {
     T_ResultPath,
     T_MaterialPath,
     T_UniquePath,
-    /** @since 6.0 - Postgres version 11 */
     T_GatherPath,
-    /** @since 6.0 - Postgres version 11 */
     T_GatherMergePath,
-    /** @since 6.0 - Postgres version 11 */
     T_ProjectionPath,
-    /** @since 6.0 - Postgres version 11 */
     T_ProjectSetPath,
-    /** @since 6.0 - Postgres version 11 */
     T_SortPath,
-    /** @since 6.0 - Postgres version 11 */
     T_GroupPath,
-    /** @since 6.0 - Postgres version 11 */
     T_UpperUniquePath,
-    /** @since 6.0 - Postgres version 11 */
     T_AggPath,
-    /** @since 6.0 - Postgres version 11 */
     T_GroupingSetsPath,
-    /** @since 6.0 - Postgres version 11 */
     T_MinMaxAggPath,
-    /** @since 6.0 - Postgres version 11 */
     T_WindowAggPath,
-    /** @since 6.0 - Postgres version 11 */
     T_SetOpPath,
-    /** @since 6.0 - Postgres version 11 */
     T_RecursiveUnionPath,
-    /** @since 6.0 - Postgres version 11 */
     T_LockRowsPath,
-    /** @since 6.0 - Postgres version 11 */
     T_ModifyTablePath,
-    /** @since 6.0 - Postgres version 11 */
     T_LimitPath,
     /* these aren't subclasses of Path: */
     T_EquivalenceClass,
     T_EquivalenceMember,
     T_PathKey,
-    /** @since 6.0 - Postgres version 11 */
     T_PathTarget,
     T_RestrictInfo,
     T_PlaceHolderVar,
     T_SpecialJoinInfo,
-    /** @deprecated Not in use any more since version 6.0 (Postgres version 11) */
-    @Deprecated(forRemoval = true)
-    T_LateralJoinInfo,
     T_AppendRelInfo,
     T_PlaceHolderInfo,
     T_MinMaxAggInfo,
     T_PlannerParamItem,
-    /** @since 6.0 - Postgres version 11 */
     T_RollupData,
-    /** @since 6.0 - Postgres version 11 */
     T_GroupingSetData,
-    /** @since 6.0 - Postgres version 11 */
     T_StatisticExtInfo,
 
     /*
@@ -397,9 +283,7 @@ public enum NodeTag {
      */
     T_MemoryContext,
     T_AllocSetContext,
-    /** @since 6.0 - Postgres version 11 */
     T_SlabContext,
-    /** @since 6.0 - Postgres version 11 */
     T_GenerationContext,
 
     /*
@@ -431,7 +315,6 @@ public enum NodeTag {
     /*
      * TAGS FOR STATEMENT NODES (mostly in parsenodes.h)
      */
-    /** @since 5.0 */
     T_RawStmt,
     T_Query,
     T_PlannedStmt,
@@ -516,7 +399,6 @@ public enum NodeTag {
     T_AlterObjectSchemaStmt,
     T_AlterOwnerStmt,
     T_AlterOperatorStmt,
-    /** @since 8.0 - Postgres vesion 13 */
     T_AlterTypeStmt,
     T_DropOwnedStmt,
     T_ReassignOwnedStmt,
@@ -537,7 +419,6 @@ public enum NodeTag {
     T_AlterTableMoveAllStmt,
     T_SecLabelStmt,
     T_CreateForeignTableStmt,
-    /** @since 6.0 - Postgres version 11 */
     T_ImportForeignSchemaStmt,
     T_CreateExtensionStmt,
     T_AlterExtensionStmt,
@@ -551,23 +432,14 @@ public enum NodeTag {
     T_AlterPolicyStmt,
     T_CreateTransformStmt,
     T_CreateAmStmt,
-    /** @since 5.0 */
     T_CreatePublicationStmt,
-    /** @since 5.0 */
     T_AlterPublicationStmt,
-    /** @since 5.0 */
     T_CreateSubscriptionStmt,
-    /** @since 5.0 */
     T_AlterSubscriptionStmt,
-    /** @since 5.0 */
     T_DropSubscriptionStmt,
-    /** @since 5.0 */
     T_CreateStatsStmt,
-    /** @since 5.0 */
     T_AlterCollationStmt,
-    /** @since 6.0 - Postgres version 11 */
     T_CallStmt,
-    /** @since 8.0 - Postgres version 13 */
     T_AlterStatsStmt,
 
     /*
@@ -583,7 +455,6 @@ public enum NodeTag {
     T_A_Indirection,
     T_A_ArrayExpr,
     T_ResTarget,
-    /** @since 3.0 */
     T_MultiAssignRef,
     T_TypeCast,
     T_CollateClause,
@@ -591,11 +462,8 @@ public enum NodeTag {
     T_WindowDef,
     T_RangeSubselect,
     T_RangeFunction,
-    /** @since 6.0 - Postgres version 11 */
     T_RangeTableSample,
-    /** @since 5.0 */
     T_RangeTableFunc,
-    /** @since 5.0 */
     T_RangeTableFuncCol,
     T_TypeName,
     T_ColumnDef,
@@ -605,17 +473,12 @@ public enum NodeTag {
     T_Constraint,
     T_DefElem,
     T_RangeTblEntry,
-    /** @since 6.0 - Postgres version 11 */
     T_RangeTblFunction,
-    /** @since 6.0 - Postgres version 11 */
     T_TableSampleClause,
-    /** @since 6.0 - Postgres version 11 */
     T_WithCheckOption,
     T_SortGroupClause,
-    /** @since 6.0 - Postgres version 11 */
     T_GroupingSet,
     T_WindowClause,
-    /** @since 5.0 */
     T_ObjectWithArgs,
     T_AccessPriv,
     T_CreateOpClassItem,
@@ -635,21 +498,14 @@ public enum NodeTag {
     /** @since Postgres 15 */
     T_MergeWhenClause,
     T_RoleSpec,
-    /** @since 5.0 */
     T_TriggerTransition,
-    /** @since 5.0 */
     T_PartitionElem,
-    /** @since 5.0 */
     T_PartitionSpec,
-    /** @since 5.0 */
     T_PartitionBoundSpec,
-    /** @since 5.0 */
     T_PartitionRangeDatum,
-    /** @since 5.0 */
     T_PartitionCmd,
     /** @since Postgres 17 */
     T_SinglePartitionSpec,
-    /** @since 6.0 - Postgres version 11 */
     T_VacuumRelation,
     /** @since Postgres 15 */
     T_PublicationObjSpec,
@@ -695,13 +551,10 @@ public enum NodeTag {
      */
     T_IdentifySystemCmd,
     T_BaseBackupCmd,
-    /** @since 6.0 - Postgres version 11 */
     T_CreateReplicationSlotCmd,
-    /** @since 6.0 - Postgres version 11 */
     T_DropReplicationSlotCmd,
     T_StartReplicationCmd,
     T_TimeLineHistoryCmd,
-    /** @since 6.0 - Postgres version 11 */
     T_SQLCmd,
 
     /*
@@ -727,26 +580,18 @@ public enum NodeTag {
     T_FdwRoutine,
     /**
      * in access/amapi.h
-     * 
-     * @since 6.0 - Postgres version 11
      */
     T_IndexAmRoutine,
     /**
      * in access/tsmapi.h
-     * 
-     * @since 6.0 - Postgres version 11
      */
     T_TsmRoutine,
     /**
      * in utils/rel.h
-     * 
-     * @since 6.0 - Postgres version 11
      */
     T_ForeignKeyCacheInfo,
     /**
      * in nodes/parsenodes.h
-     * 
-     * @since 6.0 - Postgres version 11
      */
     T_CallContext,
     /**
@@ -762,55 +607,55 @@ public enum NodeTag {
      */
     T_ReturningOption,
     /**
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     T_CreatePropGraphStmt,
     /**
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     T_PropGraphVertex,
     /**
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     T_PropGraphEdge,
     /**
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     T_PropGraphLabelAndProperties,
     /**
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     T_PropGraphProperties,
     /**
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     T_AlterPropGraphStmt,
     /**
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     T_PublicationAllObjSpec,
     /**
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     T_RepackStmt,
     /**
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     T_ForPortionOfClause,
     /**
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     T_RangeGraphTable,
     /**
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     T_GraphPattern,
     /**
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     T_WaitStmt,
     /**
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     T_GraphElementPattern;
 

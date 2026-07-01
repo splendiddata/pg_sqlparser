@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -20,7 +20,6 @@ import java.io.PrintWriter;
  * Applies some bison-version specific changes
  *
  * @author Splendid Data Product Development B.V.
- * @since 2.1
  */
 public enum BisonVersion {
     BISON_VERSION_2 {

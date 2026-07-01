@@ -120,7 +120,6 @@ import com.splendiddata.sqlparser.enums.XmlStandaloneType;
  * by {@link com.splendiddata.sqlparser.grammartojava.JavaParserConverter} to get something compilable.
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @Mojo(name = "convertGrammar", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 @Execute(goal = "convertGrammar", phase = LifecyclePhase.GENERATE_SOURCES)
@@ -1391,7 +1390,6 @@ break;
         out.println();
         out.println("  /**");
         out.println("   * obtained from postgresql-13beta1/src/include/c.h");
-        out.println("   * @since 8.0 - Postgres 13");
         out.println("   */");
         out.println("  private static final int InvalidSubTransactionId  = 0;");
         out.println();

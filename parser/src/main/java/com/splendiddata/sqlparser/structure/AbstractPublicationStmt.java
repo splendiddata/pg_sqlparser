@@ -27,7 +27,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * Base class for CreatePublicationStmt and AlterPublicationStmt
  * 
  * @author Splendid Data Product Development B.V.
- * @since 5.0
  */
 @XmlRootElement(namespace = "parser")
 public class AbstractPublicationStmt extends Node {
@@ -61,7 +60,7 @@ public class AbstractPublicationStmt extends Node {
     /**
      * True if ALL SEQUENCES is specified
      * 
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     @XmlAttribute
     public boolean for_all_sequences;

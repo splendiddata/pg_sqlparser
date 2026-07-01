@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -23,7 +23,6 @@ package com.splendiddata.sqlparser.enums;
  * copied from postgresql-13beta1/src/include/nodes/nodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 8.0 - Postgres version 13
  */
 public enum LimitOption {
     /** FETCH FIRST... ONLY */

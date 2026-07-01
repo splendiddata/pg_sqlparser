@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -31,7 +31,6 @@ import com.splendiddata.sqlparser.enums.NodeTag;
  * </p>
  *
  * @author Splendid Data Product Development B.V.
- * @since 3.0.0
  */
 @XmlRootElement(namespace = "parser")
 public class AlterTableCmd extends Node {
@@ -47,16 +46,12 @@ public class AlterTableCmd extends Node {
 
     /**
      * attribute number for columns referenced by number
-     * 
-     * @since 6.0, Postgres version 11
      */
     @XmlAttribute
     public int num;
 
     /**
      * RoleSpec
-     * 
-     * @since 3.0, Postgres version 9.5
      */
     @XmlElement
     public Node newowner;

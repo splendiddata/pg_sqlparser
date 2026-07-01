@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -28,7 +28,6 @@ import com.splendiddata.sqlparser.structure.Location;
  * present in the C compiler.
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 public class AbstractCProgram implements SqlParserErrorReporter {
     private static final Logger log = LogManager.getLogger(AbstractCProgram.class);

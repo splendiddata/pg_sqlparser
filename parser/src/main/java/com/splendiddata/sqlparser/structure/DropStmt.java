@@ -33,7 +33,6 @@ import com.splendiddata.sqlparser.enums.ObjectType;
  * Initially copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public class DropStmt extends Node {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 = 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2020 = 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -36,7 +36,6 @@ import com.splendiddata.sqlparser.enums.NodeTag;
  * </p>
  * 
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public class IndexStmt extends Node {
@@ -51,8 +50,6 @@ public class IndexStmt extends Node {
 
     /**
      * OID of relation to build index on
-     * 
-     * @since Postgres 11
      */
     public Oid relationId;
 
@@ -71,8 +68,6 @@ public class IndexStmt extends Node {
 
     /**
      * additional columns to index: a list of IndexElem
-     * 
-     * @since Postgres 11
      */
     @XmlElementWrapper(name = "indexIncludingParams")
     @XmlElement(name = "indexIncludingParam")
@@ -119,8 +114,6 @@ public class IndexStmt extends Node {
 
     /**
      * rd_createSubid of oldNode
-     * 
-     * @since Postgres 13
      */
     @XmlAttribute
     public int oldCreateSubid;
@@ -135,8 +128,6 @@ public class IndexStmt extends Node {
 
     /**
      * rd_firstRelfilenodeSubid of oldNode
-     * 
-     * @since Postgres 13
      */
     public int oldFirstRelfilenodeSubid;
 
@@ -180,10 +171,8 @@ public class IndexStmt extends Node {
     @XmlAttribute
     public boolean if_not_exists;
 
-    /*
+    /**
      * reset default_tablespace prior to executing
-     * 
-     * @since Postgres 12
      */
     @XmlAttribute
     public boolean reset_default_tblspc;

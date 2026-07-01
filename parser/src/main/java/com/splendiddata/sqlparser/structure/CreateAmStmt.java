@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -32,7 +32,6 @@ import com.splendiddata.sqlparser.enums.NodeTag;
  * </p>
  *
  * @author Splendid Data Product Development B.V.
- * @since 4.0.0
  */
 @XmlRootElement(namespace = "parser")
 public class CreateAmStmt extends Node {
@@ -47,8 +46,6 @@ public class CreateAmStmt extends Node {
 
     /**
      * type of access method.
-     * 
-     * @since 7.0 - Postgres12. Used to be an enum in previous versions
      */
     @XmlAttribute
     public Character amtype;
@@ -58,14 +55,11 @@ public class CreateAmStmt extends Node {
     private static final char TABLE_AMTYPE = 't';
     /**
      * index access method
-     * 
-     * @since 7.0 - Postgres 12
      */
     public static final Character AMTYPE_INDEX = Character.valueOf(INDEX_AMTYPE);
+    
     /**
      * table access method
-     * 
-     * @since 7.0 - Postgres 12
      */
     public static final Character AMTYPE_TABLE = Character.valueOf(TABLE_AMTYPE);
 

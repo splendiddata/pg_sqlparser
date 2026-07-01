@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -33,7 +33,6 @@ import com.splendiddata.sqlparser.enums.ObjectType;
  * </p>
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public class DefineStmt extends Node {
@@ -62,16 +61,12 @@ public class DefineStmt extends Node {
 
     /**
      * just do nothing if it already exists?
-     * 
-     * @since 5.0
      */
     @XmlAttribute
     public boolean if_not_exists;
 
     /**
      * replace if already exists?
-     * 
-     * @since 7.0 - Postgres 12
      */
     @XmlAttribute
     public boolean replace;

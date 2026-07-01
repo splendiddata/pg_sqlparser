@@ -28,7 +28,7 @@ public enum PublicationObjSpecType {
     /**
      * A table in the EXCEPT clause
      * 
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     PUBLICATIONOBJ_EXCEPT_TABLE,
     /** All tables in schema */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -39,7 +39,6 @@ import com.splendiddata.sqlparser.structure.core_yyscan_t;
  * </p>
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 public abstract class AbstractScanner extends AbstractCProgram implements com.splendiddata.sqlparser.PgSqlParser.Lexer {
     private final Logger log = LogManager.getLogger(getClass());
@@ -629,7 +628,7 @@ public abstract class AbstractScanner extends AbstractCProgram implements com.sp
      *
      * @param c
      * @return
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     static boolean is_utf16_surrogate_first(long c) {
         return (c >= 0xD800 && c <= 0xDBFF);
@@ -642,7 +641,7 @@ public abstract class AbstractScanner extends AbstractCProgram implements com.sp
      *
      * @param c
      * @return
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     static boolean is_utf16_surrogate_second(long c) {
         return (c >= 0xDC00 && c <= 0xDFFF);
@@ -686,7 +685,7 @@ public abstract class AbstractScanner extends AbstractCProgram implements com.sp
      *            The character to add
      * @param yyscanner
      *            unused
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     void addunicode(int c, core_yyscan_t yyscanner) {
         yyextra.literalbuf.append((char) c);

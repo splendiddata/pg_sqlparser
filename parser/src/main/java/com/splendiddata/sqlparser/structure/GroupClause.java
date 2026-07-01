@@ -39,7 +39,7 @@ public class GroupClause implements Cloneable {
     public List<Node> list;
 
     /**
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     @XmlAttribute
     public boolean all;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -71,7 +71,6 @@ package com.splendiddata.sqlparser.enums;
  * Copied from /postgresql-9.5alpha2/src/include/nodes/parsenodes.h</p>
  *
  * @author Splendid Data Product Development B.V.
- * @since 3.0.0
  */
 
 public enum GroupingSetKind {

@@ -44,7 +44,6 @@ import com.splendiddata.sqlparser.enums.NullTreatment;
  * </p>
  * 
  * @author Splendid Data Product Development B.V.
- * @since 2.1.0
  */
 @XmlRootElement(namespace = "parser")
 public class FuncCall extends Expr {
@@ -75,7 +74,7 @@ public class FuncCall extends Expr {
     /**
      * ignore nulls for window function
      * 
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     @XmlAttribute
     public NullTreatment ignore_nulls;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -42,7 +42,6 @@ import javafx.scene.input.ClipboardContent;
  * ListCell&lt;Node&gt; for the parsed and rendered sql statements
  *
  * @author Splendid Data Product Development B.V.
- * @since 8.0 - Postgres version 13
  */
 public class ResultStringListitem extends ListCell<Node> {
     private static final Logger log = LogManager.getLogger(ResultStringListitem.class);

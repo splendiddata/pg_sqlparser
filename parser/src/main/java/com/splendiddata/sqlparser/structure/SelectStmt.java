@@ -29,7 +29,6 @@ import com.splendiddata.sqlparser.enums.SetOperation;
  * Select statement as defined in /postgresql-9.3.4/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public class SelectStmt extends Expr {
@@ -76,7 +75,7 @@ public class SelectStmt extends Expr {
     /**
      * Is this GROUP BY ALL?
      * 
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     @XmlAttribute
     public boolean groupByAll;
@@ -119,8 +118,6 @@ public class SelectStmt extends Expr {
 
     /**
      * limit type
-     * 
-     * @since 8.0 - Postgres version 13
      */
     @XmlAttribute
     public LimitOption limitOption;

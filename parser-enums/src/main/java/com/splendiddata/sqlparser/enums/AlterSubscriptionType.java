@@ -18,12 +18,11 @@ package com.splendiddata.sqlparser.enums;
  * Copied from /postgresql-10rc1/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 5.0
  */
 public enum AlterSubscriptionType {
     ALTER_SUBSCRIPTION_OPTIONS,
     /**
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     ALTER_SUBSCRIPTION_SERVER,
     ALTER_SUBSCRIPTION_CONNECTION,
@@ -40,21 +39,21 @@ public enum AlterSubscriptionType {
      */
     ALTER_SUBSCRIPTION_DROP_PUBLICATION,
     /**
-     * @deprecated since 19beta1
+     * @deprecated since Postgres 19beta1
      */
-    @Deprecated(since="19beta1", forRemoval=true)
+    @Deprecated(since="Postgres 19beta1", forRemoval=true)
     ALTER_SUBSCRIPTION_PUBLICATION,
     /**
-     * @deprecated since 19beta1 replaced by ALTER_SUBSCRIPTION_REFRESH_PUBLICATION or ALTER_SUBSCRIPTION_REFRESH_SEQUENCES
+     * @deprecated since Postgres 19beta1 replaced by ALTER_SUBSCRIPTION_REFRESH_PUBLICATION or ALTER_SUBSCRIPTION_REFRESH_SEQUENCES
      */
-    @Deprecated(since="19beta1", forRemoval=true)
+    @Deprecated(since="Postgres 19beta1", forRemoval=true)
     ALTER_SUBSCRIPTION_REFRESH,
     /**
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     ALTER_SUBSCRIPTION_REFRESH_PUBLICATION,
     /**
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     ALTER_SUBSCRIPTION_REFRESH_SEQUENCES,
     ALTER_SUBSCRIPTION_ENABLED,

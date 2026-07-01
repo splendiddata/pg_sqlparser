@@ -18,14 +18,12 @@ package com.splendiddata.sqlparser.enums;
  * Copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
-
 public enum LockClauseStrength {
     /**
      * no such clause - only used in PlanRowMark and ON CONFLICT DO SELECT
      * 
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     LCS_NONE,
     /** FOR KEY SHARE */

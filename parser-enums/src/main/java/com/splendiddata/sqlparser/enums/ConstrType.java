@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -50,7 +50,6 @@ package com.splendiddata.sqlparser.enums;
  * </p>
  * 
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 
 public enum ConstrType {
@@ -60,9 +59,7 @@ public enum ConstrType {
     CONSTR_NULL,
     CONSTR_NOTNULL,
     CONSTR_DEFAULT,
-    /** @since 5.0 */
     CONSTR_IDENTITY,
-    /** @since 7.0 - Postgres 12 */
     CONSTR_GENERATED,
     CONSTR_CHECK,
     CONSTR_PRIMARY,

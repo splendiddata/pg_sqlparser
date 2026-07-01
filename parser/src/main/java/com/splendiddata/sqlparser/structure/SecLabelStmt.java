@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -25,7 +25,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * Initially copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public class SecLabelStmt extends Node {
@@ -36,8 +35,6 @@ public class SecLabelStmt extends Node {
 
     /**
      * Qualified name of the object
-     * 
-     * @since 5.0
      */
     public Node object;
 

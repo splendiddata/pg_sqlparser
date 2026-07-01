@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -27,7 +27,6 @@ import com.splendiddata.sqlparser.enums.ReplicaIdentityType;
  * Copied from /postgresql-9.4.1/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 2.1.0
  */
 @XmlRootElement(namespace = "parser")
 public class ReplicaIdentityStmt extends Node {

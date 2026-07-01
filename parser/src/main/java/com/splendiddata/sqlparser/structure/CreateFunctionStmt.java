@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -26,14 +26,11 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * Copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public class CreateFunctionStmt extends Node {
     /**
      * it's really CREATE PROCEDURE
-     * 
-     * @since 6.0 - Postgres version 11
      */
     @XmlAttribute
     public boolean is_procedure;
@@ -66,14 +63,6 @@ public class CreateFunctionStmt extends Node {
      */
     @XmlElement
     public Node sql_body;
-
-    /**
-     * a list of DefElem
-     * 
-     * @deprecated The with clause in a function definition is no longer supported since 6.0 - Postgres 11
-     */
-    @Deprecated
-    public List<DefElem> withClause;
 
     /**
      * Constructor

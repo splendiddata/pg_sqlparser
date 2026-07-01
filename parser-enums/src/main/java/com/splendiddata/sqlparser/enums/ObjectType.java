@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -22,7 +22,6 @@ package com.splendiddata.sqlparser.enums;
  * </p>
  *
  * @author Splendid Data Product Development B.V.
- * @since 3.0.0
  */
 public enum ObjectType {
     OBJECT_AGGREGATE("aggregate"),
@@ -60,21 +59,16 @@ public enum ObjectType {
     /** @since Postgres 15 */
     OBJECT_PARAMETER_ACL("????? OBJECT_PARAMETER_ACL in " + ObjectType.class.getName() + " ?????"),
     OBJECT_POLICY("policy"),
-    /** @since 6.0 - Postgres version 11 */
     OBJECT_PROCEDURE("procedure"),
-    /** @since 19beta1 */
+    /** @since Postgres 19beta1 */
     OBJECT_PROPGRAPH("property graph"),
-    /** @since 5.0 */
     OBJECT_PUBLICATION("publication"),
     OBJECT_ROLE("role"),
-    /** @since 6.0 - Postgres version 11 */
     OBJECT_ROUTINE("routine"),
     OBJECT_RULE("rule"),
     OBJECT_SCHEMA("schema"),
     OBJECT_SEQUENCE("sequence"),
-    /** @since 5.0 */
     OBJECT_SUBSCRIPTION("subscription"),
-    /** @since 5.0 */
     OBJECT_STATISTIC_EXT("statistics"),
     OBJECT_TABCONSTRAINT("constraint"),
     OBJECT_TABLE("table"),

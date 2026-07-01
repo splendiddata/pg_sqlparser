@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2022
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -28,7 +28,6 @@ import com.splendiddata.sqlparser.enums.NodeTag;
  * Initially copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public class AlterEnumStmt extends Node {
@@ -38,8 +37,6 @@ public class AlterEnumStmt extends Node {
 
     /**
      * old enum value's name, if renaming
-     * 
-     * @since 5.0
      */
     @XmlAttribute
     public String oldVal;
@@ -58,8 +55,6 @@ public class AlterEnumStmt extends Node {
 
     /**
      * no error if new already exists
-     * 
-     * @since 5.0
      */
     @XmlAttribute
     public boolean skipIfNewValExists;

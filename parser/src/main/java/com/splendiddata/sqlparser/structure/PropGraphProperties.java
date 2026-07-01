@@ -22,10 +22,10 @@ import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
- * Copied from /postgresql-19beta1/src/include/nodes/parsenodes.h
+ * Copied from /postgresql-Postgres 19beta1/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 19beta1
+ * @since Postgres 19beta1
  */
 @XmlRootElement(namespace = "parser")
 public class PropGraphProperties extends Node {

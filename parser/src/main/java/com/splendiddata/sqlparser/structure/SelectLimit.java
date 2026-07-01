@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -29,7 +29,6 @@ import com.splendiddata.sqlparser.enums.LimitOption;
  * copied from postgresql-13beta1/src/backend/parser/gram.c
  *
  * @author Splendid Data Product Development B.V.
- * @since 8.0 - Postgres version 13
  */
 @XmlRootElement(namespace = "parser")
 public class SelectLimit {

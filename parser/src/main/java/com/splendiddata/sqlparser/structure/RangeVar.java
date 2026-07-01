@@ -34,7 +34,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * </p>
  * 
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public class RangeVar extends Node {
@@ -53,8 +52,6 @@ public class RangeVar extends Node {
 
     /**
      * expand rel by inheritance? recursively act on children?
-     * 
-     * @since 5.0
      */
     @XmlAttribute
     public Boolean inh;
@@ -117,7 +114,7 @@ public class RangeVar extends Node {
      *            string representation of the relation and its alias (if any) is returned.
      * @return String The qualified name followed (if present) by a for portion of clause, followed (if present) by the
      *         alias.
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     public String toString(ForPortionOfClause forPortionOf) {
         StringBuilder result = toStringPartOne();
@@ -134,7 +131,7 @@ public class RangeVar extends Node {
      * Creates a StringBuilder and strings the (qualified) relation name into it, but not the alias (if any).
      *
      * @return StringBuilder with the relation name
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     private StringBuilder toStringPartOne() {
         StringBuilder result = new StringBuilder();

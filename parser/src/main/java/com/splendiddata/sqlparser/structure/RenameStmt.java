@@ -32,7 +32,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * </p>
  * 
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public class RenameStmt extends Node {

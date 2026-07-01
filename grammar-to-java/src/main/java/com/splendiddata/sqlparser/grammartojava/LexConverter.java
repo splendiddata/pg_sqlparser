@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2024
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -46,7 +46,6 @@ import org.apache.maven.plugins.annotations.Parameter;
  * by {@link com.splendiddata.sqlparser.grammartojava.JavaParserConverter} to get something compilable.
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @Mojo(name = "convertLex", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 @Execute(goal = "convertLex", phase = LifecyclePhase.GENERATE_SOURCES)
@@ -242,7 +241,7 @@ public class LexConverter extends AbstractMojo implements FileVisitor<Path> {
                             .replaceAll("char\\s+(\\w*)\\s*=\\s*strtoul", "char $1 = (char)strtoul")
                             /*
                              * int assignment from long is not allowed unless it is cast to int.
-                             * @since 19beta1
+                             * @since Postgres 19beta1
                              */
                             .replaceAll("char32_t\\s+(\\w*)\\s*=\\s*strtoul", "int $1 = (int)strtoul")
                             /*
@@ -296,9 +295,6 @@ public class LexConverter extends AbstractMojo implements FileVisitor<Path> {
                              * indexed character in yytext
                              */
                             .replaceAll("yytext\\[([^\\]])\\]", "yycharat($1)")
-                            /*
-                             * @since 8.0 - Postgres version 13
-                             */
                             .replace("YYSTATE", "yystate()")
                             .replaceAll("yytext(?!\\()", "yytext()");
                 } else {
@@ -372,14 +368,12 @@ public class LexConverter extends AbstractMojo implements FileVisitor<Path> {
         out.println("  private static final int FCONST = ScanKeyword.FCONST.value;");
         out.println("  private static final int GREATER_EQUALS = ScanKeyword.GREATER_EQUALS.value;");
         out.println("  private static final int IDENT = ScanKeyword.IDENT.value;");
-        out.println("/** @since 8.0 - Postgres13 */");
         out.println("  private static final int UIDENT = ScanKeyword.UIDENT.value;");
         out.println("  private static final int LESS_EQUALS = ScanKeyword.LESS_EQUALS.value;");
         out.println("  private static final int NOT_EQUALS = ScanKeyword.NOT_EQUALS.value;");
         out.println("  private static final int Op = ScanKeyword.Op.value;");
         out.println("  private static final int PARAM = ScanKeyword.PARAM.value;");
         out.println("  private static final int SCONST = ScanKeyword.SCONST.value;");
-        out.println("/** @since 8.0 - Postgres13 */");
         out.println("  private static final int USCONST = ScanKeyword.USCONST.value;");
         out.println("  private static final int TYPECAST = ScanKeyword.TYPECAST.value;");
         out.println("  private static final int XCONST = ScanKeyword.XCONST.value;");
@@ -388,7 +382,7 @@ public class LexConverter extends AbstractMojo implements FileVisitor<Path> {
                 "  private static final BackslashQuoteType BACKSLASH_QUOTE_OFF = BackslashQuoteType.BACKSLASH_QUOTE_OFF;");
         out.println(
                 "  private static final BackslashQuoteType BACKSLASH_QUOTE_SAFE_ENCODING = BackslashQuoteType.BACKSLASH_QUOTE_SAFE_ENCODING;");
-        out.println("/** @since 19beta1 */");
+        out.println("/** @since Postgres 19beta1 */");
         out.println("  private static final int RIGHT_ARROW = ScanKeyword.RIGHT_ARROW.value;");
         out.println();
         out.println("  private core_yyscan_t yyscanner;");
@@ -431,15 +425,11 @@ public class LexConverter extends AbstractMojo implements FileVisitor<Path> {
         out.println("   * need to nest these.)");
         out.println("   * <p>");
         out.println("   * copied from postgresql-13beta1/src/backend/parser/scan.c");
-        out.println("   * @since 8.0 - Postgres version 13");
         out.println("   */");
         out.println("  void PUSH_YYLLOC() {");
         out.println("      yyextra.save_yylloc = yychar;");
         out.println("  }");
         out.println();
-        out.println("  /**");
-        out.println("   * @since 8.0 - Postgres version 13");
-        out.println("   */");
         out.println("  void POP_YYLLOC() {");
         out.println("      yychar = yyextra.save_yylloc;");
         out.println("  }");

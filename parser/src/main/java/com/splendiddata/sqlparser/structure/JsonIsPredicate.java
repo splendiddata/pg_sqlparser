@@ -52,7 +52,7 @@ public class JsonIsPredicate extends Node {
     /**
      * base type of the subject expression
      * 
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     @XmlTransient
     public Oid exprBaseType;

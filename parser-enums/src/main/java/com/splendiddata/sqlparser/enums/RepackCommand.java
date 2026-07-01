@@ -15,14 +15,14 @@
 package com.splendiddata.sqlparser.enums;
 
 /**
- * Copied from /postgresql-19beta1/src/include/nodes/parsenodes.h
+ * Copied from /postgresql-Postgres 19beta1/src/include/nodes/parsenodes.h
  * <p>
  * Alter Domain
  *
  * The fields are used in different ways by the different variants of this command.
  *
  * @author Splendid Data Product Development B.V.
- * @since 19beta1
+ * @since Postgres 19beta1
  */
 public enum RepackCommand {
     REPACK_COMMAND_CLUSTER,

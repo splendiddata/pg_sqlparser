@@ -24,7 +24,6 @@ package com.splendiddata.sqlparser.enums;
  * </p>
  * 
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 public enum OnConflictAction {
     /** No "ON CONFLICT" clause */
@@ -36,7 +35,7 @@ public enum OnConflictAction {
     /**
      * ON CONFLICT ... DO SELECT
      * 
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     ONCONFLICT_SELECT;
 

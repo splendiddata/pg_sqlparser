@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -28,7 +28,6 @@ import com.splendiddata.sqlparser.enums.NodeTag;
  * </p>
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public class TableLikeClause extends Node {
@@ -43,14 +42,9 @@ public class TableLikeClause extends Node {
     public static final int CREATE_TABLE_LIKE_COMPRESSION = 1 << 1;
     public static final int CREATE_TABLE_LIKE_CONSTRAINTS = 1 << 2;
     public static final int CREATE_TABLE_LIKE_DEFAULTS = 1 << 3;
-    /** @since 7.0 - Postgres 12 */
     public static final int CREATE_TABLE_LIKE_GENERATED = 1 << 4;
-    /**
-     * @since 5.0
-     */
     public static final int CREATE_TABLE_LIKE_IDENTITY = 1 << 5;
     public static final int CREATE_TABLE_LIKE_INDEXES = 1 << 6;
-    /** @since 6.0 - Postgres version 11 */
     public static final int CREATE_TABLE_LIKE_STATISTICS = 1 << 7;
     public static final int CREATE_TABLE_LIKE_STORAGE = 1 << 8;
     public static final int CREATE_TABLE_LIKE_ALL = 0x7FFFFFFF;

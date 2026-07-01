@@ -29,10 +29,9 @@ import com.splendiddata.sqlparser.enums.NodeTag;
  * </p>
  * 
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
- * @deprecated since 19beta1 - replaced by {@link com.splendiddata.sqlparser.structure.RepackStmt}
+ * @deprecated since Postgres 19beta1 - replaced by {@link com.splendiddata.sqlparser.structure.RepackStmt}
  */
-@Deprecated(since = "19beta1", forRemoval = true)
+@Deprecated(since = "Postgres 19beta1", forRemoval = true)
 @XmlRootElement(namespace = "parser")
 public class ClusterStmt extends Node {
 
@@ -44,23 +43,6 @@ public class ClusterStmt extends Node {
     @XmlAttribute
     public String indexname;
 
-    /**
-     * print progress info
-     * 
-     * @deprecated since 7.0 - Postgres 12. There is an options integer now that takes it's place
-     */
-    @Deprecated(forRemoval = true)
-    public boolean verbose;
-
-    /**
-     * OR of ClusterOption flags
-     * 
-     * @since 7.0 - postgres 12
-     * @deprecated since 14.0. Use the list of params now
-     */
-    @Deprecated(forRemoval = true)
-    public int options;
-
     @XmlElementWrapper(name = "params")
     @XmlElement(name = "param")
     public List<DefElem> params;
@@ -68,31 +50,6 @@ public class ClusterStmt extends Node {
     /*
      * Copied from ClusterOption in /postgresql-12beta2/src/include/nodes/parsenodes.h
      */
-    /**
-     * recheck relation state
-     * 
-     * @since 7.0 - Postgres 12
-     * @deprecated since 14.0. Use the list of params now
-     */
-    @Deprecated(forRemoval = true)
-    public static final int CLUOPT_RECHECK = 1 << 0;
-    /**
-     * print progress info
-     * 
-     * @since 7.0 - Postgres 12
-     * @deprecated since 14.0. Use the list of params now
-     */
-    @Deprecated(forRemoval = true)
-    public static final int CLUOPT_VERBOSE = 1 << 1;
-
-    /**
-     * String containing a regular expression that will identify all CLUOPT_... options for parser generation
-     * 
-     * @since 7.0 - Postgres 12
-     * @deprecated since 14.0. Use the list of params now
-     */
-    @Deprecated(forRemoval = true)
-    public static final String REPLACEMENT_REGEXP_PART = "CLUOPT_.+";
 
     /**
      * Constructor

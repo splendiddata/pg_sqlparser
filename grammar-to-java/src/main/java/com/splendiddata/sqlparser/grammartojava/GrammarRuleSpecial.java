@@ -19,7 +19,6 @@ package com.splendiddata.sqlparser.grammartojava;
  * name of the enum value relates to the name of the rule in the gram.y file.
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
     DEFAULT(),
@@ -296,23 +295,18 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
                      * the stack as a String. But when the statement is put together, the password is blindly cast to
                      * DefElem - so a ClassCastException occurs. Better try to cast null than a String.
                      */.replaceAll("(\\s*)\\{", "$1{\n$1    \\$\\$ = null;").replace("\\$\\$", "$$")),
-    /** @since 6.0 - Postgres version 11 */
     analyze_option_list(line -> line/*
                      * The OR operation must be done on an integer scalar, not on the object
                      */.replace("$3", "$3.intValue()")),
-    /** @since 6.0 - Postgres version 11 */
     PartitionBoundSpec(line -> line/*
                      * Let's not over-complicate a simple type cast
                      */.replace("lfirst_node(DefElem, lc)", "(DefElem)lc.data")),
-    /** @since 8.0 - Postgres version 13 */
     index_elem(line -> line/*
                      * Type cast
                      */.replace("$$->", "((IndexElem)$$).")),
-    /** @since 8.0 - Postgres version 13 */
     select_limit(
             line -> line/* Type cast */.replace("($$)->", "((SelectLimit)$$).")
                     /* since Postgres 18 */.replace("Loc = -1", "Loc = null")),
-    /** @since 13 */
     create_extension_opt_list(
             line -> line/*
                      * Temporary work around as the "from version" in the create extension statement is still known as
@@ -367,9 +361,9 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
     select_with_parens(line -> line.replace("@3 - @2", "@3.getOffset() - @2.getOffset()")),
     /** @since Postgres 18 */
     limit_clause(line -> line.replace("Loc = -1", "Loc = null")),
-    /** @since 19beta1 */
+    /** @since Postgres 19beta1 */
     CreatePublicationStmt(line -> line.replace("&n->pubobjects", "n")),
-    /** @since 19beta1 */
+    /** @since Postgres 19beta1 */
     AlterPublicationStmt(line -> line.replace("&n->pubobjects", "n")),
     
     //

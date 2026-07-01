@@ -58,7 +58,6 @@ import org.apache.maven.plugins.annotations.Parameter;
  * </ul>
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @Mojo(name = "convertJava", defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
 @Execute(goal = "convertJava", phase = LifecyclePhase.PROCESS_RESOURCES)

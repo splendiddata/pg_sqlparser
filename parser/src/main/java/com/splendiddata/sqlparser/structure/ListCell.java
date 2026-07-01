@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -23,7 +23,6 @@ import java.io.Serializable;
  * ListCell as defined in /postgresql-9.3.4/src/include/nodes/pg_list.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 public class ListCell<T> implements Serializable {
     private static final long serialVersionUID = 400L;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -33,7 +33,6 @@ import com.splendiddata.sqlparser.enums.NodeTag;
  * Copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public class Constraint extends Node {
@@ -96,8 +95,6 @@ public class Constraint extends Node {
 
     /**
      * ALWAYS or BY DEFAULT
-     * 
-     * @since 5.0
      */
     @XmlAttribute
     public AttributeIdentity generated_when;
@@ -127,7 +124,7 @@ public class Constraint extends Node {
     public List<Value> keys;
 
     /**
-     * WITHOUT OVERLAPS specified @since 1
+     * WITHOUT OVERLAPS specified
      * 
      * @since Postgres 18
      */
@@ -135,8 +132,6 @@ public class Constraint extends Node {
 
     /**
      * String nodes naming referenced nonkey column(s)
-     * 
-     * @since 6.0 - Postgres version 11
      */
     @XmlElementWrapper(name = "including")
     @XmlElement(name = "including")

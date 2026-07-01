@@ -26,7 +26,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * Copied from /postgresql-10rc1/src/include/nodes/parsenodes.h
  * 
  * @author Splendid Data Product Development B.V.
- * @since 5.0
  */
 @XmlRootElement(namespace = "parser")
 public class CreateSubscriptionStmt extends Node {
@@ -38,7 +37,7 @@ public class CreateSubscriptionStmt extends Node {
     /**
      * Server name of publisher
      * 
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     @XmlAttribute
     public String servername;

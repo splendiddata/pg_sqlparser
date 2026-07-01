@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -27,7 +27,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * Copied from /postgresql-9.5alpha2/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 3.0.0
  */
 @XmlRootElement(namespace = "parser")
 public class ImportForeignSchemaStmt extends Node {

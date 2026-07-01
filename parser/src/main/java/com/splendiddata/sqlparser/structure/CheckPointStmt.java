@@ -25,7 +25,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * Copied from /postgresql-9.3.4/src/include/nodes/parsenodes.h
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public class CheckPointStmt extends Node {
@@ -33,7 +32,7 @@ public class CheckPointStmt extends Node {
     /**
      * list of DefElem nodes
      * 
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     @XmlElementWrapper(name = "options")
     @XmlElement(name = "option")

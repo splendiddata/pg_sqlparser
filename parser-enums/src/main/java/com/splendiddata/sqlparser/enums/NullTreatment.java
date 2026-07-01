@@ -15,13 +15,13 @@
 package com.splendiddata.sqlparser.enums;
 
 /**
- * Copied from /postgresql-19beta1/src/include/nodes/primnodes.h
+ * Copied from /postgresql-Postgres 19beta1/src/include/nodes/primnodes.h
  * <p>
  * Null Treatment options. If specified, initially set to PARSER_IGNORE_NULLS which is then converted to IGNORE_NULLS if
  * the window function allows the null treatment clause.
  *
  * @author Splendid Data Product Development B.V.
- * @since 19beta1
+ * @since Postgres 19beta1
  */
 public enum NullTreatment {
     NO_NULLTREATMENT,

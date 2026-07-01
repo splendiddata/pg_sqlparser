@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2025
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -24,12 +24,8 @@ package com.splendiddata.sqlparser.enums;
  * </p>
  *
  * @author Splendid Data Product Development B.V.
- * @since 5.0
  */
 public enum PartitionStrategy {
-    /**
-     * @since 6.0 - Postgres version 11
-     */
     PARTITION_STRATEGY_HASH('h'),
     PARTITION_STRATEGY_LIST('l'),
     PARTITION_STRATEGY_RANGE('r');

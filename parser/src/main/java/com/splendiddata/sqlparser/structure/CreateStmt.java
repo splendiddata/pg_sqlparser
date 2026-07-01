@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2023
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -37,7 +37,6 @@ import com.splendiddata.sqlparser.enums.OnCommitAction;
  * </p>
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public class CreateStmt extends Node {
@@ -60,15 +59,11 @@ public class CreateStmt extends Node {
 
     /**
      * FOR VALUES clause
-     * 
-     * @since 5.0
      */
     public PartitionBoundSpec partbound;
 
     /**
      * PARTITION BY clause
-     * 
-     * @since 5.0
      */
     public PartitionSpec partspec;
 
@@ -94,7 +89,7 @@ public class CreateStmt extends Node {
     @XmlAttribute
     public String tablespacename;
 
-    /** table access method @since version 7.0 - Postgres 12 */
+    /** table access method */
     @XmlAttribute
     public String accessMethod;
 

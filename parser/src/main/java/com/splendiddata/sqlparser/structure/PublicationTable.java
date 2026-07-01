@@ -45,7 +45,7 @@ public class PublicationTable extends Node {
     /**
      * True if listed in the EXCEPT clause
      * 
-     * @since 19beta1
+     * @since Postgres 19beta1
      */
     public boolean except;
 

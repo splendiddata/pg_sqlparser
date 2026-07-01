@@ -27,7 +27,6 @@ import com.splendiddata.sqlparser.enums.NodeTag;
  * Base class for all sql nodes
  *
  * @author Splendid Data Product Development B.V.
- * @since 0.0.1
  */
 @XmlRootElement(namespace = "parser")
 public class Node implements Cloneable {
