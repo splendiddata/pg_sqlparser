@@ -91,14 +91,10 @@ public class JsonReturning extends Node {
             result.append('(').append(typmod).append(')');
             separator = " ";
         }
-        if (format != null) {
-            String formatTxt = format.toString();
-            if (!formatTxt.isBlank()) {
-                result.append(separator).append(format);
-                separator = " ";
-            }
+        if (format != null && !format.toString().isBlank()) {
+            result.append(separator).append(format);
         }
-        
+
         return result.toString();
     }
 }

@@ -781,6 +781,63 @@ SELECT count(*) FROM t WHERE i = 15 AND g IN (SELECT g + 10 FROM t WHERE i = 5);
 
 DROP TABLE t;
 
+-- A merged partition needs its own TOAST table; otherwise an out-of-line
+-- varlena value carried over from one of the merging partitions has
+-- nowhere to be stored.  SET STORAGE EXTERNAL forces externalization
+-- for any value over the TOAST threshold, so a string over that threshold
+-- suffices to exercise the toast-table dependency.
+CREATE TABLE t (a text) PARTITION BY RANGE(a);
+ALTER TABLE t ALTER COLUMN a SET STORAGE EXTERNAL;
+CREATE TABLE tp_def PARTITION OF t DEFAULT;
+CREATE TABLE tp_2_3 PARTITION OF t FOR VALUES FROM ('2') TO ('3');
+INSERT INTO t SELECT repeat('1', 10000);
+ALTER TABLE t MERGE PARTITIONS (tp_def, tp_2_3) INTO tp_merged;
+SELECT reltoastrelid <> 0 AS has_toast,
+       pg_relation_size(reltoastrelid) > 0 AS toast_used
+  FROM pg_class WHERE relname = 'tp_merged';
+SELECT length(a) FROM t;
+DROP TABLE t;
+
+-- Tablespace selection for the new merged partition mirrors
+-- CREATE TABLE ... PARTITION OF: the partitioned root's explicit
+-- tablespace wins; otherwise default_tablespace applies; otherwise the
+-- database default is used.
+CREATE TABLE t (i int) PARTITION BY RANGE(i) TABLESPACE regress_tblspace;
+CREATE TABLE tp_0_5 PARTITION OF t FOR VALUES FROM (0) TO (5);
+CREATE TABLE tp_5_10 PARTITION OF t FOR VALUES FROM (5) TO (10);
+INSERT INTO t SELECT generate_series(0, 9);
+ALTER TABLE t MERGE PARTITIONS (tp_0_5, tp_5_10) INTO tp_merged;
+SELECT spcname FROM pg_class c LEFT JOIN pg_tablespace s
+  ON c.reltablespace = s.oid WHERE c.relname = 'tp_merged';
+DROP TABLE t;
+
+-- Parent has no explicit tablespace, but default_tablespace is set: the
+-- new partition lands on default_tablespace.
+CREATE TABLE t (i int) PARTITION BY RANGE(i);
+CREATE TABLE tp_0_5 PARTITION OF t FOR VALUES FROM (0) TO (5);
+CREATE TABLE tp_5_10 PARTITION OF t FOR VALUES FROM (5) TO (10);
+INSERT INTO t SELECT generate_series(0, 9);
+SET default_tablespace TO regress_tblspace;
+ALTER TABLE t MERGE PARTITIONS (tp_0_5, tp_5_10) INTO tp_merged;
+RESET default_tablespace;
+SELECT spcname FROM pg_class c LEFT JOIN pg_tablespace s
+  ON c.reltablespace = s.oid WHERE c.relname = 'tp_merged';
+DROP TABLE t;
+
+CREATE TABLE t (i int) PARTITION BY RANGE(i);
+CREATE TABLE tp_0_5 PARTITION OF t FOR VALUES FROM (0) TO (5);
+CREATE TABLE tp_5_10 PARTITION OF t FOR VALUES FROM (5) TO (10);
+INSERT INTO t SELECT generate_series(0, 9);
+-- pg_global is rejected when picked up from default_tablespace.
+SET default_tablespace TO pg_global;
+ALTER TABLE t MERGE PARTITIONS (tp_0_5, tp_5_10) INTO tp_merged;	-- fails
+RESET default_tablespace;
+-- Parent has no explicit tablespace and default_tablespace is empty: the
+-- new partition uses the database default (reltablespace = 0).
+ALTER TABLE t MERGE PARTITIONS (tp_0_5, tp_5_10) INTO tp_merged;
+SELECT reltablespace FROM pg_class WHERE relname = 'tp_merged';
+DROP TABLE t;
+
 
 RESET search_path;
 

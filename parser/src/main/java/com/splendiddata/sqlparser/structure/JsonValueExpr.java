@@ -97,11 +97,8 @@ public class JsonValueExpr extends Node {
             result.append(raw_expr);
             separator = " ";
         }
-        if (format != null) {
-            String formatTxt = format.toString();
-            if (!formatTxt.isBlank()) {
-                result.append(separator).append(formatTxt);
-            }
+        if (format != null && !format.toString().isBlank()) {
+            result.append(separator).append(format);
         }
         return result.toString();
     }

@@ -355,6 +355,16 @@ CREATE TABLE gtest20c (a int, b int GENERATED ALWAYS AS (a * 2) VIRTUAL);
 ALTER TABLE gtest20c ADD CONSTRAINT whole_row_check CHECK (gtest20c IS NOT NULL);
 INSERT INTO gtest20c VALUES (1);  -- ok
 INSERT INTO gtest20c VALUES (NULL);  -- fails
+ALTER TABLE gtest20c ALTER COLUMN b SET EXPRESSION AS (NULL::int);  -- violates constraint
+
+-- index with whole-row reference needs rebuild
+CREATE TABLE gtest20d (a int, b int GENERATED ALWAYS AS (a * 2) VIRTUAL);
+INSERT INTO gtest20d VALUES (1), (1);
+CREATE INDEX gtest20d_idx1 ON gtest20d (a) WHERE gtest20d = ROW (1, 2);
+
+ALTER TABLE gtest20d ALTER COLUMN b SET EXPRESSION AS (a * 2::bigint);  -- index rebuild
+CREATE INDEX gtest20d_idx2 ON gtest20d ((gtest20d = ROW (1, 2)));
+ALTER TABLE gtest20d ALTER COLUMN b SET EXPRESSION AS (a * 3);  -- index rebuild
 
 -- not-null constraints
 CREATE TABLE gtest21a (a int PRIMARY KEY, b int GENERATED ALWAYS AS (nullif(a, 0)) VIRTUAL NOT NULL);
@@ -381,6 +391,27 @@ INSERT INTO gtest21b (a) VALUES (2), (0);  -- violates constraint
 INSERT INTO gtest21b (a) VALUES (NULL);  -- error
 ALTER TABLE gtest21b ALTER COLUMN b DROP NOT NULL;
 INSERT INTO gtest21b (a) VALUES (0);  -- ok now
+
+-- virtual generated columns are not physically stored, even when not null
+CREATE TABLE gtest21c (a int NOT NULL, b int GENERATED ALWAYS AS (a * 2) VIRTUAL NOT NULL, c int NOT NULL);
+INSERT INTO gtest21c (a, c) VALUES (10, 42);
+SELECT a, b, c FROM gtest21c;
+DROP TABLE gtest21c;
+
+-- try adding a virtual generated column to an existing table with tuples,
+-- then try adding an atthasmissing column before adding a normal nullable
+-- column.
+CREATE TABLE gtest21d (a int NOT NULL);
+INSERT INTO gtest21d (a) VALUES(10);
+ALTER TABLE gtest21d ADD COLUMN b INT GENERATED ALWAYS AS (a * 10) VIRTUAL NOT NULL;
+SELECT * FROM gtest21d ORDER BY a;
+INSERT INTO gtest21d (a) VALUES(20);
+ALTER TABLE gtest21d ADD COLUMN c INT NOT NULL DEFAULT 1234;
+SELECT * FROM gtest21d ORDER BY a;
+ALTER TABLE gtest21d ADD COLUMN d INT;
+INSERT INTO gtest21d (a, c, d) VALUES(30, 12345, 100);
+SELECT * FROM gtest21d ORDER BY a;
+DROP TABLE gtest21d;
 
 -- not-null constraint with partitioned table
 CREATE TABLE gtestnn_parent (

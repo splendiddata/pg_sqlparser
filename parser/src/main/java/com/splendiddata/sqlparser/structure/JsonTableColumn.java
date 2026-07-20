@@ -160,7 +160,7 @@ public class JsonTableColumn extends Node {
             result.append(separator).append(coltype);
             separator = " ";
         }
-        if (format != null) {
+        if (format != null && !format.toString().isBlank()) {
             result.append(separator).append(format);
             separator = " ";
         }

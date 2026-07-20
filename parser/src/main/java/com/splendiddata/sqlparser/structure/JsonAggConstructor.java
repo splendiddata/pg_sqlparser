@@ -99,23 +99,21 @@ public class JsonAggConstructor extends Node {
         return clone;
     }
 
+    /**
+     * Returns the JsonAggConstructor in a form than can be injected in an SQL statement.
+     * <p>
+     * Beware!<br>
+     * Any "on null" or "unique keys" clause must be injected between the order by clause and a returning clause.
+     * Therefore the agg_order clause is NOT generated in this toString() method. Please generate in the calling class.
+     */
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
         String separator = "";
-        if (agg_order != null) {
-            result.append("order by");
-            separator = " ";
-            for (Node node : agg_order) {
-                result.append(separator).append(node);
-                separator = ", ";
-            }
-            separator = " ";
-        }       
         if (output != null) {
             result.append(separator).append(output);
             separator = " ";
-        } 
+        }
         if (agg_filter != null) {
             result.append(") filter (where ").append(agg_filter);
             separator = " ";
@@ -123,7 +121,7 @@ public class JsonAggConstructor extends Node {
         if (over != null) {
             result.append(") over (").append(over);
         }
-        
+
         return result.toString();
     }
 }

@@ -65,13 +65,13 @@ copy copytest2(test) from stdin;
 -- Deactivated for SplendidDataTest: line2
 -- Deactivated for SplendidDataTest: foo\.
 -- Deactivated for SplendidDataTest: line3
--- Deactivated for SplendidDataTest: \.
+\.
 copy copytest2(test) from stdin;
 -- Deactivated for SplendidDataTest: line4
 -- Deactivated for SplendidDataTest: line5
--- Deactivated for SplendidDataTest: \.foo
+\.foo
 -- Deactivated for SplendidDataTest: line6
--- Deactivated for SplendidDataTest: \.
+\.
 select test from copytest2;
 
 
@@ -86,9 +86,18 @@ copy copytest3 from stdin csv header;
 -- Deactivated for SplendidDataTest: this is just a line full of junk that would error out if parsed
 -- Deactivated for SplendidDataTest: 1,a,1
 -- Deactivated for SplendidDataTest: 2,b,2
--- Deactivated for SplendidDataTest: \.
+\.
 
 copy copytest3 to stdout csv header;
+
+-- testing explicit column order
+create temp table copytest_order (a int, b int, c int);
+copy copytest_order from stdin;
+-- Deactivated for SplendidDataTest: 1	2	3
+\.
+copy copytest_order (c, b, a) to stdout;
+copy copytest_order (c, b, a) to stdout (format csv);
+copy copytest_order (c, b, a) to stdout (format json);
 
 --- test copying in JSON mode with various styles
 copy (select 1 union all select 2) to stdout with (format json);
@@ -199,7 +208,7 @@ copy copytest4 from stdin (header);
 -- Deactivated for SplendidDataTest: this is just a line full of junk that would error out if parsed
 -- Deactivated for SplendidDataTest: 1	a
 -- Deactivated for SplendidDataTest: 2	b
--- Deactivated for SplendidDataTest: \.
+\.
 
 copy copytest4 to stdout (header);
 
@@ -309,7 +318,7 @@ drop trigger part_ins_trig on parted_copytest_a2;
 copy parted_copytest from stdin;
 -- Deactivated for SplendidDataTest: 1	1	str1
 -- Deactivated for SplendidDataTest: 2	2	str2
--- Deactivated for SplendidDataTest: \.
+\.
 
 -- Ensure index entries were properly added during the copy.
 select * from parted_copytest where b = 1;
@@ -369,7 +378,7 @@ copy tab_progress_reporting from stdin;
 -- Deactivated for SplendidDataTest: sharon	25	(15,12)	1000	sam
 -- Deactivated for SplendidDataTest: sam	30	(10,5)	2000	bill
 -- Deactivated for SplendidDataTest: bill	20	(11,10)	1000	sharon
--- Deactivated for SplendidDataTest: \.
+\.
 
 -- Generate COPY FROM report with FILE, with some excluded tuples.
 truncate tab_progress_reporting;
@@ -382,7 +391,7 @@ copy tab_progress_reporting from stdin(on_error ignore);
 -- Deactivated for SplendidDataTest: sharon	x	(15,12)	x	sam
 -- Deactivated for SplendidDataTest: sharon	25	(15,12)	1000	sam
 -- Deactivated for SplendidDataTest: sharon	y	(15,12)	x	sam
--- Deactivated for SplendidDataTest: \.
+\.
 
 drop trigger check_after_tab_progress_reporting on tab_progress_reporting;
 drop function notice_after_tab_progress_reporting();
@@ -403,36 +412,36 @@ copy header_copytest from stdin with (header wrong_choice);
 copy header_copytest from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	b	c
 -- Deactivated for SplendidDataTest: 1	2	foo
--- Deactivated for SplendidDataTest: \.
+\.
 copy header_copytest (c, a, b) from stdin with (header match);
 -- Deactivated for SplendidDataTest: c	a	b
 -- Deactivated for SplendidDataTest: bar	3	4
--- Deactivated for SplendidDataTest: \.
+\.
 copy header_copytest from stdin with (header match, format csv);
 -- Deactivated for SplendidDataTest: a,b,c
 -- Deactivated for SplendidDataTest: 5,6,baz
--- Deactivated for SplendidDataTest: \.
+\.
 -- errors
 copy header_copytest (c, b, a) from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	b	c
 -- Deactivated for SplendidDataTest: 1	2	foo
--- Deactivated for SplendidDataTest: \.
+\.
 copy header_copytest from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	b	\N
 -- Deactivated for SplendidDataTest: 1	2	foo
--- Deactivated for SplendidDataTest: \.
+\.
 copy header_copytest from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	b
 -- Deactivated for SplendidDataTest: 1	2
--- Deactivated for SplendidDataTest: \.
+\.
 copy header_copytest from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	b	c	d
 -- Deactivated for SplendidDataTest: 1	2	foo	bar
--- Deactivated for SplendidDataTest: \.
+\.
 copy header_copytest from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	b	d
 -- Deactivated for SplendidDataTest: 1	2	foo
--- Deactivated for SplendidDataTest: \.
+\.
 SELECT * FROM header_copytest ORDER BY a;
 
 -- Drop an extra column, in the middle of the existing set.
@@ -441,20 +450,20 @@ alter table header_copytest drop column b;
 copy header_copytest (c, a) from stdin with (header match);
 -- Deactivated for SplendidDataTest: c	a
 -- Deactivated for SplendidDataTest: foo	7
--- Deactivated for SplendidDataTest: \.
+\.
 copy header_copytest (a, c) from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	c
 -- Deactivated for SplendidDataTest: 8	foo
--- Deactivated for SplendidDataTest: \.
+\.
 -- errors
 copy header_copytest from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	........pg.dropped.2........	c
 -- Deactivated for SplendidDataTest: 1	2	foo
--- Deactivated for SplendidDataTest: \.
+\.
 copy header_copytest (a, c) from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	c	b
 -- Deactivated for SplendidDataTest: 1	foo	2
--- Deactivated for SplendidDataTest: \.
+\.
 
 SELECT * FROM header_copytest ORDER BY a;
 drop table header_copytest;
@@ -518,7 +527,7 @@ create server copytest_server foreign data wrapper copytest_wrapper;
 create foreign table copytest_foreign_table (a int) server copytest_server;
 copy copytest_foreign_table from stdin (freeze);
 -- Deactivated for SplendidDataTest: 1
--- Deactivated for SplendidDataTest: \.
+\.
 rollback;
 
 -- Tests for COPY TO with materialized views.

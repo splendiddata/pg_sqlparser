@@ -1184,6 +1184,77 @@ SELECT count(*) FROM t WHERE i = 0 AND tab_id IN (SELECT tab_id FROM t WHERE i =
 
 DROP TABLE t;
 
+-- Each new partition produced by SPLIT must get its own TOAST table so
+-- that out-of-line varlena attributes coming from the source partition
+-- can be stored.  SET STORAGE EXTERNAL forces externalization for any
+-- value over the TOAST threshold, so a string over that threshold
+-- suffices to exercise the toast-table dependency.
+CREATE TABLE t (a text) PARTITION BY RANGE(a);
+ALTER TABLE t ALTER COLUMN a SET STORAGE EXTERNAL;
+CREATE TABLE tp_all PARTITION OF t FOR VALUES FROM (MINVALUE) TO (MAXVALUE);
+INSERT INTO t SELECT repeat('1', 10000);
+ALTER TABLE t SPLIT PARTITION tp_all INTO (
+    PARTITION tp_lo FOR VALUES FROM (MINVALUE) TO ('2'),
+    PARTITION tp_hi FOR VALUES FROM ('2') TO (MAXVALUE)
+);
+SELECT relname,
+       reltoastrelid <> 0 AS has_toast,
+       pg_relation_size(reltoastrelid) > 0 AS toast_used
+  FROM pg_class WHERE relname IN ('tp_lo', 'tp_hi') ORDER BY relname;
+SELECT length(a) FROM t;
+DROP TABLE t;
+
+-- Tablespace selection for the new partitions mirrors
+-- CREATE TABLE ... PARTITION OF: the partitioned root's explicit
+-- tablespace wins; otherwise default_tablespace applies; otherwise the
+-- database default is used.
+CREATE TABLE t (i int) PARTITION BY RANGE(i) TABLESPACE regress_tblspace;
+CREATE TABLE tp_all PARTITION OF t FOR VALUES FROM (0) TO (10);
+INSERT INTO t SELECT generate_series(0, 9);
+ALTER TABLE t SPLIT PARTITION tp_all INTO (
+    PARTITION tp_lo FOR VALUES FROM (0) TO (5),
+    PARTITION tp_hi FOR VALUES FROM (5) TO (10)
+);
+SELECT c.relname, s.spcname FROM pg_class c LEFT JOIN pg_tablespace s
+  ON c.reltablespace = s.oid WHERE c.relname IN ('tp_lo', 'tp_hi')
+  ORDER BY c.relname;
+DROP TABLE t;
+
+-- Parent has no explicit tablespace, but default_tablespace is set: the
+-- new partitions land on default_tablespace.
+CREATE TABLE t (i int) PARTITION BY RANGE(i);
+CREATE TABLE tp_all PARTITION OF t FOR VALUES FROM (0) TO (10);
+INSERT INTO t SELECT generate_series(0, 9);
+SET default_tablespace TO regress_tblspace;
+ALTER TABLE t SPLIT PARTITION tp_all INTO (
+    PARTITION tp_lo FOR VALUES FROM (0) TO (5),
+    PARTITION tp_hi FOR VALUES FROM (5) TO (10)
+);
+RESET default_tablespace;
+SELECT c.relname, s.spcname FROM pg_class c LEFT JOIN pg_tablespace s
+  ON c.reltablespace = s.oid WHERE c.relname IN ('tp_lo', 'tp_hi')
+  ORDER BY c.relname;
+DROP TABLE t;
+
+CREATE TABLE t (i int) PARTITION BY RANGE(i);
+CREATE TABLE tp_all PARTITION OF t FOR VALUES FROM (0) TO (10);
+INSERT INTO t SELECT generate_series(0, 9);
+-- pg_global is rejected when picked up from default_tablespace.
+SET default_tablespace TO pg_global;
+ALTER TABLE t SPLIT PARTITION tp_all INTO (
+    PARTITION tp_lo FOR VALUES FROM (0) TO (5),
+    PARTITION tp_hi FOR VALUES FROM (5) TO (10)
+);	-- fails
+RESET default_tablespace;
+-- Parent has no explicit tablespace and default_tablespace is empty: new
+-- partitions use the database default (reltablespace = 0).
+ALTER TABLE t SPLIT PARTITION tp_all INTO (
+    PARTITION tp_lo FOR VALUES FROM (0) TO (5),
+    PARTITION tp_hi FOR VALUES FROM (5) TO (10)
+);
+SELECT relname, reltablespace FROM pg_class
+  WHERE relname IN ('tp_lo', 'tp_hi') ORDER BY relname;
+DROP TABLE t;
 
 RESET search_path;
 

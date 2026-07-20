@@ -312,7 +312,7 @@ SELECT * FROM atest2 WHERE ( col1 IN ( SELECT b FROM atest1 ) );
 SET SESSION AUTHORIZATION regress_priv_user4;
 COPY atest2 FROM stdin; -- ok
 -- Deactivated for SplendidDataTest: bar	true
--- Deactivated for SplendidDataTest: \.
+\.
 SELECT * FROM atest1; -- ok
 
 
@@ -553,7 +553,7 @@ INSERT INTO atest5 (two) VALUES (3); -- ok
 COPY atest5 FROM stdin; -- fail
 COPY atest5 (two) FROM stdin; -- ok
 -- Deactivated for SplendidDataTest: 1
--- Deactivated for SplendidDataTest: \.
+\.
 INSERT INTO atest5 (three) VALUES (4); -- fail
 INSERT INTO atest5 VALUES (5,5,5); -- fail
 UPDATE atest5 SET three = 10; -- ok
@@ -798,14 +798,22 @@ CREATE TABLE t1 (
   valid_at tsrange,
 	CONSTRAINT t1pk PRIMARY KEY (c1, valid_at WITHOUT OVERLAPS)
 );
--- UPDATE requires select permission on the valid_at column (but not update):
+-- UPDATE requires select and update permission on the valid_at column:
 GRANT SELECT (c1) ON t1 TO regress_priv_user2;
 GRANT UPDATE (c1) ON t1 TO regress_priv_user2;
 GRANT SELECT (c1, valid_at) ON t1 TO regress_priv_user3;
 GRANT UPDATE (c1) ON t1 TO regress_priv_user3;
+GRANT SELECT (c1) ON t1 TO regress_priv_user4;
+GRANT UPDATE (c1, valid_at) ON t1 TO regress_priv_user4;
+GRANT SELECT (c1, valid_at) ON t1 TO regress_priv_user5;
+GRANT UPDATE (c1, valid_at) ON t1 TO regress_priv_user5;
 SET SESSION AUTHORIZATION regress_priv_user2;
 UPDATE t1 FOR PORTION OF valid_at FROM '2000-01-01' TO '2001-01-01' SET c1 = '[2,3)';
 SET SESSION AUTHORIZATION regress_priv_user3;
+UPDATE t1 FOR PORTION OF valid_at FROM '2000-01-01' TO '2001-01-01' SET c1 = '[2,3)';
+SET SESSION AUTHORIZATION regress_priv_user4;
+UPDATE t1 FOR PORTION OF valid_at FROM '2000-01-01' TO '2001-01-01' SET c1 = '[2,3)';
+SET SESSION AUTHORIZATION regress_priv_user5;
 UPDATE t1 FOR PORTION OF valid_at FROM '2000-01-01' TO '2001-01-01' SET c1 = '[2,3)';
 SET SESSION AUTHORIZATION regress_priv_user1;
 -- DELETE requires select permission on the valid_at column:

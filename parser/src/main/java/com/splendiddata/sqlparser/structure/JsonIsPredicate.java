@@ -107,12 +107,8 @@ public class JsonIsPredicate extends Node {
         if (unique_keys) {
             result.append(separator).append("with unique keys");
         }
-        if (format != null) {
-            String formatTxt = format.toString();
-            if (!formatTxt.isBlank()) {
-                result.append(separator).append(format);
-                separator = " ";
-            }
+        if (format != null && !format.toString().isBlank()) {
+            result.append(separator).append(format);
         }
         return result.toString();
     }

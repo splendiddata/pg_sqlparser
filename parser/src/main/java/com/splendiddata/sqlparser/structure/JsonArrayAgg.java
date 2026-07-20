@@ -90,18 +90,25 @@ public class JsonArrayAgg extends Expr {
             result.append(arg);
             separator = " ";
         }
+        if (constructor != null && constructor.agg_order != null) {
+            result.append(separator).append("order by");
+            separator = " ";
+            for (Node node : constructor.agg_order) {
+                result.append(separator).append(node);
+                separator = ", ";
+            }
+            separator = " ";
+        }
         if (!absent_on_null) {
             result.append(separator).append("null on null");
-            separator = " ";
         }
         if (constructor != null) {
             String constructorTxt = constructor.toString();
             if (!constructorTxt.isBlank()) {
-                result.append(separator).append(constructor);
-                separator = " ";
+                result.append(separator).append(constructorTxt);
             }
         }
-        result.append(')');        
+        result.append(')');
         return result.toString();
     }
 }

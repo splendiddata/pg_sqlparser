@@ -106,13 +106,10 @@ public class JsonArrayQueryConstructor extends Node {
         }
         if (output != null) {
             result.append(separator).append(output);
+            separator = " ";
         }
-        if (format != null) {
-            String formatTxt = format.toString();
-            if (!formatTxt.isBlank()) {
-                result.append(separator).append(format);
-                separator = " ";
-            }
+        if (format != null && !format.toString().isBlank()) {
+            result.append(separator).append(format);
         }
         result.append(")");
         return result.toString();

@@ -226,6 +226,9 @@ public class DefineStmt extends Node {
                             result.append(" = ").append(def.arg);
                         }
                         break;
+                    case "category":
+                        result.append(separator).append(def.defname.toLowerCase()).append(" = '").append(def.arg).append("'");
+                        break;
                     default:
                         result.append(separator).append('"').append(def.defname.toLowerCase()).append('"');
                         if (def.arg != null) {

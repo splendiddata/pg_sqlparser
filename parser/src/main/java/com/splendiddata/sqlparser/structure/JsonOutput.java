@@ -78,14 +78,12 @@ public class JsonOutput extends Node {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder("returning ");
-        String separator = "";
+        StringBuilder result = new StringBuilder("returning");
         if (typeName != null) {
-            result.append(typeName);
-            separator = " ";
+            result.append(' ').append(typeName);
         }
-        if (returning != null) {
-            result.append(separator).append(returning);
+        if (returning != null && !returning.toString().isBlank()) {
+            result.append(' ').append(returning);
         }
         return result.toString();
     }

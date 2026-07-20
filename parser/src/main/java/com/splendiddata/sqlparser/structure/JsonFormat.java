@@ -75,11 +75,13 @@ public class JsonFormat extends Node {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder("");
-        if (format_type != null) {
+        String separator = "";
+        if (format_type != null && !format_type.toString().isBlank()) {
             result.append(format_type);
+            separator = " ";
         }
-        if (encoding != null && !"".equals(encoding.toString())) {
-            result.append(" ").append(encoding);
+        if (encoding != null && !encoding.toString().isBlank()) {
+            result.append(separator).append(encoding);
         }
         return result.toString();
     }
