@@ -1,9 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2023 - 2024
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
- * This unpublished material is proprietary to Splendid Data Product Development B.V. All rights reserved. The methods
- * and techniques described herein are considered trade secrets and/or confidential. Reproduction or distribution, in
- * whole or in part, is forbidden except by express written permission of Splendid Data Product Development B.V.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -93,23 +99,33 @@ public class JsonAggConstructor extends Node {
         return clone;
     }
 
+    /**
+     * Returns the JsonAggConstructor in an sql format.
+     * <p>
+     * Beware!<br>
+     * {@link JsonArrayAgg#toString()} has an implementation of its own as a NULL ON NULL clause must syntactically be
+     * generated in the middle of the JsonAggConstructor clauses.
+     * 
+     * @see java.lang.Object#toString()
+     *
+     * @return String the content in an sql format
+     */
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
         String separator = "";
         if (agg_order != null) {
-            result.append("order by");
-            separator = " ";
+            separator = "order by ";
             for (Node node : agg_order) {
                 result.append(separator).append(node);
                 separator = ", ";
             }
             separator = " ";
-        }       
+        }
         if (output != null) {
             result.append(separator).append(output);
             separator = " ";
-        } 
+        }
         if (agg_filter != null) {
             result.append(") filter (where ").append(agg_filter);
             separator = " ";
@@ -117,7 +133,7 @@ public class JsonAggConstructor extends Node {
         if (over != null) {
             result.append(") over (").append(over);
         }
-        
+
         return result.toString();
     }
 }

@@ -249,7 +249,7 @@ COPY t1 FROM stdin WITH ;
 -- Deactivated for SplendidDataTest: 102	2	bbb
 -- Deactivated for SplendidDataTest: 103	3	ccc
 -- Deactivated for SplendidDataTest: 104	4	dad
--- Deactivated for SplendidDataTest: \.
+\.
 
 CREATE TABLE t2 (c float) INHERITS (t1);
 GRANT ALL ON t2 TO public;
@@ -259,7 +259,7 @@ COPY t2 FROM stdin;
 -- Deactivated for SplendidDataTest: 202	2	bcd	2.2
 -- Deactivated for SplendidDataTest: 203	3	cde	3.3
 -- Deactivated for SplendidDataTest: 204	4	def	4.4
--- Deactivated for SplendidDataTest: \.
+\.
 
 CREATE TABLE t3 (id int not null primary key, c text, b text, a int);
 ALTER TABLE t3 INHERIT t1;
@@ -269,7 +269,7 @@ COPY t3(id, a,b,c) FROM stdin;
 -- Deactivated for SplendidDataTest: 301	1	xxx	X
 -- Deactivated for SplendidDataTest: 302	2	yyy	Y
 -- Deactivated for SplendidDataTest: 303	3	zzz	Z
--- Deactivated for SplendidDataTest: \.
+\.
 
 CREATE POLICY p1 ON t1 FOR ALL TO PUBLIC USING (a % 2 = 0); -- be even number
 CREATE POLICY p2 ON t2 FOR ALL TO PUBLIC USING (a % 2 = 1); -- be odd number
@@ -1627,21 +1627,23 @@ COPY copy_t FROM STDIN; --ok
 -- Deactivated for SplendidDataTest: 2	bcd
 -- Deactivated for SplendidDataTest: 3	cde
 -- Deactivated for SplendidDataTest: 4	def
--- Deactivated for SplendidDataTest: \.
+\.
 SET row_security TO ON;
 COPY copy_t FROM STDIN; --ok
 -- Deactivated for SplendidDataTest: 1	abc
 -- Deactivated for SplendidDataTest: 2	bcd
 -- Deactivated for SplendidDataTest: 3	cde
 -- Deactivated for SplendidDataTest: 4	def
--- Deactivated for SplendidDataTest: \.
+\.
 
 -- Check COPY FROM as user with permissions.
 SET SESSION AUTHORIZATION regress_rls_bob;
 SET row_security TO OFF;
 COPY copy_t FROM STDIN; --fail - would be affected by RLS.
+\.
 SET row_security TO ON;
 COPY copy_t FROM STDIN; --fail - COPY FROM not supported by RLS.
+\.
 
 -- Check COPY FROM as user with permissions and BYPASSRLS
 SET SESSION AUTHORIZATION regress_rls_exempt_user;
@@ -1651,14 +1653,16 @@ COPY copy_t FROM STDIN; --ok
 -- Deactivated for SplendidDataTest: 2	bcd
 -- Deactivated for SplendidDataTest: 3	cde
 -- Deactivated for SplendidDataTest: 4	def
--- Deactivated for SplendidDataTest: \.
+\.
 
 -- Check COPY FROM as user without permissions.
 SET SESSION AUTHORIZATION regress_rls_carol;
 SET row_security TO OFF;
 COPY copy_t FROM STDIN; --fail - permission denied.
+\.
 SET row_security TO ON;
 COPY copy_t FROM STDIN; --fail - permission denied.
+\.
 
 RESET SESSION AUTHORIZATION;
 DROP TABLE copy_t;
