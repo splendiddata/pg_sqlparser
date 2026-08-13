@@ -5,7 +5,7 @@
 
 	<groupId>com.splendiddata</groupId>
 	<artifactId>pg_sqlparser</artifactId>
-	<version>14.2</version>
+	<version>14.3</version>
 	<packaging>pom</packaging>
 	<name>pg_sqlparser</name>
 	<description>Java implementation of the Postgres sql parser. This version of the sqlparser is generated from the Postgres version 14 parser.</description>
@@ -40,9 +40,10 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<sonar.exclusions>file:**/generated-sources/**</sonar.exclusions>
-		<log4j.version>2.26.0</log4j.version>
+		<log4j.version>2.26.1</log4j.version>
 		<javafx.version>11.0.2</javafx.version>
-		<jupiter.version>5.14.1</jupiter.version>
+		<!-- jupiter.version 5.14.4 is the youngest version that still works with Java 11 -->
+		<jupiter.version>5.14.4</jupiter.version>
 		<p6spy.version>3.9.1</p6spy.version>
 		<jvx.version>2.8</jvx.version>
 	</properties>
@@ -157,7 +158,7 @@
 			<dependency>
 				<groupId>org.checkerframework</groupId>
 				<artifactId>checker-qual</artifactId>
-				<version>4.2.0</version>
+				<version>4.2.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven</groupId>
@@ -221,7 +222,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>3.5.0</version>
+					<version>3.5.1</version>
 					<configuration>
 						<encoding>UTF-8</encoding>
 					</configuration>
