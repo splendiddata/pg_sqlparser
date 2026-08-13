@@ -50,6 +50,7 @@ copy (select t into temp test3 from test1 where id=3) to stdout;
 -- This should fail
 --
 -- Deactivated for SplendidDataTest: copy (select * from test1) from stdin;
+\.
 --
 -- This should fail
 --
@@ -97,8 +98,8 @@ drop table test1;
 create table test3 (c int);
 -- Deactivated for SplendidDataTest: select 0\; copy test3 from stdin\; copy test3 from stdin\; select 1; -- 1
 -- Deactivated for SplendidDataTest: 1
--- Deactivated for SplendidDataTest: \.
+\.
 -- Deactivated for SplendidDataTest: 2
--- Deactivated for SplendidDataTest: \.
+\.
 select * from test3;
 drop table test3;

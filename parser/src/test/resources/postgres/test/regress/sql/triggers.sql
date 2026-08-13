@@ -307,7 +307,7 @@ COPY main_table (a,b) FROM stdin;
 -- Deactivated for SplendidDataTest: 30	10
 -- Deactivated for SplendidDataTest: 50	35
 -- Deactivated for SplendidDataTest: 80	15
--- Deactivated for SplendidDataTest: \.
+\.
 
 CREATE FUNCTION trigger_func() RETURNS trigger LANGUAGE plpgsql AS '
 BEGIN
@@ -350,7 +350,7 @@ ALTER TABLE main_table DROP CONSTRAINT main_table_a_key;
 COPY main_table (a, b) FROM stdin;
 -- Deactivated for SplendidDataTest: 30	40
 -- Deactivated for SplendidDataTest: 50	60
--- Deactivated for SplendidDataTest: \.
+\.
 
 SELECT * FROM main_table ORDER BY a, b;
 
@@ -380,7 +380,7 @@ INSERT INTO main_table (a) VALUES (123), (456);
 COPY main_table FROM stdin;
 -- Deactivated for SplendidDataTest: 123	999
 -- Deactivated for SplendidDataTest: 456	999
--- Deactivated for SplendidDataTest: \.
+\.
 DELETE FROM main_table WHERE a IN (123, 456);
 UPDATE main_table SET a = 50, b = 60;
 SELECT * FROM main_table ORDER BY a, b;
@@ -1566,12 +1566,12 @@ delete from parted_stmt_trig;
 copy parted_stmt_trig(a) from stdin;
 -- Deactivated for SplendidDataTest: 1
 -- Deactivated for SplendidDataTest: 2
--- Deactivated for SplendidDataTest: \.
+\.
 
 -- insert via copy on the first partition
 copy parted_stmt_trig1(a) from stdin;
 -- Deactivated for SplendidDataTest: 1
--- Deactivated for SplendidDataTest: \.
+\.
 
 -- Disabling a trigger in the parent table should disable children triggers too
 alter table parted_stmt_trig disable trigger trig_ins_after_parent;
@@ -2142,7 +2142,7 @@ copy parent (a, b) from stdin;
 -- Deactivated for SplendidDataTest: AAA	42
 -- Deactivated for SplendidDataTest: BBB	42
 -- Deactivated for SplendidDataTest: CCC	42
--- Deactivated for SplendidDataTest: \.
+\.
 
 -- insert into parent with a before trigger on a child tuple before
 -- insertion, and we capture the newly modified row in parent format
@@ -2167,7 +2167,7 @@ copy parent (a, b) from stdin;
 -- Deactivated for SplendidDataTest: AAA	42
 -- Deactivated for SplendidDataTest: BBB	42
 -- Deactivated for SplendidDataTest: CCC	234
--- Deactivated for SplendidDataTest: \.
+\.
 
 drop table child1, child2, child3, parent;
 drop function intercept_insert();
@@ -2333,7 +2333,7 @@ copy parent (a, b) from stdin;
 -- Deactivated for SplendidDataTest: AAA	42
 -- Deactivated for SplendidDataTest: BBB	42
 -- Deactivated for SplendidDataTest: CCC	42
--- Deactivated for SplendidDataTest: \.
+\.
 
 -- same behavior for copy if there is an index (interesting because rows are
 -- captured by a different code path in copyfrom.c if there are indexes)
