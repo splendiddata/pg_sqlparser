@@ -11,8 +11,8 @@
 --
 
 -- directory paths are passed to us in environment variables
--- Deactivated for SplendidDataTest:\getenv abs_srcdir PG_ABS_SRCDIR
--- Deactivated for SplendidDataTest:\getenv abs_builddir PG_ABS_BUILDDIR
+\getenv abs_srcdir PG_ABS_SRCDIR
+\getenv abs_builddir PG_ABS_BUILDDIR
 
 --- test copying in CSV mode with various styles
 --- of embedded line ending characters
@@ -27,12 +27,12 @@ insert into copytest values('Unix',E'abc\ndef',2);
 insert into copytest values('Mac',E'abc\rdef',3);
 insert into copytest values(E'esc\\ape',E'a\\r\\\r\\\n\\nb',4);
 
--- Deactivated for SplendidDataTest:\set filename :abs_builddir '/results/copytest.csv'
--- Deactivated for SplendidDataTest:copy copytest to :'filename' csv;
+\set filename :abs_builddir '/results/copytest.csv'
+-- Deactivated for SplendidDataTest: copy copytest to :'filename' csv;
 
 create temp table copytest2 (like copytest);
 
--- Deactivated for SplendidDataTest:copy copytest2 from :'filename' csv;
+-- Deactivated for SplendidDataTest: copy copytest2 from :'filename' csv;
 
 select * from copytest except select * from copytest2;
 
@@ -40,9 +40,9 @@ truncate copytest2;
 
 --- same test but with an escape char different from quote char
 
--- Deactivated for SplendidDataTest:copy copytest to :'filename' csv quote '''' escape E'\\';
+-- Deactivated for SplendidDataTest: copy copytest to :'filename' csv quote '''' escape E'\\';
 
--- Deactivated for SplendidDataTest:copy copytest2 from :'filename' csv quote '''' escape E'\\';
+-- Deactivated for SplendidDataTest: copy copytest2 from :'filename' csv quote '''' escape E'\\';
 
 select * from copytest except select * from copytest2;
 
@@ -58,7 +58,7 @@ copy copytest3 from stdin csv header;
 -- Deactivated for SplendidDataTest: this is just a line full of junk that would error out if parsed
 -- Deactivated for SplendidDataTest: 1,a,1
 -- Deactivated for SplendidDataTest: 2,b,2
--- Deactivated for SplendidDataTest: \.
+\.
 
 copy copytest3 to stdout csv header;
 
@@ -70,7 +70,7 @@ copy copytest4 from stdin (header);
 -- Deactivated for SplendidDataTest: this is just a line full of junk that would error out if parsed
 -- Deactivated for SplendidDataTest: 1	a
 -- Deactivated for SplendidDataTest: 2	b
--- Deactivated for SplendidDataTest: \.
+\.
 
 copy copytest4 to stdout (header);
 
@@ -93,7 +93,7 @@ insert into parted_copytest select x,1,'One' from generate_series(1,1000) x;
 insert into parted_copytest select x,2,'Two' from generate_series(1001,1010) x;
 insert into parted_copytest select x,1,'One' from generate_series(1011,1020) x;
 
--- Deactivated for SplendidDataTest: \set filename :abs_builddir '/results/parted_copytest.csv'
+\set filename :abs_builddir '/results/parted_copytest.csv'
 -- Deactivated for SplendidDataTest: copy (select * from parted_copytest order by a) to :'filename';
 
 truncate parted_copytest;
@@ -135,7 +135,7 @@ drop trigger part_ins_trig on parted_copytest_a2;
 copy parted_copytest from stdin;
 -- Deactivated for SplendidDataTest: 1	1	str1
 -- Deactivated for SplendidDataTest: 2	2	str2
--- Deactivated for SplendidDataTest: \.
+\.
 
 -- Ensure index entries were properly added during the copy.
 select * from parted_copytest where b = 1;
@@ -194,11 +194,11 @@ copy tab_progress_reporting from stdin;
 -- Deactivated for SplendidDataTest: sharon	25	(15,12)	1000	sam
 -- Deactivated for SplendidDataTest: sam	30	(10,5)	2000	bill
 -- Deactivated for SplendidDataTest: bill	20	(11,10)	1000	sharon
--- Deactivated for SplendidDataTest: \.
+\.
 
 -- Generate COPY FROM report with FILE, with some excluded tuples.
 truncate tab_progress_reporting;
--- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/emp.data'
+\set filename :abs_srcdir '/data/emp.data'
 -- Deactivated for SplendidDataTest: copy tab_progress_reporting from :'filename'
 -- Deactivated for SplendidDataTest: 	where (salary < 2000);
 
@@ -217,40 +217,41 @@ alter table header_copytest drop column c;
 alter table header_copytest add column c text;
 copy header_copytest to stdout with (header match);
 copy header_copytest from stdin with (header wrong_choice);
+\.
 -- works
 copy header_copytest from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	b	c
 -- Deactivated for SplendidDataTest: 1	2	foo
--- Deactivated for SplendidDataTest: \.
+\.
 copy header_copytest (c, a, b) from stdin with (header match);
 -- Deactivated for SplendidDataTest: c	a	b
 -- Deactivated for SplendidDataTest: bar	3	4
--- Deactivated for SplendidDataTest: \.
+\.
 copy header_copytest from stdin with (header match, format csv);
 -- Deactivated for SplendidDataTest: a,b,c
 -- Deactivated for SplendidDataTest: 5,6,baz
--- Deactivated for SplendidDataTest: \.
+\.
 -- errors
 copy header_copytest (c, b, a) from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	b	c
 -- Deactivated for SplendidDataTest: 1	2	foo
--- Deactivated for SplendidDataTest: \.
+\.
 copy header_copytest from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	b	\N
 -- Deactivated for SplendidDataTest: 1	2	foo
--- Deactivated for SplendidDataTest: \.
+\.
 copy header_copytest from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	b
 -- Deactivated for SplendidDataTest: 1	2
--- Deactivated for SplendidDataTest: \.
+\.
 copy header_copytest from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	b	c	d
 -- Deactivated for SplendidDataTest: 1	2	foo	bar
--- Deactivated for SplendidDataTest: \.
+\.
 copy header_copytest from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	b	d
 -- Deactivated for SplendidDataTest: 1	2	foo
--- Deactivated for SplendidDataTest: \.
+\.
 SELECT * FROM header_copytest ORDER BY a;
 
 -- Drop an extra column, in the middle of the existing set.
@@ -259,20 +260,20 @@ alter table header_copytest drop column b;
 copy header_copytest (c, a) from stdin with (header match);
 -- Deactivated for SplendidDataTest: c	a
 -- Deactivated for SplendidDataTest: foo	7
--- Deactivated for SplendidDataTest: \.
+\.
 copy header_copytest (a, c) from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	c
 -- Deactivated for SplendidDataTest: 8	foo
--- Deactivated for SplendidDataTest: \.
+\.
 -- errors
 copy header_copytest from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	........pg.dropped.2........	c
 -- Deactivated for SplendidDataTest: 1	2	foo
--- Deactivated for SplendidDataTest: \.
+\.
 copy header_copytest (a, c) from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	c	b
 -- Deactivated for SplendidDataTest: 1	foo	2
--- Deactivated for SplendidDataTest: \.
+\.
 
 SELECT * FROM header_copytest ORDER BY a;
 drop table header_copytest;
@@ -283,13 +284,13 @@ create temp table oversized_column_default (
     col2 varchar(5));
 -- normal COPY should work
 copy oversized_column_default from stdin;
--- Deactivated for SplendidDataTest: \.
+\.
 -- error if the column is excluded
 copy oversized_column_default (col2) from stdin;
--- Deactivated for SplendidDataTest: \.
+\.
 -- error if the DEFAULT option is given
 copy oversized_column_default from stdin (default '');
--- Deactivated for SplendidDataTest: \.
+\.
 drop table oversized_column_default;
 
 
@@ -318,7 +319,7 @@ CREATE TABLE parted_si_p_odd PARTITION OF parted_si FOR VALUES IN (1);
 -- relation extension). See
 -- https://postgr.es/m/18130-7a86a7356a75209d%40postgresql.org
 -- https://postgr.es/m/257696.1695670946%40sss.pgh.pa.us
--- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/desc.data'
+\set filename :abs_srcdir '/data/desc.data'
 -- Deactivated for SplendidDataTest: COPY parted_si(id, data) FROM :'filename';
 
 -- An earlier bug (see commit b1ecb9b3fcf) could end up using a buffer from

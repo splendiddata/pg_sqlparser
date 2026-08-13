@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020 - 2021
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
@@ -233,6 +233,15 @@ public class CreateFunctionStmt extends Node {
                     break;
                 case "support":
                     result.append(" support ").append(((List<Value>) option.arg).get(0));
+                    break;
+                case "transform":
+                    result.append(" transform for type");
+                    separator = " ";
+                    for (TypeName typeName : (List<TypeName>)option.arg) {
+                        result.append(separator).append(typeName);
+                        separator = ", for type ";
+                    }
+                    separator = " ";
                     break;
                 default:
                     result.append(ParserUtil.reportUnknownValue("option", ParserUtil.stmtToXml(option), getClass()));

@@ -140,6 +140,15 @@ SELECT * FROM JSON_TABLE(jsonb '{"d1": "foo"}', '$'
 SELECT * FROM JSON_TABLE(jsonb '{"d1": "foo"}', '$'
     COLUMNS (js1 oid[] PATH '$.d2' DEFAULT '{1}'::int[]::oid[] ON EMPTY));
 
+-- A DEFAULT expression whose base type matches the column type must still be
+-- coerced to the column's typmod.
+SELECT * FROM JSON_TABLE(jsonb '{}', '$'
+    COLUMNS (c numeric(4,1) PATH '$.x' DEFAULT 99999.999 ON EMPTY));
+SELECT * FROM JSON_TABLE(jsonb '{}', '$'
+    COLUMNS (c bit(3) PATH '$.x' DEFAULT b'10101' ON EMPTY));
+SELECT * FROM JSON_TABLE(jsonb '{}', '$'
+    COLUMNS (c numeric(4,1) PATH '$.x' DEFAULT abs(NULL::numeric) ON EMPTY));
+
 -- JSON_TABLE: Test backward parsing
 
 CREATE VIEW jsonb_table_view2 AS
@@ -550,3 +559,22 @@ SELECT * FROM JSON_TABLE(jsonb '1', '$' COLUMNS (a int) NULL ON ERROR);
 SELECT * FROM JSON_TABLE(jsonb '1', '$' COLUMNS (a int true on empty));
 SELECT * FROM JSON_TABLE(jsonb '1', '$' COLUMNS (a int omit quotes true on error));
 SELECT * FROM JSON_TABLE(jsonb '1', '$' COLUMNS (a int exists empty object on error));
+
+-- Test JSON_TABLE() column deparsing -- don't emit default ON ERROR / EMPTY
+-- behavior
+CREATE VIEW json_table_view8 AS SELECT * from JSON_TABLE('"a"', '$' COLUMNS (a text PATH '$'));
+\sv json_table_view8;
+
+CREATE VIEW json_table_view9 AS SELECT * from JSON_TABLE('"a"', '$' COLUMNS (a text PATH '$') ERROR ON ERROR);
+\sv json_table_view9;
+
+DROP VIEW json_table_view8, json_table_view9;
+
+-- Test JSON_TABLE() deparsing -- don't emit default ON ERROR behavior
+CREATE VIEW json_table_view8 AS SELECT * from JSON_TABLE('"a"', '$' COLUMNS (a text PATH '$') EMPTY ON ERROR);
+\sv json_table_view8;
+
+CREATE VIEW json_table_view9 AS SELECT * from JSON_TABLE('"a"', '$' COLUMNS (a text PATH '$') EMPTY ARRAY ON ERROR);
+\sv json_table_view9;
+
+DROP VIEW json_table_view8, json_table_view9;

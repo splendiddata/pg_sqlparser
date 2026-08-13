@@ -16,9 +16,9 @@
 -- Deactivated for SplendidDataTest:        (SELECT count(*) FROM pg_collation WHERE collname IN ('de_DE', 'en_US', 'sv_SE', 'tr_TR') AND collencoding = pg_char_to_encoding('UTF8')) <> 4 OR
 -- Deactivated for SplendidDataTest:        version() !~ 'linux-gnu'
 -- Deactivated for SplendidDataTest:        AS skip_test \gset
--- Deactivated for SplendidDataTest: \if :skip_test
--- Deactivated for SplendidDataTest: \quit
--- Deactivated for SplendidDataTest: \endif
+\if :skip_test
+\quit
+\endif
 
 SET client_encoding TO UTF8;
 
@@ -31,7 +31,7 @@ CREATE TABLE collate_test1 (
     b text COLLATE "en_US" NOT NULL
 );
 
--- Deactivated for SplendidDataTest: \d collate_test1
+\d collate_test1
 
 CREATE TABLE collate_test_fail (
     a int,
@@ -52,7 +52,7 @@ CREATE TABLE collate_test_like (
     LIKE collate_test1
 );
 
--- Deactivated for SplendidDataTest: \d collate_test_like
+\d collate_test_like
 
 CREATE TABLE collate_test2 (
     a int,
@@ -196,6 +196,9 @@ SELECT to_date('01 ŞUB 2010', 'DD TMMON YYYY');
 SELECT to_date('01 Şub 2010', 'DD TMMON YYYY');
 SELECT to_date('1234567890ab 2010', 'TMMONTH YYYY'); -- fail
 
+SELECT to_date('01 Aralık 2010', 'DD TMMONTH YYYY');
+SELECT to_date('01 aralık 2010', 'DD TMMONTH YYYY');
+SELECT to_date('2010 01 araLık', 'YYYY DD TMMONTH');
 
 -- backwards parsing
 
@@ -437,8 +440,8 @@ CREATE INDEX collate_dep_test4i ON collate_dep_test4t (b COLLATE test0);
 DROP COLLATION test0 RESTRICT; -- fail
 DROP COLLATION test0 CASCADE;
 
--- Deactivated for SplendidDataTest: \d collate_dep_test1
--- Deactivated for SplendidDataTest: \d collate_dep_test2
+\d collate_dep_test1
+\d collate_dep_test2
 
 DROP TABLE collate_dep_test1, collate_dep_test4t;
 DROP TYPE collate_dep_test2;

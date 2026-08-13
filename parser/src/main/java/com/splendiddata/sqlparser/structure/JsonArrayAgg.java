@@ -1,9 +1,15 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2023 - 2024
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
- * This unpublished material is proprietary to Splendid Data Product Development B.V. All rights reserved. The methods
- * and techniques described herein are considered trade secrets and/or confidential. Reproduction or distribution, in
- * whole or in part, is forbidden except by express written permission of Splendid Data Product Development B.V.
+ * This program is free software: You may redistribute and/or modify under the terms of the GNU General Public License
+ * as published by the Free Software Foundation, either version 3 of the License, or (at Client's option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If not, Client should
+ * obtain one via www.gnu.org/licenses/.
  */
 
 package com.splendiddata.sqlparser.structure;
@@ -84,15 +90,33 @@ public class JsonArrayAgg extends Expr {
             result.append(arg);
             separator = " ";
         }
-        if (!absent_on_null) {
-            result.append(separator).append("null on null");
-            separator = " ";
-        }
         if (constructor != null) {
-            String constructorTxt = constructor.toString();
-            if (!constructorTxt.isBlank()) {
-                result.append(separator).append(constructor);
+            /*
+             * Spell out the constructor here as "null on null" is not part of it, but must syntactically be generated
+             * in the middle of it
+             */
+            if (constructor.agg_order != null) {
+                separator += "order by ";
+                for (Node node : constructor.agg_order) {
+                    result.append(separator).append(node);
+                    separator = ", ";
+                }
                 separator = " ";
+            }
+            if (!absent_on_null) {
+                result.append(separator).append("null on null");
+                separator = " ";
+            }
+            if (constructor.output != null) {
+                result.append(separator).append(constructor.output);
+                separator = " ";
+            }
+            if (constructor.agg_filter != null) {
+                result.append(") filter (where ").append(constructor.agg_filter);
+                separator = " ";
+            }
+            if (constructor.over != null) {
+                result.append(") over (").append(constructor.over);
             }
         }
         result.append(')');        
