@@ -90,15 +90,33 @@ public class JsonArrayAgg extends Expr {
             result.append(arg);
             separator = " ";
         }
-        if (!absent_on_null) {
-            result.append(separator).append("null on null");
-            separator = " ";
-        }
         if (constructor != null) {
-            String constructorTxt = constructor.toString();
-            if (!constructorTxt.isBlank()) {
-                result.append(separator).append(constructor);
+            /*
+             * Spell out the constructor here as "null on null" is not part of it, but must syntactically be generated
+             * in the middle of it
+             */
+            if (constructor.agg_order != null) {
+                separator += "order by ";
+                for (Node node : constructor.agg_order) {
+                    result.append(separator).append(node);
+                    separator = ", ";
+                }
                 separator = " ";
+            }
+            if (!absent_on_null) {
+                result.append(separator).append("null on null");
+                separator = " ";
+            }
+            if (constructor.output != null) {
+                result.append(separator).append(constructor.output);
+                separator = " ";
+            }
+            if (constructor.agg_filter != null) {
+                result.append(") filter (where ").append(constructor.agg_filter);
+                separator = " ";
+            }
+            if (constructor.over != null) {
+                result.append(") over (").append(constructor.over);
             }
         }
         result.append(')');        

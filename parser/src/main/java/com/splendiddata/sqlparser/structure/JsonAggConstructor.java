@@ -99,23 +99,33 @@ public class JsonAggConstructor extends Node {
         return clone;
     }
 
+    /**
+     * Returns the JsonAggConstructor in an sql format.
+     * <p>
+     * Beware!<br>
+     * {@link JsonArrayAgg#toString()} has an implementation of its own as a NULL ON NULL clause must syntactically be
+     * generated in the middle of the JsonAggConstructor clauses.
+     * 
+     * @see java.lang.Object#toString()
+     *
+     * @return String the content in an sql format
+     */
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
         String separator = "";
         if (agg_order != null) {
-            result.append("order by");
-            separator = " ";
+            separator = "order by ";
             for (Node node : agg_order) {
                 result.append(separator).append(node);
                 separator = ", ";
             }
             separator = " ";
-        }       
+        }
         if (output != null) {
             result.append(separator).append(output);
             separator = " ";
-        } 
+        }
         if (agg_filter != null) {
             result.append(") filter (where ").append(agg_filter);
             separator = " ";
@@ -123,7 +133,7 @@ public class JsonAggConstructor extends Node {
         if (over != null) {
             result.append(") over (").append(over);
         }
-        
+
         return result.toString();
     }
 }

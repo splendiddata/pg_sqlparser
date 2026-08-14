@@ -18,7 +18,7 @@
 --
 
 -- directory paths are passed to us in environment variables
--- Deactivated for SplendidDataTest: \getenv abs_srcdir PG_ABS_SRCDIR
+\getenv abs_srcdir PG_ABS_SRCDIR
 
 --
 -- DEFAULT syntax
@@ -264,12 +264,12 @@ CREATE TABLE COPY_TBL (x INT, y TEXT, z INT,
 	CONSTRAINT COPY_CON
 	CHECK (x > 3 AND y <> 'check failed' AND x < 7 ));
 
--- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/constro.data'
+\set filename :abs_srcdir '/data/constro.data'
 -- Deactivated for SplendidDataTest: COPY COPY_TBL FROM :'filename';
 
 SELECT * FROM COPY_TBL;
 
--- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/constrf.data'
+\set filename :abs_srcdir '/data/constrf.data'
 -- Deactivated for SplendidDataTest: COPY COPY_TBL FROM :'filename';
 
 SELECT * FROM COPY_TBL;

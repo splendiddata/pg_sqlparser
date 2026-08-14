@@ -1157,17 +1157,19 @@ copy attest(a) to stdout;
 copy attest("........pg.dropped.1........") to stdout;
 copy attest from stdin;
 -- Deactivated for SplendidDataTest: 10	11	12
--- Deactivated for SplendidDataTest: \.
+\.
 select * from attest;
 copy attest from stdin;
 -- Deactivated for SplendidDataTest: 21	22
--- Deactivated for SplendidDataTest: \.
+\.
 select * from attest;
 copy attest(a) from stdin;
+\.
 copy attest("........pg.dropped.1........") from stdin;
+\.
 copy attest(b,c) from stdin;
 -- Deactivated for SplendidDataTest: 31	32
--- Deactivated for SplendidDataTest: \.
+\.
 select * from attest;
 drop table attest;
 
