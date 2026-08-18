@@ -13,8 +13,8 @@ CREATE SCHEMA generated_virtual_tests;
 GRANT USAGE ON SCHEMA generated_virtual_tests TO PUBLIC;
 SET search_path = generated_virtual_tests;
 
-CREATE TABLE gtest0 (a int PRIMARY KEY, b int GENERATED ALWAYS AS (55) VIRTUAL);
-CREATE TABLE gtest1 (a int PRIMARY KEY, b int GENERATED ALWAYS AS (a * 2) VIRTUAL);
+-- Deactivated for SplendidDataTest: CREATE TABLE gtest0 (a int PRIMARY KEY, b int GENERATED ALWAYS AS (55) VIRTUAL);
+-- Deactivated for SplendidDataTest: CREATE TABLE gtest1 (a int PRIMARY KEY, b int GENERATED ALWAYS AS (a * 2) VIRTUAL);
 
 SELECT table_name, column_name, column_default, is_nullable, is_generated, generation_expression FROM information_schema.columns WHERE table_schema = 'generated_virtual_tests' ORDER BY 1, 2;
 
@@ -224,10 +224,12 @@ COPY gtest1 FROM stdin;
 \.
 
 COPY gtest1 (a, b) FROM stdin;
+\.
 
 COPY gtest1 FROM stdin WHERE b <> 10;
 
 COPY gtest1 FROM stdin WHERE gtest1 IS NULL;
+\.
 
 SELECT * FROM gtest1 ORDER BY a;
 
@@ -244,6 +246,7 @@ COPY gtest3 FROM stdin;
 \.
 
 COPY gtest3 (a, b) FROM stdin;
+\.
 
 SELECT * FROM gtest3 ORDER BY a;
 

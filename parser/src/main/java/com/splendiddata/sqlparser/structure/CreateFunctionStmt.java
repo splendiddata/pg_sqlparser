@@ -223,6 +223,15 @@ public class CreateFunctionStmt extends Node {
                 case "support":
                     result.append(" support ").append(((List<Value>) option.arg).get(0));
                     break;
+                case "transform":
+                    result.append(" transform for type");
+                    separator = " ";
+                    for (TypeName typeName : (List<TypeName>)option.arg) {
+                        result.append(separator).append(typeName);
+                        separator = ", for type ";
+                    }
+                    separator = " ";
+                    break;
                 default:
                     result.append(ParserUtil.reportUnknownValue("option", ParserUtil.stmtToXml(option), getClass()));
                     break;

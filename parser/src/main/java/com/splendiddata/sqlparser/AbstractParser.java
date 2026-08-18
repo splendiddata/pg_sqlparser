@@ -29,6 +29,8 @@ import com.splendiddata.sqlparser.enums.GroupingSetKind;
 import com.splendiddata.sqlparser.enums.JsonBehaviorType;
 import com.splendiddata.sqlparser.enums.JsonEncoding;
 import com.splendiddata.sqlparser.enums.JsonFormatType;
+import com.splendiddata.sqlparser.enums.JsonTablePlanJoinType;
+import com.splendiddata.sqlparser.enums.JsonTablePlanType;
 import com.splendiddata.sqlparser.enums.JsonValueType;
 import com.splendiddata.sqlparser.enums.NodeTag;
 import com.splendiddata.sqlparser.enums.RoleSpecType;
@@ -57,6 +59,7 @@ import com.splendiddata.sqlparser.structure.JsonFormat;
 import com.splendiddata.sqlparser.structure.JsonIsPredicate;
 import com.splendiddata.sqlparser.structure.JsonKeyValue;
 import com.splendiddata.sqlparser.structure.JsonTablePathSpec;
+import com.splendiddata.sqlparser.structure.JsonTablePlanSpec;
 import com.splendiddata.sqlparser.structure.JsonValueExpr;
 import com.splendiddata.sqlparser.structure.List;
 import com.splendiddata.sqlparser.structure.ListCell;
@@ -1787,5 +1790,71 @@ public class AbstractParser extends AbstractCProgram {
         behavior.location = location;
 
         return behavior;
+    }
+
+    /**
+     * copied from postgres19beta3/src/backend/nodes/makefuncs.c
+     * <p>
+     * makeJsonTableDefaultPlan -<br>
+     * creates a JsonTablePlanSpec node to represent a "default" JSON_TABLE plan with given join strategy
+     * 
+     * @since Postgres 19beta3
+     */
+    protected JsonTablePlanSpec makeJsonTableDefaultPlan(int join_type, Location location) {
+        JsonTablePlanSpec n = new JsonTablePlanSpec();
+
+        n.plan_type = JsonTablePlanType.JSTP_DEFAULT;
+        n.join_type = join_type;
+        n.location = location;
+
+        return n;
+    }
+
+    /**
+     * copied from postgres19beta3/src/backend/nodes/makefuncs.c
+     * <p>
+     * makeJsonTableSimplePlan -<br>
+     * creates a JsonTablePlanSpec node to represent a "simple" JSON_TABLE plan for given PATH
+     * 
+     * @since Postgres 19beta3
+     */
+    protected JsonTablePlanSpec makeJsonTableSimplePlan(String pathname, Location location) {
+        JsonTablePlanSpec n = new JsonTablePlanSpec();
+
+        n.plan_type = JsonTablePlanType.JSTP_SIMPLE;
+        n.pathname = pathname;
+        n.location = location;
+
+        return n;
+    }
+
+    /**
+     * copied from postgres19beta3/src/backend/nodes/makefuncs.c
+     * <p>
+     * makeJsonTableJoinedPlan -<br>
+     * creates a JsonTablePlanSpec node to represent join between the given pair of plans
+     *
+     * @param type
+     *            An integer value as defined by {@link JsonTablePlanJoinType} (maybe ored together).
+     * @param plan1
+     *            A JsonTablePlanSpec, but here defined as Node as the parser wants that
+     * @param plan2
+     *            A JsonTablePlanSpec, but here defined as Node as the parser wants that
+     * @param location
+     *            Location of the JsonTablePlanSpec clause
+     * @return JsonTablePlanSpec
+     * @since Postgres 19beta3
+     */
+    protected JsonTablePlanSpec makeJsonTableJoinedPlan(int type, JsonTablePlanSpec plan1, JsonTablePlanSpec plan2,
+            Location location) {
+        JsonTablePlanSpec n = new JsonTablePlanSpec();
+
+        n.plan_type = JsonTablePlanType.JSTP_JOINED;
+        n.join_type = type;
+        n.plan1 = (JsonTablePlanSpec) plan1;
+        n.plan2 = (JsonTablePlanSpec) plan2;
+        n.location = location;
+
+        return n;
     }
 }

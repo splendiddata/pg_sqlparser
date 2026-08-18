@@ -657,7 +657,11 @@ public enum NodeTag {
     /**
      * @since Postgres 19beta1
      */
-    T_GraphElementPattern;
+    T_GraphElementPattern,
+    /**
+     * @since Postgres 19beta3
+     */
+    T_JsonTablePlanSpec;
 
     /**
      * String containing all values with "|" characters between them, that can be used as argument in a regular

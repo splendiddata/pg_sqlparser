@@ -356,7 +356,7 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
     /** @since Postgres 17 */
     json_table(
             line -> line.replace("castNode(A_Const.class, $5)->val.sval.sval", "$5->toString()")
-                    .replace("val.node.type", "val.type")),
+                    .replace("val.node.type", "val.type").replaceAll("^(\\s+)\"", "$1+ \"")),
     /** @since Postgres 18 */
     select_with_parens(line -> line.replace("@3 - @2", "@3.getOffset() - @2.getOffset()")),
     /** @since Postgres 18 */
@@ -365,6 +365,8 @@ public enum GrammarRuleSpecial implements GrammarRuleSpecialProcessing {
     CreatePublicationStmt(line -> line.replace("&n->pubobjects", "n")),
     /** @since Postgres 19beta1 */
     AlterPublicationStmt(line -> line.replace("&n->pubobjects", "n")),
+    /** @Since Postgres 19beta3 */
+    json_table_default_plan_choices(line -> line.replace("$$ = $", "$$ = (Integer)$")),
     
     //
     // Example of injecting dumpYystack

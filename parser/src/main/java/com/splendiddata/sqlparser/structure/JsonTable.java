@@ -14,6 +14,7 @@
 
 package com.splendiddata.sqlparser.structure;
 
+import com.splendiddata.sqlparser.ParserUtil;
 import com.splendiddata.sqlparser.enums.NodeTag;
 
 import jakarta.xml.bind.annotation.XmlAttribute;
@@ -50,6 +51,10 @@ public class JsonTable extends Node {
     @XmlElementWrapper(name = "columns")
     @XmlElement(name = "column")
     public List<JsonTableColumn> columns;
+
+    /** join plan, if specified */
+    @XmlElement
+    public JsonTablePlanSpec planspec;
 
     /** ON ERROR behavior */
     @XmlElement
@@ -90,6 +95,9 @@ public class JsonTable extends Node {
         if (other.columns != null) {
             this.columns = other.columns.clone();
         }
+        if (other.planspec != null) {
+            this.planspec = other.planspec.clone();
+        }
         if (other.on_error != null) {
             this.on_error = on_error.clone();
         }
@@ -113,6 +121,9 @@ public class JsonTable extends Node {
         }
         if (columns != null) {
             clone.columns = columns.clone();
+        }
+        if (planspec != null) {
+            clone.planspec = planspec.clone();
         }
         if (on_error != null) {
             clone.on_error = on_error.clone();
@@ -151,6 +162,9 @@ public class JsonTable extends Node {
         if (columns != null) {
             result.append(separator).append("columns ").append(columns);
             separator = " ";
+        }
+        if (planspec != null) {
+            result.append(separator).append(ParserUtil.reportUnknownValue("planspec", planspec, getClass()));
         }
         if (on_error != null) {
             result.append(separator).append(on_error).append(" on error");

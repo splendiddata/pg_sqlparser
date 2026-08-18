@@ -365,6 +365,49 @@ SELECT relpages, reltuples, relallvisible, relallfrozen
 FROM pg_class
 WHERE oid = 'stats_import.test'::regclass;
 
+-- error: reltuples must be finite (rejected with WARNING, returns false)
+SELECT pg_restore_relation_stats(
+        'schemaname', 'stats_import',
+        'relname', 'test',
+        'reltuples', 'Infinity'::real);
+
+SELECT pg_restore_relation_stats(
+        'schemaname', 'stats_import',
+        'relname', 'test',
+        'reltuples', '-Infinity'::real);
+
+SELECT pg_restore_relation_stats(
+        'schemaname', 'stats_import',
+        'relname', 'test',
+        'reltuples', 'NaN'::real);
+
+-- error: reltuples must not be less than -1.0 (rejected with WARNING, returns false)
+SELECT pg_restore_relation_stats(
+        'schemaname', 'stats_import',
+        'relname', 'test',
+        'reltuples', '-5'::real);
+
+-- reltuples is unchanged (still 500) after the rejected values above
+SELECT relpages, reltuples, relallvisible, relallfrozen
+FROM pg_class
+WHERE oid = 'stats_import.test'::regclass;
+
+-- ok: -1 (the "unknown" sentinel) is still accepted
+SELECT pg_restore_relation_stats(
+        'schemaname', 'stats_import',
+        'relname', 'test',
+        'reltuples', '-1'::real);
+
+SELECT relpages, reltuples, relallvisible, relallfrozen
+FROM pg_class
+WHERE oid = 'stats_import.test'::regclass;
+
+-- restore reltuples to 500 for the following tests
+SELECT pg_restore_relation_stats(
+        'schemaname', 'stats_import',
+        'relname', 'test',
+        'reltuples', '500'::real);
+
 -- ok: set just relallvisible, rest stay same
 SELECT pg_restore_relation_stats(
         'schemaname', 'stats_import',
@@ -996,12 +1039,26 @@ VALUES
   (2, 'red', '{[11,13),[15,19),[20,30)}'::int4multirange),
   (3, 'red', '{[21,23),[25,29),[120,130)}'::int4multirange);
 
--- ensure that we set attribute stats for a multirange
+-- warn: reject range values as ordinary multirange statistics
 SELECT pg_catalog.pg_restore_attribute_stats(
   'schemaname', 'stats_import',
   'relname', 'test_mr',
   'attname', 'mrange',
   'inherited', false,
+  'most_common_vals', ARRAY['[1,3)']::text,
+  'most_common_freqs', ARRAY[1.0]::real[]
+);
+
+-- ensure that we set attribute stats for a multirange
+-- MCVs and histograms retain the multirange type.
+SELECT pg_catalog.pg_restore_attribute_stats(
+  'schemaname', 'stats_import',
+  'relname', 'test_mr',
+  'attname', 'mrange',
+  'inherited', false,
+  'most_common_vals', ARRAY['{[1,3),[5,9)}', '{[11,13),[15,19)}']::text,
+  'most_common_freqs', ARRAY[0.6, 0.4]::real[],
+  'histogram_bounds', ARRAY['{[1,3)}', '{[11,13)}', '{[21,23)}']::text,
   'range_length_histogram', '{19,29,109}'::text,
   'range_empty_frac', '0'::real,
   'range_bounds_histogram', '{"[1,30)","[11,30)","[21,130)"}'::text

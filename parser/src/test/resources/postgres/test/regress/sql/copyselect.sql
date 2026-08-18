@@ -97,8 +97,8 @@ copy (select 1) to stdout\; copy (select 2) to stdout\; select 3\; select 4; -- 
 create table test3 (c int);
 select 0\; copy test3 from stdin\; copy test3 from stdin\; select 1; -- 0 1
 -- Deactivated for SplendidDataTest: 1
--- Deactivated for SplendidDataTest: \.
+\.
 -- Deactivated for SplendidDataTest: 2
--- Deactivated for SplendidDataTest: \.
+\.
 select * from test3;
 drop table test3;

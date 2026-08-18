@@ -123,6 +123,7 @@ copy copytest to stdout (format json, force_null *);
 copy copytest to stdout (format json, on_error ignore);
 copy copytest to stdout (format json, reject_limit 1);
 copy copytest from stdin(format json);
+\.
 -- all of the above should yield error
 
 -- column list with json format
@@ -408,6 +409,7 @@ alter table header_copytest drop column c;
 alter table header_copytest add column c text;
 copy header_copytest to stdout with (header match);
 copy header_copytest from stdin with (header wrong_choice);
+\.
 -- works
 copy header_copytest from stdin with (header match);
 -- Deactivated for SplendidDataTest: a	b	c

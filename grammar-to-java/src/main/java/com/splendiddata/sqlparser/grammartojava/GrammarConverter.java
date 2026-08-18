@@ -383,11 +383,15 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                             .replace("%type <retclause> returning_clause", "%type <ReturningClause> returning_clause")
                             .replace("%type <retoptionkind> returning_option_kind",
                                     "%type <ReturningOptionKind> returning_option_kind")
-                            /* Since PPostgres 19 */
+                            /* Since Postgres 19 */
                             .replaceAll("%type <ival>\\s+vertex_or_edge",
                                     "%type <AlterPropGraphElementKind> vertex_or_edge")
-                            .replace("%type <publicationallobjectspec> PublicationAllObjSpec", "%type <PublicationAllObjSpec> PublicationAllObjSpec")
-                            .replace("%type <ival>	null_treatment opt_window_exclusion_clause", "%type <NullTreatment>	null_treatment\n%type <ival> opt_window_exclusion_clause")
+                            .replace("%type <publicationallobjectspec> PublicationAllObjSpec",
+                                    "%type <PublicationAllObjSpec> PublicationAllObjSpec")
+                            .replace("%type <ival>	null_treatment opt_window_exclusion_clause",
+                                    "%type <NullTreatment>	null_treatment\n%type <ival> opt_window_exclusion_clause")
+                            .replaceAll("^\\s+json_table_plan\\b", "%type <JsonTablePlanSpec> json_table_plan")
+                            .replaceAll("%type <Node>\\s+for_portion_of_clause", "%type <ForPortionOfClause> for_portion_of_clause")
                             /* remaining ival types */
                             .replace("%type <ival>", "%type <Integer>");
                     /*
@@ -734,13 +738,11 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                         /*
                          * RepackCommand from "enum".
                          */
-                        .replaceAll("(\\W)(" + RepackCommand.REPLACEMENT_REGEXP_PART + ")(\\W)",
-                                "$1RepackCommand.$2$3")
+                        .replaceAll("(\\W)(" + RepackCommand.REPLACEMENT_REGEXP_PART + ")(\\W)", "$1RepackCommand.$2$3")
                         /*
                          * NullTreatment from "enum".
                          */
-                        .replaceAll("(\\W)(" + NullTreatment.REPLACEMENT_REGEXP_PART + ")(\\W)",
-                                "$1NullTreatment.$2$3")
+                        .replaceAll("(\\W)(" + NullTreatment.REPLACEMENT_REGEXP_PART + ")(\\W)", "$1NullTreatment.$2$3")
                         /*
                          * GraphElementPatternKind from "enum".
                          */
@@ -1058,8 +1060,9 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                  */
                 return null;
             case "preprocess_pub_all_objtype_list":
-                convertedLine = epilogFunctionReturnType + ' ' + input.replace("List *all_objects_list", "List<PublicationAllObjSpec> all_objects_list")
-                .replace("List **pubobjects", "AbstractPublicationStmt stmt");
+                convertedLine = epilogFunctionReturnType + ' '
+                        + input.replace("List *all_objects_list", "List<PublicationAllObjSpec> all_objects_list")
+                                .replace("List **pubobjects", "AbstractPublicationStmt stmt");
                 break;
             default:
                 convertedLine = epilogFunctionReturnType + ' ' + input;
@@ -1150,20 +1153,24 @@ public class GrammarConverter extends AbstractMojo implements FileVisitor<Path> 
                                 "ereport(Severity.ERROR, errmsg(\"unexpected node type %d\", n.type));");
                 break;
             case "preprocess_pub_all_objtype_list":
-                convertedLine = input.replaceAll("^\\s+\\*all_tables = false;", "").replaceAll("^\\s+\\*all_sequences = false;", "")
-                .replace("foreach_ptr(PublicationAllObjSpec, obj, all_objects_list)","for (PublicationAllObjSpec obj : all_objects_list)")
-                .replace("if (*all_tables)", "if (stmt.for_all_tables)").replace("if (*all_sequences)","if (stmt.for_all_sequences)")
-                .replace("*all_tables = true;", "stmt.for_all_tables = true;").replace("*all_sequences = true;", "stmt.for_all_sequences = true;")
-                .replace("*pubobjects = list_concat(*pubobjects, obj->except_tables);", """
-                        if (obj.except_tables != null) {
-                            			if (stmt.pubobjects == null) {
-                               			    stmt.pubobjects = obj.except_tables.clone();
-                               			} else {
-                               				stmt.pubobjects.addAll(obj.except_tables);
-                               			}
-                                    }""");
-System.out.println("preprocess_pub_all_objtype_list: " + convertedLine + "\nfrom: " + input);        
-break;
+                convertedLine = input.replaceAll("^\\s+\\*all_tables = false;", "")
+                        .replaceAll("^\\s+\\*all_sequences = false;", "")
+                        .replace("foreach_ptr(PublicationAllObjSpec, obj, all_objects_list)",
+                                "for (PublicationAllObjSpec obj : all_objects_list)")
+                        .replace("if (*all_tables)", "if (stmt.for_all_tables)")
+                        .replace("if (*all_sequences)", "if (stmt.for_all_sequences)")
+                        .replace("*all_tables = true;", "stmt.for_all_tables = true;")
+                        .replace("*all_sequences = true;", "stmt.for_all_sequences = true;")
+                        .replace("*pubobjects = list_concat(*pubobjects, obj->except_tables);", """
+                                if (obj.except_tables != null) {
+                                    			if (stmt.pubobjects == null) {
+                                       			    stmt.pubobjects = obj.except_tables.clone();
+                                       			} else {
+                                       				stmt.pubobjects.addAll(obj.except_tables);
+                                       			}
+                                            }""");
+//                System.out.println("preprocess_pub_all_objtype_list: " + convertedLine + "\nfrom: " + input);
+                break;
             default:
                 convertedLine = input;
                 break;
