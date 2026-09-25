@@ -756,8 +756,53 @@ SELECT x, row_number() OVER (ORDER BY x), rank() OVER (ORDER BY x) FROM test3ci 
 CREATE UNIQUE INDEX ON test1ci (x);  -- ok
 INSERT INTO test1ci VALUES ('ABC');  -- error
 CREATE UNIQUE INDEX ON test3ci (x);  -- error
+
+-- ON CONFLICT ON CONSTRAINT must not use an index that differs from the
+-- named constraint's index in collation
+CREATE TABLE test_arbiter_ci (x text, y text);
+ALTER TABLE test_arbiter_ci ADD CONSTRAINT test_arbiter_ci_x_key UNIQUE (x);
+CREATE UNIQUE INDEX test_arbiter_ci_x_ci
+  ON test_arbiter_ci (x COLLATE case_insensitive);
+INSERT INTO test_arbiter_ci VALUES ('abc', 'first');
+INSERT INTO test_arbiter_ci VALUES ('ABC', 'second')
+  ON CONFLICT ON CONSTRAINT test_arbiter_ci_x_key
+  DO UPDATE SET y = excluded.y;  -- error
+INSERT INTO test_arbiter_ci VALUES ('ABC', 'third')
+  ON CONFLICT ON CONSTRAINT test_arbiter_ci_x_key DO NOTHING;  -- error
+INSERT INTO test_arbiter_ci VALUES ('ABC', 'fourth')
+  ON CONFLICT ON CONSTRAINT test_arbiter_ci_x_key
+  DO SELECT RETURNING *;  -- error
+SELECT x, y FROM test_arbiter_ci;
+DROP TABLE test_arbiter_ci;
 SELECT string_to_array('ABC,DEF,GHI' COLLATE case_insensitive, ',', 'abc');
 SELECT string_to_array('ABCDEFGHI' COLLATE case_insensitive, NULL, 'b');
+
+-- Unique-ifying a semijoin's RHS must use the join's collation.  test3cs
+-- holds both 'abc' and 'ABC', so test1ci's 'abc' must come out once.
+BEGIN;
+
+SET LOCAL enable_seqscan TO off;
+SET LOCAL enable_material TO off;
+SET LOCAL enable_hashjoin TO off;
+SET LOCAL enable_mergejoin TO off;
+SET LOCAL enable_hashagg TO off;
+
+EXPLAIN (COSTS OFF)
+SELECT count(*) FROM test1ci
+WHERE x COLLATE case_insensitive IN (SELECT x FROM test3cs);
+SELECT count(*) FROM test1ci
+WHERE x COLLATE case_insensitive IN (SELECT x FROM test3cs);
+
+SET LOCAL enable_hashagg TO on;
+SET LOCAL enable_sort TO off;
+
+EXPLAIN (COSTS OFF)
+SELECT count(*) FROM test1ci
+WHERE x COLLATE case_insensitive IN (SELECT x FROM test3cs);
+SELECT count(*) FROM test1ci
+WHERE x COLLATE case_insensitive IN (SELECT x FROM test3cs);
+
+ROLLBACK;
 
 -- These queries should be able to use the index on test1ci.x:
 SET enable_seqscan = off;
@@ -838,6 +883,18 @@ SELECT x, count(*) FROM test3ci GROUP BY x HAVING (CASE x WHEN 'abc' COLLATE cas
 EXPLAIN (COSTS OFF)
 SELECT x, count(*) FROM test3ci GROUP BY x HAVING (CASE x WHEN 'abc' COLLATE case_insensitive THEN true ELSE false END);
 SELECT x, count(*) FROM test3ci GROUP BY x HAVING (CASE x WHEN 'abc' COLLATE case_insensitive THEN true ELSE false END);
+
+-- Positive: the WHEN value's own CaseTestExpr (JSON RETURNING coercion) does
+-- not refer to the CASE arg
+EXPLAIN (COSTS OFF)
+SELECT x, count(*) FROM test3ci GROUP BY x HAVING (CASE x WHEN JSON_OBJECT('a': 'b' RETURNING text) THEN true ELSE false END);
+SELECT x, count(*) FROM test3ci GROUP BY x HAVING (CASE x WHEN JSON_OBJECT('a': 'b' RETURNING text) THEN true ELSE false END);
+
+-- Positive: likewise for the CaseTestExpr in an ArrayCoerceExpr's elemexpr
+CREATE DOMAIN nonempty_text AS text CHECK (VALUE <> '');
+EXPLAIN (COSTS OFF)
+SELECT x, count(*) FROM test3ci GROUP BY x HAVING (CASE x WHEN ('{abc}'::text[]::nonempty_text[])[1] THEN true ELSE false END);
+SELECT x, count(*) FROM test3ci GROUP BY x HAVING (CASE x WHEN ('{abc}'::text[]::nonempty_text[])[1] THEN true ELSE false END);
 
 -- Negative: nested CASE with collation conflict
 EXPLAIN (COSTS OFF)
@@ -1110,6 +1167,40 @@ CREATE TABLE test10fk (x text COLLATE case_insensitive REFERENCES test10pk (x) O
 
 CREATE TABLE test11pk (x text COLLATE case_insensitive PRIMARY KEY);
 CREATE TABLE test11fk (x text COLLATE case_sensitive REFERENCES test11pk (x) ON UPDATE CASCADE ON DELETE CASCADE);  -- error
+
+-- The referenced index's collation can differ from the column's collation.
+-- Use reversed index columns to exercise the index-to-table column mapping.
+CREATE TABLE fk_collation_pk (id int, x text COLLATE case_insensitive);
+CREATE UNIQUE INDEX fk_collation_idx ON fk_collation_pk (x COLLATE "C", id);
+INSERT INTO fk_collation_pk VALUES (1, 'ABC');
+CREATE TABLE fk_collation_fk (id int, x text COLLATE case_insensitive);
+INSERT INTO fk_collation_fk VALUES (1, 'abc');
+-- Lack of SELECT on the PK table forces per-row validation.
+CREATE ROLE regress_fk_collation;
+GRANT USAGE ON SCHEMA collate_tests TO regress_fk_collation;
+GRANT REFERENCES ON fk_collation_pk TO regress_fk_collation;
+ALTER TABLE fk_collation_fk OWNER TO regress_fk_collation;
+SET ROLE regress_fk_collation;
+ALTER TABLE fk_collation_fk ADD CONSTRAINT fk_collation_fkey
+    FOREIGN KEY (id, x) REFERENCES fk_collation_pk (id, x);
+-- Ordinary DML must also use the column's case-insensitive equality.
+INSERT INTO fk_collation_fk VALUES (1, 'aBc');
+INSERT INTO fk_collation_fk VALUES (2, 'abc'); -- fails
+RESET ROLE;
+DROP TABLE fk_collation_fk, fk_collation_pk;
+REVOKE USAGE ON SCHEMA collate_tests FROM regress_fk_collation;
+DROP ROLE regress_fk_collation;
+
+-- Conversely, a case-insensitive index must not make the FK comparison
+-- accept unequal values under the column's deterministic collation.
+CREATE TABLE fk_collation_pk (x text COLLATE "C");
+CREATE UNIQUE INDEX fk_collation_idx ON fk_collation_pk (x COLLATE case_insensitive);
+INSERT INTO fk_collation_pk VALUES ('ABC');
+CREATE TABLE fk_collation_fk (x text COLLATE "C",
+    CONSTRAINT fk_collation_fkey FOREIGN KEY (x) REFERENCES fk_collation_pk (x));
+INSERT INTO fk_collation_fk VALUES ('ABC');
+INSERT INTO fk_collation_fk VALUES ('abc'); -- fails
+DROP TABLE fk_collation_fk, fk_collation_pk;
 
 -- foreign key actions
 -- Some of the behaviors are most easily visible with a

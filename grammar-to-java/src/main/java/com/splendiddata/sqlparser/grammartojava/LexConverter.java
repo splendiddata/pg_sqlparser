@@ -382,8 +382,6 @@ public class LexConverter extends AbstractMojo implements FileVisitor<Path> {
                 "  private static final BackslashQuoteType BACKSLASH_QUOTE_OFF = BackslashQuoteType.BACKSLASH_QUOTE_OFF;");
         out.println(
                 "  private static final BackslashQuoteType BACKSLASH_QUOTE_SAFE_ENCODING = BackslashQuoteType.BACKSLASH_QUOTE_SAFE_ENCODING;");
-        out.println("/** @since Postgres 19beta1 */");
-        out.println("  private static final int RIGHT_ARROW = ScanKeyword.RIGHT_ARROW.value;");
         out.println();
         out.println("  private core_yyscan_t yyscanner;");
         out.println("%}");

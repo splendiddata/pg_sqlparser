@@ -20,6 +20,7 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 /**
  * Copied from /postgresql-Postgres 19beta1/src/include/nodes/parsenodes.h
@@ -40,6 +41,14 @@ public class WaitStmt extends Node {
     public List<DefElem> options;
 
     /**
+     * token location, or null if unknown
+     * 
+     * @since Postgres19beta4
+     */
+    @XmlTransient
+    public Location lsn_location;
+
+    /**
      * Constructor
      */
     public WaitStmt() {
@@ -58,6 +67,7 @@ public class WaitStmt extends Node {
         if (original.options != null) {
             this.options = original.options.clone();
         }
+        this.lsn_location = original.lsn_location;
     }
 
     public WaitStmt clone() {
@@ -65,7 +75,17 @@ public class WaitStmt extends Node {
         if (options != null) {
             clone.options = options.clone();
         }
+        if (lsn_location != null) {
+            clone.lsn_location = lsn_location;
+        }
         return clone;
+    }
+    /**
+     * @return String returns the lsn_location as String to be represented in an XML structure for debugging purposes
+     */
+    @XmlAttribute(name = "lsn_location")
+    private String getLsnLocationString() {
+        return lsn_location == null ? null : lsn_location.toString();
     }
 
 }

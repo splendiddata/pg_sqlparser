@@ -59,7 +59,7 @@ public enum Keyword implements ScanKeywordCategory {
     ALSO("also", UNRESERVED_KEYWORD),
     ALTER("alter", UNRESERVED_KEYWORD),
     ALWAYS("always", UNRESERVED_KEYWORD),
-    ANALYSE("analyse", RESERVED_KEYWORD), /* British spelling */
+    ANALYSE("analyse", RESERVED_KEYWORD),       /* British spelling */
     ANALYZE("analyze", RESERVED_KEYWORD),
     AND("and", RESERVED_KEYWORD),
     ANY("any", RESERVED_KEYWORD),
@@ -163,8 +163,6 @@ public enum Keyword implements ScanKeywordCategory {
     /** @since Postgres 14 */
     DEPTH("depth", UNRESERVED_KEYWORD),
     DESC("desc", RESERVED_KEYWORD),
-    /** @since Postgres 19beta1 */
-    DESTINATION("destination", UNRESERVED_KEYWORD),
     DETACH("detach", UNRESERVED_KEYWORD),
     DICTIONARY("dictionary", UNRESERVED_KEYWORD),
     DISABLE_P("disable", UNRESERVED_KEYWORD),
@@ -176,8 +174,6 @@ public enum Keyword implements ScanKeywordCategory {
     DOUBLE_P("double", UNRESERVED_KEYWORD),
     DROP("drop", UNRESERVED_KEYWORD),
     EACH("each", UNRESERVED_KEYWORD),
-    /** @since Postgres 19beta1 */
-    EDGE("edge", UNRESERVED_KEYWORD),
     ELSE("else", RESERVED_KEYWORD),
     /** @since Postgres 17 */
     EMPTY_P("empty", UNRESERVED_KEYWORD),
@@ -227,10 +223,6 @@ public enum Keyword implements ScanKeywordCategory {
     GLOBAL("global", UNRESERVED_KEYWORD),
     GRANT("grant", RESERVED_KEYWORD),
     GRANTED("granted", UNRESERVED_KEYWORD),
-    /** @since Postgres 19beta1 */
-    GRAPH("graph", UNRESERVED_KEYWORD),
-    /** @since Postgres 19beta1 */
-    GRAPH_TABLE("graph_table", COL_NAME_KEYWORD),
     GREATEST("greatest", COL_NAME_KEYWORD),
     GROUP_P("group", RESERVED_KEYWORD),
     GROUPING("grouping", COL_NAME_KEYWORD),
@@ -357,8 +349,6 @@ public enum Keyword implements ScanKeywordCategory {
     NFKC("nfkc", UNRESERVED_KEYWORD),
     NFKD("nfkd", UNRESERVED_KEYWORD),
     NO("no", UNRESERVED_KEYWORD),
-    /** @since Postgres 19beta1 */
-    NODE("node", UNRESERVED_KEYWORD),
     NONE("none", COL_NAME_KEYWORD),
     NORMALIZE("normalize", COL_NAME_KEYWORD),
     NORMALIZED("normalized", UNRESERVED_KEYWORD),
@@ -404,7 +394,11 @@ public enum Keyword implements ScanKeywordCategory {
     PARSER("parser", UNRESERVED_KEYWORD),
     PARTIAL("partial", UNRESERVED_KEYWORD),
     PARTITION("partition", UNRESERVED_KEYWORD),
-    /** @since Postgres 17 */
+    /**
+     * @since Postgres 17
+     * @deprecated since Postgres 19beta4
+     */
+    @Deprecated(since="Postgres 19beta4", forRemoval=true)
     PARTITIONS("partitions", UNRESERVED_KEYWORD),
     PASSING("passing", UNRESERVED_KEYWORD),
     PASSWORD("password", UNRESERVED_KEYWORD),
@@ -417,8 +411,6 @@ public enum Keyword implements ScanKeywordCategory {
     PLAN("plan", UNRESERVED_KEYWORD),
     PLANS("plans", UNRESERVED_KEYWORD),
     POLICY("policy", UNRESERVED_KEYWORD),
-    /** @since Postgres 19beta1 */
-    PORTION("portion", UNRESERVED_KEYWORD),
     POSITION("position", COL_NAME_KEYWORD),
     PRECEDING("preceding", UNRESERVED_KEYWORD),
     PRECISION("precision", COL_NAME_KEYWORD),
@@ -432,10 +424,6 @@ public enum Keyword implements ScanKeywordCategory {
     PROCEDURE("procedure", UNRESERVED_KEYWORD),
     PROCEDURES("procedures", UNRESERVED_KEYWORD),
     PROGRAM("program", UNRESERVED_KEYWORD),
-    /** @since Postgres 19beta1 */
-    PROPERTIES("properties", UNRESERVED_KEYWORD),
-    /** @since Postgres 19beta1 */
-    PROPERTY("property", UNRESERVED_KEYWORD),
     PUBLICATION("publication", UNRESERVED_KEYWORD),
     QUOTE("quote", UNRESERVED_KEYWORD),
     /** @since Postgres 17 */
@@ -453,8 +441,6 @@ public enum Keyword implements ScanKeywordCategory {
     REFERENCING("referencing", UNRESERVED_KEYWORD),
     REFRESH("refresh", UNRESERVED_KEYWORD),
     REINDEX("reindex", UNRESERVED_KEYWORD),
-    /** @since Postgres 19beta1 */
-    RELATIONSHIP("relationship", UNRESERVED_KEYWORD),
     RELATIVE_P("relative", UNRESERVED_KEYWORD),
     RELEASE("release", UNRESERVED_KEYWORD),
     RENAME("rename", UNRESERVED_KEYWORD),
@@ -511,7 +497,11 @@ public enum Keyword implements ScanKeywordCategory {
     SOME("some", RESERVED_KEYWORD),
     /** @since Postgres 17 */
     SOURCE("source", UNRESERVED_KEYWORD),
-    /** @since Postgres 17 */
+    /**
+     * @since Postgres 17
+     * @deprecated since Postgres 19beta4
+     */
+    @Deprecated(since="Postgres 19beta4", forRemoval=true)
     SPLIT("split", UNRESERVED_KEYWORD),
     SQL_P("sql", UNRESERVED_KEYWORD),
     STABLE("stable", UNRESERVED_KEYWORD),
@@ -587,8 +577,6 @@ public enum Keyword implements ScanKeywordCategory {
     VARYING("varying", UNRESERVED_KEYWORD),
     VERBOSE("verbose", TYPE_FUNC_NAME_KEYWORD),
     VERSION_P("version", UNRESERVED_KEYWORD),
-    /** @since Postgres 19beta1 */
-    VERTEX("vertex", UNRESERVED_KEYWORD),
     VIEW("view", UNRESERVED_KEYWORD),
     VIEWS("views", UNRESERVED_KEYWORD),
     /** @since Postgres 19beta1 */

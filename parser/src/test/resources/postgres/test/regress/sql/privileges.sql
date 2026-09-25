@@ -68,6 +68,11 @@ SET ROLE regress_priv_user3;
 GRANT regress_priv_user1 TO regress_priv_user4;
 SELECT grantor::regrole FROM pg_auth_members WHERE roleid = 'regress_priv_user1'::regrole and member = 'regress_priv_user4'::regrole;
 RESET ROLE;
+REVOKE INHERIT OPTION FOR regress_priv_user2 FROM regress_priv_user3;
+SET ROLE regress_priv_user3;
+GRANT regress_priv_user1 TO regress_priv_user5; -- fail
+ALTER GROUP regress_priv_user1 ADD USER regress_priv_user5; -- fail
+RESET ROLE;
 REVOKE regress_priv_user2 FROM regress_priv_user3;
 REVOKE regress_priv_user1 FROM regress_priv_user2 CASCADE;
 
@@ -793,41 +798,6 @@ UPDATE errtst SET a = 'aaaa', b = NULL WHERE a = 'aaa';
 
 SET SESSION AUTHORIZATION regress_priv_user1;
 DROP TABLE errtst;
-
--- test column-level privileges on the range used in FOR PORTION OF
-SET SESSION AUTHORIZATION regress_priv_user1;
-CREATE TABLE t1 (
-  c1 int4range,
-  valid_at tsrange,
-	CONSTRAINT t1pk PRIMARY KEY (c1, valid_at WITHOUT OVERLAPS)
-);
--- UPDATE requires select and update permission on the valid_at column:
-GRANT SELECT (c1) ON t1 TO regress_priv_user2;
-GRANT UPDATE (c1) ON t1 TO regress_priv_user2;
-GRANT SELECT (c1, valid_at) ON t1 TO regress_priv_user3;
-GRANT UPDATE (c1) ON t1 TO regress_priv_user3;
-GRANT SELECT (c1) ON t1 TO regress_priv_user4;
-GRANT UPDATE (c1, valid_at) ON t1 TO regress_priv_user4;
-GRANT SELECT (c1, valid_at) ON t1 TO regress_priv_user5;
-GRANT UPDATE (c1, valid_at) ON t1 TO regress_priv_user5;
-SET SESSION AUTHORIZATION regress_priv_user2;
-UPDATE t1 FOR PORTION OF valid_at FROM '2000-01-01' TO '2001-01-01' SET c1 = '[2,3)';
-SET SESSION AUTHORIZATION regress_priv_user3;
-UPDATE t1 FOR PORTION OF valid_at FROM '2000-01-01' TO '2001-01-01' SET c1 = '[2,3)';
-SET SESSION AUTHORIZATION regress_priv_user4;
-UPDATE t1 FOR PORTION OF valid_at FROM '2000-01-01' TO '2001-01-01' SET c1 = '[2,3)';
-SET SESSION AUTHORIZATION regress_priv_user5;
-UPDATE t1 FOR PORTION OF valid_at FROM '2000-01-01' TO '2001-01-01' SET c1 = '[2,3)';
-SET SESSION AUTHORIZATION regress_priv_user1;
--- DELETE requires select permission on the valid_at column:
-GRANT DELETE ON t1 TO regress_priv_user2;
-GRANT DELETE ON t1 TO regress_priv_user3;
-SET SESSION AUTHORIZATION regress_priv_user2;
-DELETE FROM t1 FOR PORTION OF valid_at FROM '2000-01-01' TO '2001-01-01';
-SET SESSION AUTHORIZATION regress_priv_user3;
-DELETE FROM t1 FOR PORTION OF valid_at FROM '2000-01-01' TO '2001-01-01';
-SET SESSION AUTHORIZATION regress_priv_user1;
-DROP TABLE t1;
 
 -- test column-level privileges when involved with DELETE
 SET SESSION AUTHORIZATION regress_priv_user1;
@@ -1932,71 +1902,12 @@ revoke select on dep_priv_test from regress_priv_user4 cascade;
 set session role regress_priv_user1;
 drop table dep_priv_test;
 
---
--- Property graphs
---
-set session role regress_priv_user1;
-create property graph ptg1
-	vertex tables (
-		atest5 key (four)
-			default label properties (four)
-			label lttc properties (three as lttck),
-		atest1 key (a)
-			default label
-			label lttc properties (a as lttck),
-		atest2 key (col1)
-			default label
-			label ltv properties (col1 as ltvk));
--- select privileges on property graph as well as table
-select * from graph_table (ptg1 match (is atest5) COLUMNS (1 as value)) limit 0; -- ok
-grant select on property graph ptg1 to regress_priv_user2;
-set session role regress_priv_user2;
-\dp ptg1
-select * from graph_table (ptg1 match (is atest1) COLUMNS (1 as value)) limit 0; -- ok
--- select privileges on property graph but not table
-select * from graph_table (ptg1 match (is atest5) COLUMNS (1 as value)) limit 0; -- fails
-select * from graph_table (ptg1 match (is lttc) COLUMNS (1 as value)) limit 0; -- fails
-set session role regress_priv_user3;
--- select privileges on table but not property graph
-select * from graph_table (ptg1 match (is atest1) COLUMNS (1 as value)) limit 0; -- fails
--- select privileges on neither
-select * from graph_table (ptg1 match (is atest5) COLUMNS (1 as value)) limit 0; -- fails
--- column privileges
-set session role regress_priv_user1;
-select * from graph_table (ptg1 match (v is lttc) COLUMNS (v.lttck)) limit 0; -- ok
-grant select on property graph ptg1 to regress_priv_user4;
-set session role regress_priv_user4;
-select * from graph_table (ptg1 match (a is atest5) COLUMNS (a.four)) limit 0; -- ok
-select * from graph_table (ptg1 match (v is lttc) COLUMNS (v.lttck)) limit 0; -- fail
--- access property graph through security definer view
-set session role regress_priv_user4;
-create view atpgv1 as select * from graph_table (ptg1 match (is atest1) COLUMNS (1 as value)) limit 0;
-grant select on atpgv1 to regress_priv_user3;
-select * from atpgv1; -- ok
-set session role regress_priv_user3;
-select * from atpgv1; -- ok
-set session role regress_priv_user4;
-create view atpgv2 as select * from graph_table (ptg1 match (v is ltv) COLUMNS (v.ltvk)) limit 0;
--- though the session user is the owner of the view and also has access to the
--- property graph, it does not have access to a table referenced in the graph
--- pattern
-select * from atpgv2; -- fail
-grant select on atpgv2 to regress_priv_user2;
--- The user who otherwise does not have access to the property graph, gets
--- access to it through a security definer view and uses it successfully since
--- it has access to the tables referenced in the graph pattern.
-set session role regress_priv_user2;
-select * from atpgv2; -- ok
 
 -- clean up
 
 \c
 
 drop sequence x_seq;
-
-drop view atpgv1;
-drop view atpgv2;
-drop property graph ptg1;
 
 DROP AGGREGATE priv_testagg1(int);
 DROP FUNCTION priv_testfunc2(int);

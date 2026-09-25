@@ -36,7 +36,7 @@ import com.splendiddata.sqlparser.enums.XmlStandaloneType;
  * @author Splendid Data Product Development B.V.
  */
 @XmlRootElement(namespace = "parser")
-public class XmlExpr extends Node {
+public class XmlExpr extends Expr {
 
     /** xml function ID */
     @XmlAttribute
