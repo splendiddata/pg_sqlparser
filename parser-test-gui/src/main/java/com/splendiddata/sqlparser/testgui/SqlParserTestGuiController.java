@@ -14,14 +14,10 @@
 
 package com.splendiddata.sqlparser.testgui;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -40,7 +36,6 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 
@@ -80,27 +75,9 @@ public class SqlParserTestGuiController implements Initializable {
 
     double scrollPixel;
 
-    @SuppressWarnings("unchecked")
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        try (InputStream iStream = getClass().getClassLoader()
-                .getResourceAsStream(RESULT_CELL_FACTORT_CLASS_NAME.replace('.', '/') + ".class")) {
-            if (iStream != null) {
-                Constructor<?> cellFactoryConstructoronstructor = java.lang.Class
-                        .forName(RESULT_CELL_FACTORT_CLASS_NAME).getConstructor();
-                resultString.setCellFactory(cell -> {
-                    try {
-                        return (ListCell<Node>) cellFactoryConstructoronstructor.newInstance();
-                    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                            | InvocationTargetException | SecurityException e) {
-                        log.error(e, e);
-                    }
-                    return null;
-                });
-            }
-        } catch (IOException | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
-            log.error(e, e);
-        }
+        resultString.setCellFactory(cell -> new ResultStringListitem());
         resultString.setItems(resultStringList);
         resultString.getSelectionModel().selectedItemProperty()
                 .addListener(obs -> resultXML.setText(resultString.getSelectionModel().getSelectedItem() == null ? ""

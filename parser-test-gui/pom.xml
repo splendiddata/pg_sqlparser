@@ -12,69 +12,6 @@
 	<name>parser-test-gui</name>
 	<description>just a little test gui to visualise parser results</description>
 
-	<profiles>
-		<profile>
-			<id>noFormatter</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>build-helper-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>add-source</id>
-								<phase>generate-sources</phase>
-								<goals>
-									<goal>add-source</goal>
-								</goals>
-								<configuration>
-									<sources>
-										<source>src/main/noformatter</source>
-									</sources>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<id>withFormatter</id>
-			<dependencies>
-				<dependency>
-					<groupId>com.splendiddata.pgcode_formatter</groupId>
-					<artifactId>pgcode_formatter</artifactId>
-					<version>0.2</version>
-				</dependency>
-			</dependencies>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>build-helper-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>add-source</id>
-								<phase>generate-sources</phase>
-								<goals>
-									<goal>add-source</goal>
-								</goals>
-								<configuration>
-									<sources>
-										<source>src/main/withformatter</source>
-									</sources>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
-
 	<dependencies>
 		<dependency>
 			<groupId>com.splendiddata.pg_sqlparser</groupId>
