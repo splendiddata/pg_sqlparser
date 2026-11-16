@@ -804,6 +804,31 @@ WHERE x COLLATE case_insensitive IN (SELECT x FROM test3cs);
 
 ROLLBACK;
 
+-- Memoize must not share a cache entry between 'abc' and 'ABC' when the join
+-- clause can tell them apart.  The planner won't choose Memoize without
+-- a valid ndistinct estimate, so create a new table and analyze it.
+BEGIN;
+
+CREATE TABLE test_memoize_ci (x text COLLATE case_insensitive);
+INSERT INTO test_memoize_ci SELECT x FROM test3ci, generate_series(1, 10);
+ANALYZE test_memoize_ci;
+
+SET LOCAL enable_hashjoin TO off;
+SET LOCAL enable_mergejoin TO off;
+
+-- Ensure we get a Memoize plan
+EXPLAIN (COSTS OFF)
+SELECT t2.x, count(*) FROM test_memoize_ci t1
+  LEFT JOIN test3cs t2 ON t2.x COLLATE case_sensitive = t1.x
+GROUP BY t2.x ORDER BY t2.x;
+
+-- Ensure we get the expected results
+SELECT t2.x, count(*) FROM test_memoize_ci t1
+  LEFT JOIN test3cs t2 ON t2.x COLLATE case_sensitive = t1.x
+GROUP BY t2.x ORDER BY t2.x;
+
+ROLLBACK;
+
 -- These queries should be able to use the index on test1ci.x:
 SET enable_seqscan = off;
 SET enable_indexonlyscan = off;
@@ -1473,6 +1498,19 @@ SELECT a, b FROM groupby_collation_t GROUP BY a, b ORDER BY a, b;
 SELECT a, b FROM groupby_collation_t GROUP BY a, b ORDER BY a, b;
 
 DROP TABLE groupby_collation_t;
+
+--
+-- An expression that is simplified to one of its inputs must keep its own
+-- collation.
+--
+CREATE TABLE simplify_collation_t (a text COLLATE "C" NOT NULL, b text);
+INSERT INTO simplify_collation_t VALUES ('foo'), ('FOO');
+
+SELECT count(*) FROM (SELECT COALESCE(a, b COLLATE case_insensitive) FROM simplify_collation_t GROUP BY 1);
+SELECT count(*) FROM (SELECT CASE WHEN true THEN a ELSE b COLLATE case_insensitive END FROM simplify_collation_t GROUP BY 1);
+SELECT count(*) FROM (SELECT NULLIF(a, NULL::text COLLATE case_insensitive) FROM simplify_collation_t GROUP BY 1);
+
+DROP TABLE simplify_collation_t;
 
 -- virtual generated columns
 CREATE TABLE t5 (

@@ -264,12 +264,12 @@ CREATE TABLE COPY_TBL (x INT, y TEXT, z INT,
 	CONSTRAINT COPY_CON
 	CHECK (x > 3 AND y <> 'check failed' AND x < 7 ));
 
--- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/constro.data'
+\set filename :abs_srcdir '/data/constro.data'
 -- Deactivated for SplendidDataTest: COPY COPY_TBL FROM :'filename';
 
 SELECT * FROM COPY_TBL;
 
--- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/constrf.data'
+\set filename :abs_srcdir '/data/constrf.data'
 -- Deactivated for SplendidDataTest: COPY COPY_TBL FROM :'filename';
 
 SELECT * FROM COPY_TBL;
@@ -326,6 +326,17 @@ alter table parted_ch_2 alter constraint cc_2 not enforced;
 select * from check_constraint_status;
 drop table parted_ch;
 drop view check_constraint_status;
+
+create table parted_ch(
+  a int, b int,
+  constraint cc check (a > 10) not enforced
+) partition by list(a);
+
+create table parted_ch_1(a int, b int);
+alter table parted_ch_1 add constraint cc check (a > 10) not valid;
+alter table parted_ch attach partition parted_ch_1  for values in (0, 1);
+alter table parted_ch alter constraint cc enforced; -- error
+drop table parted_ch;
 
 --
 -- Primary keys

@@ -203,6 +203,12 @@ COPY x from stdin WHERE a > 60003;
 -- Deactivated for SplendidDataTest: 60005	26	36	46	56
 \.
 
+COPY x from stdin WHERE NOT (a < 70003);
+-- Deactivated for SplendidDataTest: 70001	22	32	42	52
+-- Deactivated for SplendidDataTest: 70002	23	33	43	53
+-- Deactivated for SplendidDataTest: 70003	24	34	44	54
+\.
+
 COPY x from stdin WHERE f > 60003;
 \.
 
@@ -601,6 +607,44 @@ COPY check_ign_err FROM STDIN WITH (on_error ignore, log_verbosity verbose);
 -- Deactivated for SplendidDataTest: 8	{8}	8
 \.
 
+CREATE DOMAIN d_int_not_null AS integer NOT NULL CHECK (value > 0);
+CREATE DOMAIN d_int_positive_maybe_null AS integer CHECK (value > 0);
+CREATE TABLE t_on_error_null (a d_int_not_null, b d_int_positive_maybe_null, c integer);
+
+\pset null NULL
+COPY t_on_error_null FROM STDIN WITH (on_error set_null); -- fail
+\N	11	13
+\.
+
+COPY t_on_error_null(c, a) FROM STDIN WITH (on_error set_null); -- fail
+-- Deactivated for SplendidDataTest: 11	\N
+\.
+
+COPY t_on_error_null FROM STDIN WITH (on_error set_null); -- fail
+-- Deactivated for SplendidDataTest: ss	11	14
+\.
+
+COPY t_on_error_null FROM STDIN WITH (on_error set_null); -- fail
+-- Deactivated for SplendidDataTest: -1	11	13
+\.
+
+-- fail, less data.
+COPY t_on_error_null FROM STDIN WITH (delimiter ',', on_error set_null);
+-- Deactivated for SplendidDataTest: 1,1
+\.
+-- fail, extra data.
+COPY t_on_error_null FROM STDIN WITH (delimiter ',', on_error set_null);
+-- Deactivated for SplendidDataTest: 1,2,3,4
+\.
+
+COPY t_on_error_null FROM STDIN WITH (on_error set_null, log_verbosity verbose); -- ok
+-- Deactivated for SplendidDataTest: 10	x1	yx
+-- Deactivated for SplendidDataTest: 11	zx	12
+-- Deactivated for SplendidDataTest: 13	14	ea
+\.
+
+SELECT * FROM t_on_error_null ORDER BY a;
+
 \pset null ''
 
 -- tests for on_error option with log_verbosity and null constraint via domain
@@ -636,6 +680,23 @@ COPY check_ign_err FROM STDIN WITH (on_error ignore);
 -- test extra data: should fail
 COPY check_ign_err FROM STDIN WITH (on_error ignore);
 -- Deactivated for SplendidDataTest: 1	{1}	3	abc
+\.
+
+-- a hard error in the row following one skipped by ON_ERROR must report the
+-- line correctly.
+COPY check_ign_err FROM STDIN WITH (on_error ignore);
+-- Deactivated for SplendidDataTest: 1	{1}	stale_ignore_text
+-- Deactivated for SplendidDataTest: 2	{2}	2	extra
+\.
+
+COPY check_ign_err FROM STDIN WITH (format csv, on_error ignore);
+-- Deactivated for SplendidDataTest: 1,{1},stale_ignore_csv
+-- Deactivated for SplendidDataTest: 2,{2},2,extra
+\.
+
+COPY check_ign_err FROM STDIN WITH (on_error set_null);
+-- Deactivated for SplendidDataTest: 1	{1}	stale_setnull_text
+-- Deactivated for SplendidDataTest: 2	{2}	2	extra
 \.
 
 -- tests for reject_limit option

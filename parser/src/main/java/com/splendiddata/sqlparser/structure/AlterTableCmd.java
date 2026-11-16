@@ -255,6 +255,19 @@ public class AlterTableCmd extends Node {
         case AT_ReplicaIdentity:
             return def.toString();
         case AT_ResetOptions:
+            result = new StringBuilder("alter column ").append(ParserUtil.identifierToSql(name)).append(" reset (");
+            if (def != null) {
+                separator = "";
+                for (Node node : (List<Node>) def) {
+                    result.append(separator);
+                    separator = ", ";
+                    if (node instanceof DefElem) {
+                        result.append(' ').append(ParserUtil.identifierToSql(((DefElem) node).defname));
+                    }
+                }
+            }
+            result.append(')');
+            return result.toString();
         case AT_ResetRelOptions:
             result = new StringBuilder("reset (");
             if (def != null) {
@@ -273,6 +286,27 @@ public class AlterTableCmd extends Node {
             return new StringBuilder().append("alter column ").append(ParserUtil.identifierToSql(name))
                     .append(" set not null").toString();
         case AT_SetOptions:
+            result = new StringBuilder("alter column ").append(ParserUtil.identifierToSql(name)).append(" set (");
+            if (def != null) {
+                separator = "";
+                for (Node node : (List<Node>) def) {
+                    result.append(separator);
+                    separator = ", ";
+                    if (node instanceof DefElem) {
+                        result.append(' ').append(ParserUtil.identifierToSql(((DefElem) node).defname));
+                        if (((DefElem) node).arg != null) {
+                            result.append(" = ");
+                            if (((DefElem) node).arg.getNodeType().equals(NodeTag.T_String)) {
+                                result.append("'").append(((DefElem) node).arg).append("'");
+                            } else {
+                                result.append(((DefElem) node).arg);
+                            }
+                        }
+                    }
+                }
+            }
+            result.append(')');
+            return result.toString();
         case AT_SetRelOptions:
             result = new StringBuilder("set (");
             if (def != null) {

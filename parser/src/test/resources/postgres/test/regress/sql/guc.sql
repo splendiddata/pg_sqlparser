@@ -28,6 +28,9 @@ SHOW search_path;
 SET enable_seqscan = null;  -- error
 RESET search_path;
 
+-- Check syntax validation of output_plugin_libraries
+SELECT set_config('output_plugin_libraries', 'pgoutput,', true);
+
 -- SET LOCAL has no effect outside of a transaction
 SET LOCAL vacuum_cost_delay TO 50;
 SHOW vacuum_cost_delay;

@@ -228,7 +228,6 @@ public class A_Expr extends ConditionalExpr {
             case T_A_Const:
             case T_FuncCall:
             case T_TypeCast:
-            case T_SubLink:
             case T_A_Indirection:
             case T_RowExpr:
             case T_List:
