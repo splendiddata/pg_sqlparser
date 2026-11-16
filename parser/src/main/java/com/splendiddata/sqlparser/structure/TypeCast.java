@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -101,6 +101,43 @@ public class TypeCast extends Expr {
         }
 
         return new StringBuilder().append(arg).append("::").append(typeName).toString();
+    }
+
+    /**
+     * Use this method to render the type cast to a cast(arg as type) construct
+     * 
+     * @return The content of this object rendered as cast() function
+     */
+    public String renderAsFunctionCall() {
+        if (arg != null && typeName != null && typeName.names.size() == 2
+                && "pg_catalog".equals(typeName.names.get(0).val.str)) {
+            if ("bool".equals(typeName.names.get(1).val.str)) {
+                switch (arg.toString()) {
+                case "'t'":
+                    return "true";
+                case "'f'":
+                    return "false";
+                default:
+                    break;
+                }
+            }
+            if ("interval".equals(typeName.names.get(1).val.str)) {
+                StringBuilder result = new StringBuilder();
+                switch (arg.type) {
+                case T_A_Const:
+                case T_ColumnRef:
+                case T_TypeCast:
+                    result.append(arg);
+                    break;
+                default:
+                    result.append('(').append(arg).append(')');
+                    break;
+                }
+                result.append("::").append(typeName);
+                return result.toString();
+            }
+        }
+        return new StringBuilder().append("cast(").append(arg).append(" as ").append(typeName).append(')').toString();
     }
 
     @Override

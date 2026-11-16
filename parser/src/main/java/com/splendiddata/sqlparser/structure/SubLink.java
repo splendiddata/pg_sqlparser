@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -100,13 +100,13 @@ public class SubLink extends Expr {
             break;
         case ANY_SUBLINK:
             if (operName == null) {
-                result.append(testexpr).append(" in ");
+                addExpression(result, testexpr).append(" in ");
             } else {
-                result.append(testexpr).append(' ').append(ParserUtil.operatorNameToSql(operName)).append(" any ");
+                addExpression(result, testexpr).append(' ').append(ParserUtil.operatorNameToSql(operName)).append(" any ");
             }
             break;
         case ALL_SUBLINK:
-            result.append(testexpr).append(' ').append(ParserUtil.operatorNameToSql(operName)).append(" all ");
+            addExpression(result, testexpr).append(' ').append(ParserUtil.operatorNameToSql(operName)).append(" all ");
             break;
         case ARRAY_SUBLINK:
             result.append("array");
@@ -124,6 +124,45 @@ public class SubLink extends Expr {
         }
         result.append('(').append(subselect).append(')');
         return result.toString();
+    }
+
+    /**
+     * Returns the result StringBuilder with the expression added. If brackets are needed around the expression, they
+     * will be added as well.
+     *
+     * @param result
+     * @param expression
+     * @return result with the expression added
+     */
+    private static StringBuilder addExpression(StringBuilder result, Node expression) {
+        if (expression != null) {
+            if (expression.type == null) {
+                if (expression instanceof GroupingFunc) {
+                    return result.append(expression);
+                }
+                result.append(" ??? expression.type == null in ").append(expression).append(" ???");
+                return result;
+            }
+            switch (expression.type) {
+            case T_ColumnRef:
+            case T_A_Const:
+            case T_FuncCall:
+            case T_TypeCast:
+            case T_A_Indirection:
+            case T_RowExpr:
+            case T_List:
+            case T_SQLValueFunction:
+                return result.append(expression);
+            case T_A_Expr:
+                if (((A_Expr) expression).lexpr == null || ((A_Expr) expression).rexpr == null) {
+                    return result.append(expression);
+                }
+                return result.append('(').append(expression).append(')');
+            default:
+                return result.append('(').append(expression).append(')');
+            }
+        }
+        return result;
     }
 
     @Override

@@ -82,7 +82,7 @@ COPY viewtest_tbl FROM stdin;
 -- Deactivated for SplendidDataTest: 10	15	2.2	xyz
 -- Deactivated for SplendidDataTest: 15	20	3.3	xyzz
 -- Deactivated for SplendidDataTest: 20	25	4.4	xyzzy
--- Deactivated for SplendidDataTest: \.
+\.
 
 CREATE OR REPLACE VIEW viewtest AS
 	SELECT * FROM viewtest_tbl;
@@ -380,6 +380,22 @@ ALTER TABLE tmp1 RENAME TO tx1;
 \d+ aliased_view_2
 \d+ aliased_view_3
 \d+ aliased_view_4
+
+-- Test correct deparsing of ORDER BY when there is an output name conflict
+
+create view aliased_order_by as
+select x1 as x2, x2 as x1, x3 from tt1
+  order by x2;  -- this is interpreted per SQL92, so really ordering by x1
+
+\d+ aliased_order_by
+
+alter view aliased_order_by rename column x1 to x0;
+
+\d+ aliased_order_by
+
+alter view aliased_order_by rename column x3 to x1;
+
+\d+ aliased_order_by
 
 -- Test aliasing of joins
 
@@ -704,7 +720,8 @@ select * from
   current_date as d,
   localtimestamp(3) as t,
   cast(1+2 as int4) as i4,
-  cast(1+2 as int8) as i8;
+  cast(1+2 as int8) as i8,
+  cast('foo' is normalized as boolean) as isn;
 select pg_get_viewdef('tt20v', true);
 
 -- reverse-listing of various special function syntaxes required by SQL
@@ -817,9 +834,31 @@ select x + y + z as c1,
        (x > y) AND (y > z OR x > z) as c8,
        (x > y) OR (y > z AND NOT (x > z)) as c9,
        (x,y) <> ALL (values(1,2),(3,4)) as c10,
-       (x,y) <= ANY (values(1,2),(3,4)) as c11
+       (x,y) <= ANY (values(1,2),(3,4)) as c11,
+       (x>0 OR y>0) IN (SELECT false) AS c12,
+       (x < y) <> ALL (SELECT false) AS c13,
+       true = (y = ANY (SELECT 1)) AS c14
 from (values(1,2,3)) v(x,y,z);
 select pg_get_viewdef('tt26v', true);
+
+-- xml IS DOCUMENT needs to be treated specially
+create operator ||
+  (function = xmlconcat2, leftarg=xml, rightarg=xml);
+create view tt261v as
+select x is document as c1,
+       (x || x) is document as c2,
+       f = (x is document) as c3
+from (values(false,null::xml)) v(f,x);
+select pg_get_viewdef('tt261v', true);
+
+-- test restriction on non-system view expansion.
+create table tt27v_tbl (a int);
+create view tt27v as select a from tt27v_tbl;
+set restrict_nonsystem_relation_kind to 'view';
+select a from tt27v where a > 0; -- Error
+insert into tt27v values (1); -- Error
+select viewname from pg_views where viewname = 'tt27v'; -- Ok to access a system view.
+reset restrict_nonsystem_relation_kind;
 
 -- clean up all the random objects we made above
 DROP SCHEMA temp_view_test CASCADE;

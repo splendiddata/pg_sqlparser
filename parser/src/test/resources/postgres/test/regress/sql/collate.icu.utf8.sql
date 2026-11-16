@@ -14,9 +14,9 @@
 -- Deactivated for SplendidDataTest: SELECT getdatabaseencoding() <> 'UTF8' OR
 -- Deactivated for SplendidDataTest:        (SELECT count(*) FROM pg_collation WHERE collprovider = 'i' AND collname <> 'unicode') = 0
 -- Deactivated for SplendidDataTest:        AS skip_test \gset
--- Deactivated for SplendidDataTest: \if :skip_test
--- Deactivated for SplendidDataTest: \quit
--- Deactivated for SplendidDataTest: \endif
+\if :skip_test
+\quit
+\endif
 
 SET client_encoding TO UTF8;
 
@@ -712,6 +712,58 @@ INSERT INTO test1ci VALUES ('ABC');  -- error
 CREATE UNIQUE INDEX ON test3ci (x);  -- error
 SELECT string_to_array('ABC,DEF,GHI' COLLATE case_insensitive, ',', 'abc');
 SELECT string_to_array('ABCDEFGHI' COLLATE case_insensitive, NULL, 'b');
+
+-- Unique-ifying a semijoin's RHS must use the join's collation.  test3cs
+-- holds both 'abc' and 'ABC', so test1ci's 'abc' must come out once.
+BEGIN;
+
+SET LOCAL enable_seqscan TO off;
+SET LOCAL enable_material TO off;
+SET LOCAL enable_hashjoin TO off;
+SET LOCAL enable_mergejoin TO off;
+SET LOCAL enable_hashagg TO off;
+
+EXPLAIN (COSTS OFF)
+SELECT count(*) FROM test1ci
+WHERE x COLLATE case_insensitive IN (SELECT x FROM test3cs);
+SELECT count(*) FROM test1ci
+WHERE x COLLATE case_insensitive IN (SELECT x FROM test3cs);
+
+SET LOCAL enable_hashagg TO on;
+SET LOCAL enable_sort TO off;
+
+EXPLAIN (COSTS OFF)
+SELECT count(*) FROM test1ci
+WHERE x COLLATE case_insensitive IN (SELECT x FROM test3cs);
+SELECT count(*) FROM test1ci
+WHERE x COLLATE case_insensitive IN (SELECT x FROM test3cs);
+
+ROLLBACK;
+
+-- Memoize must not share a cache entry between 'abc' and 'ABC' when the join
+-- clause can tell them apart.  The planner won't choose Memoize without
+-- a valid ndistinct estimate, so create a new table and analyze it.
+BEGIN;
+
+CREATE TABLE test_memoize_ci (x text COLLATE case_insensitive);
+INSERT INTO test_memoize_ci SELECT x FROM test3ci, generate_series(1, 10);
+ANALYZE test_memoize_ci;
+
+SET LOCAL enable_hashjoin TO off;
+SET LOCAL enable_mergejoin TO off;
+
+-- Ensure we get a Memoize plan
+EXPLAIN (COSTS OFF)
+SELECT t2.x, count(*) FROM test_memoize_ci t1
+  LEFT JOIN test3cs t2 ON t2.x COLLATE case_sensitive = t1.x
+GROUP BY t2.x ORDER BY t2.x;
+
+-- Ensure we get the expected results
+SELECT t2.x, count(*) FROM test_memoize_ci t1
+  LEFT JOIN test3cs t2 ON t2.x COLLATE case_sensitive = t1.x
+GROUP BY t2.x ORDER BY t2.x;
+
+ROLLBACK;
 
 -- bpchar
 CREATE TABLE test1bpci (x char(3) COLLATE case_insensitive);

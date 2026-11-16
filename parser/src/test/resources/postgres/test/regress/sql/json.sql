@@ -585,6 +585,11 @@ FROM (VALUES (1),(2)) v(i);
 SELECT * FROM
   json_populate_recordset(null::record, '[{"x": 776}]') AS (x int, y int);
 
+-- anonymous record type with variable rowtype
+SELECT i,
+  json_populate_recordset(r, '[{"f1":"10000","f2":"20000","f3":"30000"}]')
+FROM (VALUES (1, row(0,0)), (2, row(0,0,0)), (3, row(0,0))) v(i, r);
+
 -- empty array is a corner case
 SELECT json_populate_recordset(null::record, '[]');
 SELECT json_populate_recordset(row(1,2), '[]');
@@ -748,6 +753,8 @@ select json_object('{a,b,NULL,"d e f"}','{1,2,3,"a b c"}');
 
 select json_object('{a,b,"","d e f"}','{1,2,3,"a b c"}');
 
+-- json_object_agg_unique requires unique keys
+select json_object_agg_unique(mod(i,100), i) from generate_series(0, 199) i;
 
 -- json_to_record and json_to_recordset
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -213,7 +213,6 @@ public class A_Expr extends ConditionalExpr {
             case T_A_Const:
             case T_FuncCall:
             case T_TypeCast:
-            case T_SubLink:
             case T_A_Indirection:
             case T_RowExpr:
             case T_List:
