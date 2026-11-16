@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2020
+ * Copyright (c) Splendid Data Product Development B.V. 2020 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -118,7 +118,16 @@ public class RangeFunction extends Node {
 
                 Iterator<Node> it = function.iterator();
                 if (it.hasNext()) {
-                    result.append(it.next());
+                    Node node = it.next();
+                    if (node instanceof TypeCast tc) {
+                        /*
+                         * Apparently a double colon operator does not work in a range function (generates a syntax error).
+                         * So, let's write the cast out as function call.
+                         */
+                        result.append(tc.renderAsFunctionCall());
+                    } else {
+                        result.append(node);
+                    }
                 }
 
                 if (it.hasNext()) {
