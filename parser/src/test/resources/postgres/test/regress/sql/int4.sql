@@ -1,11 +1,3 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
-
-
-
 --
 -- INT4
 --
@@ -133,12 +125,21 @@ SELECT (-1::int4<<31)::text;
 SELECT ((-1::int4<<31)+1)::text;
 
 -- check sane handling of INT_MIN overflow cases
--- Deactivated for SplendidDataTest: SELECT (-2147483648)::int4 * (-1)::int4;
--- Deactivated for SplendidDataTest: SELECT (-2147483648)::int4 / (-1)::int4;
--- Deactivated for SplendidDataTest: SELECT (-2147483648)::int4 % (-1)::int4;
--- Deactivated for SplendidDataTest: SELECT (-2147483648)::int4 * (-1)::int2;
--- Deactivated for SplendidDataTest: SELECT (-2147483648)::int4 / (-1)::int2;
--- Deactivated for SplendidDataTest: SELECT (-2147483648)::int4 % (-1)::int2;
+SELECT (-2147483648)::int4 * (-1)::int4;
+SELECT (-2147483648)::int4 / (-1)::int4;
+SELECT (-2147483648)::int4 % (-1)::int4;
+SELECT (-2147483648)::int4 * (-1)::int2;
+SELECT (-2147483648)::int4 / (-1)::int2;
+SELECT (-2147483648)::int4 % (-1)::int2;
+
+-- check overflow of to_char() with V format
+SELECT to_char(2, '9V999999999'); -- 10^9
+SELECT to_char(3, '9V999999999'); -- 10^9
+SELECT to_char(214748364, '999999999V9');
+SELECT to_char(2147483647, '9V9');
+SELECT to_char(-2, '9V999999999'); -- 10^9
+SELECT to_char((-2147483648)::int4, '9V9');
+SELECT to_char(1, '9V9999999999'); -- 10^10
 
 -- check rounding when casting from float
 SELECT x, x::int4 AS int4_value
@@ -161,26 +162,26 @@ FROM (VALUES (-2.5::numeric),
              (2.5::numeric)) t(x);
 
 -- test gcd()
--- Deactivated for SplendidDataTest: SELECT a, b, gcd(a, b), gcd(a, -b), gcd(b, a), gcd(-b, a)
--- Deactivated for SplendidDataTest: FROM (VALUES (0::int4, 0::int4),
--- Deactivated for SplendidDataTest:              (0::int4, 6410818::int4),
--- Deactivated for SplendidDataTest:              (61866666::int4, 6410818::int4),
--- Deactivated for SplendidDataTest:              (-61866666::int4, 6410818::int4),
--- Deactivated for SplendidDataTest:              ((-2147483648)::int4, 1::int4),
--- Deactivated for SplendidDataTest:              ((-2147483648)::int4, 2147483647::int4),
--- Deactivated for SplendidDataTest:              ((-2147483648)::int4, 1073741824::int4)) AS v(a, b);
+SELECT a, b, gcd(a, b), gcd(a, -b), gcd(b, a), gcd(-b, a)
+FROM (VALUES (0::int4, 0::int4),
+             (0::int4, 6410818::int4),
+             (61866666::int4, 6410818::int4),
+             (-61866666::int4, 6410818::int4),
+             ((-2147483648)::int4, 1::int4),
+             ((-2147483648)::int4, 2147483647::int4),
+             ((-2147483648)::int4, 1073741824::int4)) AS v(a, b);
 
--- Deactivated for SplendidDataTest: SELECT gcd((-2147483648)::int4, 0::int4); -- overflow
--- Deactivated for SplendidDataTest: SELECT gcd((-2147483648)::int4, (-2147483648)::int4); -- overflow
+SELECT gcd((-2147483648)::int4, 0::int4); -- overflow
+SELECT gcd((-2147483648)::int4, (-2147483648)::int4); -- overflow
 
 -- test lcm()
--- Deactivated for SplendidDataTest: SELECT a, b, lcm(a, b), lcm(a, -b), lcm(b, a), lcm(-b, a)
--- Deactivated for SplendidDataTest: FROM (VALUES (0::int4, 0::int4),
--- Deactivated for SplendidDataTest:              (0::int4, 42::int4),
--- Deactivated for SplendidDataTest:              (42::int4, 42::int4),
--- Deactivated for SplendidDataTest:              (330::int4, 462::int4),
--- Deactivated for SplendidDataTest:              (-330::int4, 462::int4),
--- Deactivated for SplendidDataTest:              ((-2147483648)::int4, 0::int4)) AS v(a, b);
+SELECT a, b, lcm(a, b), lcm(a, -b), lcm(b, a), lcm(-b, a)
+FROM (VALUES (0::int4, 0::int4),
+             (0::int4, 42::int4),
+             (42::int4, 42::int4),
+             (330::int4, 462::int4),
+             (-330::int4, 462::int4),
+             ((-2147483648)::int4, 0::int4)) AS v(a, b);
 
--- Deactivated for SplendidDataTest: SELECT lcm((-2147483648)::int4, 1::int4); -- overflow
--- Deactivated for SplendidDataTest: SELECT lcm(2147483647::int4, 2147483646::int4); -- overflow
+SELECT lcm((-2147483648)::int4, 1::int4); -- overflow
+SELECT lcm(2147483647::int4, 2147483646::int4); -- overflow
