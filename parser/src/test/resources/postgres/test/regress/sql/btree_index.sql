@@ -1,17 +1,9 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for syntax checking, not for the testing of a commandline paser.
- * So input for the copy statements is removed.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
- 
- 
 --
 -- BTREE_INDEX
 --
 
 -- directory paths are passed to us in environment variables
--- Deactivated for SplendidDataTest: \getenv abs_srcdir PG_ABS_SRCDIR
+\getenv abs_srcdir PG_ABS_SRCDIR
 
 CREATE TABLE bt_i4_heap (
 	seqno 		int4,
@@ -33,16 +25,16 @@ CREATE TABLE bt_f8_heap (
 	random 		int4
 );
 
--- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/desc.data'
+\set filename :abs_srcdir '/data/desc.data'
 COPY bt_i4_heap FROM :'filename';
 
--- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/hash.data'
+\set filename :abs_srcdir '/data/hash.data'
 COPY bt_name_heap FROM :'filename';
 
--- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/desc.data'
+\set filename :abs_srcdir '/data/desc.data'
 COPY bt_txt_heap FROM :'filename';
 
--- Deactivated for SplendidDataTest: \set filename :abs_srcdir '/data/hash.data'
+\set filename :abs_srcdir '/data/hash.data'
 COPY bt_f8_heap FROM :'filename';
 
 ANALYZE bt_i4_heap;
@@ -169,9 +161,6 @@ select * from btree_bpchar where f1::bpchar like 'foo';
 explain (costs off)
 select * from btree_bpchar where f1::bpchar like 'foo%';
 select * from btree_bpchar where f1::bpchar like 'foo%';
-
--- get test coverage for "single value" deduplication strategy:
-insert into btree_bpchar select 'foo' from generate_series(1,1500);
 
 --
 -- Perform unique checking, with and without the use of deduplication

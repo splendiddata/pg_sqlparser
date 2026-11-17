@@ -1,10 +1,3 @@
-/*
- * This file has been altered by SplendidData.
- * It is only used for happy flow syntax checking, so erroneous statements are commented out here.
- * The deactivated lines are marked by: -- Deactivated for SplendidDataTest: 
- */
-
-
 --
 -- SUBSELECT
 --
@@ -19,8 +12,6 @@ SELECT 1 AS zero WHERE 1 IN (SELECT 2);
 
 SELECT * FROM (SELECT 1 AS x) ss;
 SELECT * FROM ((SELECT 1 AS x)) ss;
-
--- Deactivated for SplendidDataTest: SELECT * FROM ((SELECT 1 AS x)), ((SELECT * FROM ((SELECT 2 AS y))));
 
 (SELECT 2) UNION SELECT 2;
 ((SELECT 2)) UNION SELECT 2;
@@ -88,35 +79,6 @@ SELECT f1 AS "Correlated Field"
   FROM SUBSELECT_TBL
   WHERE (f1, f2) IN (SELECT f2, CAST(f3 AS int4) FROM SUBSELECT_TBL
                      WHERE f3 IS NOT NULL);
-
--- Subselects without aliases
-
--- Deactivated for SplendidDataTest: SELECT count FROM (SELECT COUNT(DISTINCT name) FROM road);
--- Deactivated for SplendidDataTest: SELECT COUNT(*) FROM (SELECT DISTINCT name FROM road);
-
--- Deactivated for SplendidDataTest: SELECT * FROM (SELECT * FROM int4_tbl), (VALUES (123456)) WHERE f1 = column1;
-
--- Deactivated for SplendidDataTest: CREATE VIEW view_unnamed_ss AS
--- Deactivated for SplendidDataTest: SELECT * FROM (SELECT * FROM (SELECT abs(f1) AS a1 FROM int4_tbl)),
--- Deactivated for SplendidDataTest:               (SELECT * FROM int8_tbl)
--- Deactivated for SplendidDataTest:   WHERE a1 < 10 AND q1 > a1 ORDER BY q1, q2;
-
-SELECT * FROM view_unnamed_ss;
-
-\sv view_unnamed_ss
-
-DROP VIEW view_unnamed_ss;
-
--- Test matching of locking clause to correct alias
-
--- Deactivated for SplendidDataTest: CREATE VIEW view_unnamed_ss_locking AS
--- Deactivated for SplendidDataTest: SELECT * FROM (SELECT * FROM int4_tbl), int8_tbl AS unnamed_subquery
--- Deactivated for SplendidDataTest:   WHERE f1 = q1
--- Deactivated for SplendidDataTest:   FOR UPDATE OF unnamed_subquery;
-
-\sv view_unnamed_ss_locking
-
-DROP VIEW view_unnamed_ss_locking;
 
 --
 -- Use some existing tables in the regression test
@@ -444,6 +406,18 @@ from
   join
   int4_tbl i4 on dummy = i4.f1;
 
+-- Likewise, but with the sublink inserted into a whole-row reference.
+
+select 1 from ((select (select 1) as x) ss1 cross join int4_tbl i4) j
+  where (select 1 where j is null) is null;
+
+select 1 from ((select (select 1) as x) ss1 cross join int4_tbl i4) j
+  where (1, 1) in (select (j is null)::int, count(*) from int4_tbl);
+
+select 1 from ((select (select 1) as x) ss1 cross join int4_tbl i4) j
+  where exists (select 1 from int4_tbl
+                tablesample system ((j is null)::int * 100));
+
 --
 -- Test case for subselect within UPDATE of INSERT...ON CONFLICT DO UPDATE
 --
@@ -629,6 +603,19 @@ select sum(ss.tst::int) from
          random() as r
   from onek i where i.unique1 = o.unique1 ) ss
 where o.ten = 0;
+
+--
+-- Test rescan of a hashed subplan that is referenced more than once (here
+-- the equivalence class produces two copies of it in the scan filter)
+--
+explain (costs off)
+select i4.f1, (select count(*) from onek
+               where two = four and two = (0 in (select i4.f1))::int)
+from int4_tbl i4 order by i4.f1;
+
+select i4.f1, (select count(*) from onek
+               where two = four and two = (0 in (select i4.f1))::int)
+from int4_tbl i4 order by i4.f1;
 
 --
 -- Test rescan of a SetOp node

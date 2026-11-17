@@ -82,7 +82,7 @@ COPY viewtest_tbl FROM stdin;
 -- Deactivated for SplendidDataTest: 10	15	2.2	xyz
 -- Deactivated for SplendidDataTest: 15	20	3.3	xyzz
 -- Deactivated for SplendidDataTest: 20	25	4.4	xyzzy
--- Deactivated for SplendidDataTest: \.
+\.
 
 CREATE OR REPLACE VIEW viewtest AS
 	SELECT * FROM viewtest_tbl;
@@ -704,7 +704,8 @@ select * from
   current_date as d,
   localtimestamp(3) as t,
   cast(1+2 as int4) as i4,
-  cast(1+2 as int8) as i8;
+  cast(1+2 as int8) as i8,
+  cast('foo' is normalized as boolean) as isn;
 select pg_get_viewdef('tt20v', true);
 
 -- reverse-listing of various special function syntaxes required by SQL
@@ -785,7 +786,10 @@ select x + y + z as c1,
        (x > y) AND (y > z OR x > z) as c8,
        (x > y) OR (y > z AND NOT (x > z)) as c9,
        (x,y) <> ALL (values(1,2),(3,4)) as c10,
-       (x,y) <= ANY (values(1,2),(3,4)) as c11
+       (x,y) <= ANY (values(1,2),(3,4)) as c11,
+       (x>0 OR y>0) IN (SELECT false) AS c12,
+       (x < y) <> ALL (SELECT false) AS c13,
+       true = (y = ANY (SELECT 1)) AS c14
 from (values(1,2,3)) v(x,y,z);
 select pg_get_viewdef('tt26v', true);
 
@@ -810,6 +814,16 @@ CREATE TABLE tt28(c int);
 CREATE RULE "_RETURN" AS ON SELECT TO tt28 DO INSTEAD SELECT * FROM tt26;
 CREATE RULE "_RETURN" AS ON SELECT TO tt28 DO INSTEAD SELECT * FROM tt26;
 ROLLBACK;
+
+-- xml IS DOCUMENT needs to be treated specially
+create operator ||
+  (function = xmlconcat2, leftarg=xml, rightarg=xml);
+create view tt261v as
+select x is document as c1,
+       (x || x) is document as c2,
+       f = (x is document) as c3
+from (values(false,null::xml)) v(f,x);
+select pg_get_viewdef('tt261v', true);
 
 -- test restriction on non-system view expansion.
 create table tt27v_tbl (a int);

@@ -241,10 +241,10 @@ SELECT
 FROM bitwise_test;
 
 COPY bitwise_test FROM STDIN NULL 'null';
--- Deactivated for SplendidDataTest:1	1	1	1	1	B0101
--- Deactivated for SplendidDataTest:3	3	3	null	2	B0100
--- Deactivated for SplendidDataTest:7	7	7	3	4	B1100
--- Deactivated for SplendidDataTest:\.
+-- Deactivated for SplendidDataTest: 1	1	1	1	1	B0101
+-- Deactivated for SplendidDataTest: 3	3	3	null	2	B0100
+-- Deactivated for SplendidDataTest: 7	7	7	3	4	B1100
+\.
 
 SELECT
   BIT_AND(i2) AS "1",
@@ -318,7 +318,7 @@ COPY bool_test FROM STDIN NULL 'null';
 -- Deactivated for SplendidDataTest: TRUE	null	FALSE	null
 -- Deactivated for SplendidDataTest: FALSE	TRUE	null	null
 -- Deactivated for SplendidDataTest: null	TRUE	FALSE	null
--- Deactivated for SplendidDataTest: \.
+\.
 
 SELECT
   BOOL_AND(b1)     AS "f",
@@ -582,6 +582,15 @@ select aggfns(distinct a,a,c order by a)
 select aggfns(distinct a,b,c order by a,c using ~<~,b)
   from (values (1,3,'foo'),(0,null,null),(2,2,'bar'),(3,1,'baz')) v(a,b,c),
        generate_series(1,2) i;
+
+-- single input sorted on two keys; 0 and -0 differ only for *<
+select array_agg(distinct r order by r using <, r using *<)
+  from (values (row(-0.0::float8)), (row(0.0::float8))) v(r),
+       generate_series(1,2) i;
+
+-- likewise, but without DISTINCT; the second sort key must not be ignored
+select array_agg(r order by r using <, r using *<)
+  from (values (row(-0.0::float8)), (row(0.0::float8))) v(r);
 
 -- check node I/O via view creation and usage, also deparsing logic
 

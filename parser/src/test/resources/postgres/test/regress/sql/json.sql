@@ -7,11 +7,6 @@ SELECT '"abc
 def"'::json;					-- ERROR, unescaped newline in string constant
 SELECT '"\n\"\\"'::json;		-- OK, legal escapes
 SELECT '"\v"'::json;			-- ERROR, not a valid JSON escape
-
--- Check fast path for longer strings (at least 16 bytes long)
-SELECT ('"'||repeat('.', 12)||'abc"')::json; -- OK
-SELECT ('"'||repeat('.', 12)||'abc\n"')::json; -- OK, legal escapes
-
 -- see json_encoding test for input with unicode escapes
 
 -- Numbers.
@@ -579,6 +574,11 @@ SELECT i, json_populate_recordset(row(i,50), '[{"f1":"42"},{"f2":"43"}]')
 FROM (VALUES (1),(2)) v(i);
 SELECT * FROM
   json_populate_recordset(null::record, '[{"x": 776}]') AS (x int, y int);
+
+-- anonymous record type with variable rowtype
+SELECT i,
+  json_populate_recordset(r, '[{"f1":"10000","f2":"20000","f3":"30000"}]')
+FROM (VALUES (1, row(0,0)), (2, row(0,0,0)), (3, row(0,0))) v(i, r);
 
 -- empty array is a corner case
 SELECT json_populate_recordset(null::record, '[]');
