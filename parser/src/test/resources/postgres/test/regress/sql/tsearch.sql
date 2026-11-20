@@ -230,6 +230,19 @@ RESET enable_bitmapscan;
 
 DROP INDEX wowidx;
 
+-- Check picksplit with only two entries.
+CREATE TABLE test_tsvector_wide (a tsvector, b text);
+-- The EXTERNAL INCLUDE column means that two index tuples do not fit on
+-- one leaf page.  The second INSERT splits that page.
+ALTER TABLE test_tsvector_wide ALTER COLUMN b SET STORAGE EXTERNAL;
+CREATE INDEX ON test_tsvector_wide USING gist (a) INCLUDE (b);
+INSERT INTO test_tsvector_wide VALUES ('foo', repeat('x', 5000));
+INSERT INTO test_tsvector_wide SELECT 'bar', b FROM test_tsvector_wide;
+SET enable_seqscan = off;
+SELECT count(*) FROM test_tsvector_wide WHERE a @@ 'bar';
+RESET enable_seqscan;
+DROP TABLE test_tsvector_wide;
+
 ALTER TABLE test_tsvector SET (parallel_workers = 2);
 CREATE INDEX wowidx ON test_tsvector USING gin (a);
 
@@ -667,14 +680,14 @@ SELECT ts_headline('english', 'foo barbar', to_tsquery('english', 'foo'),
 
 CREATE TABLE test_tsquery (txtkeyword TEXT, txtsample TEXT);
 \set ECHO none
--- Deactivated for SplendidDataTest: \copy test_tsquery from stdin
+\copy test_tsquery from stdin
 -- Deactivated for SplendidDataTest: 'New York'	new <-> york | big <-> apple | nyc
 -- Deactivated for SplendidDataTest: Moscow	moskva | moscow
 -- Deactivated for SplendidDataTest: 'Sanct Peter'	Peterburg | peter | 'Sanct Peterburg'
 -- Deactivated for SplendidDataTest: foo & bar & qq	foo & (bar | qq) & city
 -- Deactivated for SplendidDataTest: 1 & (2 <-> 3)	2 <-> 4
 -- Deactivated for SplendidDataTest: 5 <-> 6	5 <-> 7
--- Deactivated for SplendidDataTest: \.
+\.
 \set ECHO all
 
 ALTER TABLE test_tsquery ADD COLUMN keyword tsquery;
